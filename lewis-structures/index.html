@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lewis Lab · Interactive Lewis Structures</title>
+<meta name="description" content="An interactive general chemistry lesson on Lewis structures: valence electrons, formal charge, resonance, octet exceptions, VSEPR, worked examples and practice.">
+<meta name="theme-color" content="#0e9f8e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-14 -14 28 28'%3E%3Ccircle r='12' fill='%230e9f8e'/%3E%3Ctext x='0' y='5' text-anchor='middle' font-size='14' font-weight='800' fill='white' font-family='sans-serif'%3Ee%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f7fb; --bg2:#eef0f8; --card:#ffffff; --text:#1c2033; --muted:#5d6480; --line:#dfe3ef;
+  --accent:#0e9f8e; --accent2:#7c4dff; --accent3:#ff8a3d;
+  --sin:#e8346f; --cos:#2b78f0; --tan:#e69500; --lp:#7c4dff; --bond:#2a2f45; --fcpos:#2b78f0; --fcneg:#e5484d; --ok:#12a56a; --bad:#e5484d;
+  --grid:#e6e9f2; --axis:#9aa1b9; --shadow:0 6px 24px rgba(30,35,70,.08), 0 1px 3px rgba(30,35,70,.06);
+  --radius:18px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",Georgia,serif;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --bg:#0e1020; --bg2:#151831; --card:#1a1d38; --text:#eef0ff; --muted:#a3a9cc; --line:#2c3159;
+  --accent:#2fd4bf; --accent2:#a78bff; --accent3:#ffa766;
+  --sin:#ff5c8f; --cos:#5aa2ff; --tan:#ffb83d; --lp:#b49bff; --bond:#e6e8ff; --fcpos:#6aa8ff; --fcneg:#ff7a7e; --ok:#2fd18b; --bad:#ff6b6f;
+  --grid:#252a4d; --axis:#6c739c; --shadow:0 8px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%;transition:background .3s,color .3s}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.2;margin:.2em 0 .5em}
+h2{font-size:clamp(1.5rem,3.5vw,2.1rem)}
+h3{font-size:1.2rem}
+p{margin:.5em 0 .9em}
+button{font:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+
+/* ---------- top bar / nav ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line)}
+.topbar .row{display:flex;align-items:center;gap:10px;padding:8px 18px;max-width:1240px;margin:0 auto}
+.brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text)}
+.brand .logo{width:28px;height:28px}
+.navchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px;scroll-behavior:smooth}
+.navchips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.85rem;text-decoration:none;white-space:nowrap;transition:.2s}
+.chip .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg2);font-size:.72rem;font-weight:700}
+.chip.visited .n{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.chip.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.chip.active .n{background:rgba(255,255,255,.25);color:#fff}
+.iconbtn{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:1.1rem}
+.progress{height:3px;background:transparent}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));transition:width .1s}
+
+/* ---------- sections & cards ---------- */
+section{padding:48px 0 24px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sec-num{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.lead{color:var(--muted);font-size:1.07rem;max-width:760px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card,.ex,.q{min-width:0}
+.fb .m,.tip .m,.why .m,.prompt .m,.lead .m,.goal .m{white-space:normal}
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.grid2,.split{grid-template-columns:minmax(0,1fr)}.grid3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:520px){.grid3{grid-template-columns:minmax(0,1fr)}.card{padding:15px}section{padding:34px 0 14px}.wrap{padding:0 12px}}
+.tip{border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card));padding:12px 14px;border-radius:12px;margin:12px 0}
+.tip.warn{border-color:var(--tan);background:color-mix(in srgb,var(--tan) 10%,var(--card))}
+.tip.good{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 9%,var(--card))}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:700;background:var(--bg2);color:var(--muted)}
+.c-sin{color:var(--sin)} .c-cos{color:var(--cos)} .c-tan{color:var(--tan)} .c-ok{color:var(--ok)} .c-bad{color:var(--bad)}
+.muted{color:var(--muted)} .small{font-size:.88rem}
+.center{text-align:center}
+
+/* ---------- controls ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-weight:600;transition:transform .08s,background .2s,border-color .2s;touch-action:manipulation}
+.btn:hover{border-color:var(--accent)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.btn.small{padding:6px 11px;min-height:36px;font-size:.88rem;border-radius:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:8px 14px;min-height:40px;cursor:pointer;font-weight:600}
+.seg button.on{background:var(--accent);color:#fff}
+label.ctl{display:block;margin:10px 0 2px;font-weight:600;font-size:.93rem}
+label.ctl .val{float:right;font-family:var(--math);font-weight:700;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;touch-action:pan-y}
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;margin:4px 14px 4px 0;font-size:.93rem}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+input[type=text],select{font:inherit;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);min-height:44px;width:100%}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input.mathin{font-family:var(--math);font-size:1.1rem}
+
+/* ---------- math typesetting ---------- */
+.m{font-family:var(--math);font-size:1.08em;white-space:nowrap}
+.m i{font-style:italic}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.88em;margin:0 .12em;line-height:1.15}
+.fr>span:first-child{border-bottom:1.4px solid currentColor;padding:0 .18em .05em}
+.fr>span:last-child{padding:.05em .18em 0}
+.rt{white-space:nowrap}
+.rt>.rad{display:inline-block;border-top:1.4px solid currentColor;padding:.06em .08em 0;margin-left:.02em;line-height:1.15}
+.rt:has(.fr)>.sq{font-size:1.75em;vertical-align:-.12em;line-height:1}
+.rt:has(.fr)>.rad{vertical-align:-.05em}
+.m sup{font-size:.68em;vertical-align:.6em;line-height:0}
+.m sub{font-size:.68em;line-height:0}
+.eq{display:block;text-align:center;font-family:var(--math);font-size:1.2rem;margin:12px 0;white-space:normal;overflow-x:auto}
+.formula{background:var(--bg2);border-radius:12px;padding:10px 12px;margin:8px 0;font-family:var(--math);font-size:1.1rem;overflow-x:auto}
+.formula .m{font-size:1em}
+
+/* ---------- hero ---------- */
+.hero{padding:46px 0 10px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:center}
+@media (max-width:860px){.hero-grid{grid-template-columns:minmax(0,1fr)}}
+.hero h1{font-size:clamp(2.2rem,6vw,3.7rem);letter-spacing:-.03em;margin:.1em 0 .25em}
+.grad{background:linear-gradient(120deg,var(--accent),var(--accent2) 55%,var(--accent3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kicker{display:inline-block;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);padding:4px 12px;border-radius:999px;font-size:.85rem}
+.howto{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.howto .card{margin:0;padding:14px}
+.howto .ic{font-size:1.5rem}
+@media (max-width:860px){.howto{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+#heroCanvas{width:100%;aspect-ratio:1.25/1;display:block}
+
+/* ---------- visuals ---------- */
+svg{display:block;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.viz{width:100%;background:var(--card);border-radius:14px}
+canvas.plot{width:100%;display:block;border-radius:14px;background:var(--card);touch-action:pan-y}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center}
+.readout dt{color:var(--muted);font-size:.9rem}
+.readout dd{margin:0;font-family:var(--math);font-size:1.2rem;font-weight:600}
+.bigval{font-family:var(--math);font-size:1.6rem;font-weight:700}
+.handle{cursor:grab}
+.handle:active{cursor:grabbing}
+.astc text{font-weight:800}
+.quad-on{opacity:1!important}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.88rem;color:var(--muted);margin:6px 0}
+.legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;background:currentColor;margin-right:6px;vertical-align:middle}
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem}
+table.tbl th,table.tbl td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:center}
+table.tbl th{color:var(--muted);font-weight:700}
+.scrollx{overflow-x:auto}
+.ratio{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:var(--bg2);margin:6px 0;transition:box-shadow .2s;cursor:default}
+.ratio:hover,.ratio.hl{box-shadow:0 0 0 2px var(--accent) inset}
+.ratio b{font-family:var(--math);font-size:1.1rem}
+.ratio .m{font-size:1.05rem}
+.soh{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.soh div{text-align:center;padding:12px 6px;border-radius:14px;color:#fff;font-weight:800;font-size:1.25rem;letter-spacing:.06em}
+.soh small{display:block;font-weight:500;letter-spacing:0;font-size:.78rem;opacity:.95}
+.bar{height:26px;border-radius:8px;overflow:hidden;display:flex;background:var(--bg2);margin:8px 0}
+.bar>div{height:100%;transition:width .15s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden}
+
+/* ---------- steps (worked examples) ---------- */
+.ex{border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;background:var(--card);box-shadow:var(--shadow)}
+.ex h3{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ex .goal{white-space:normal;line-height:2;font-family:var(--math);font-size:1.15rem;background:var(--bg2);padding:10px 12px;border-radius:12px;overflow-x:auto}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps li{display:none;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;padding:10px 4px;border-bottom:1px dashed var(--line);animation:pop .35s ease}
+.steps li.shown{display:grid}
+.steps li::before{counter-increment:st;content:counter(st);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-weight:800;font-size:.85rem}
+.steps .expr{font-family:var(--math);font-size:1.15rem;overflow-x:auto;padding:2px 0;white-space:normal;line-height:2}
+.steps .why{font-size:.9rem;color:var(--muted);margin-top:2px}
+.steps .why b{color:var(--accent)}
+.hintbox{display:none;margin:8px 0}
+.hintbox.on{display:block;animation:pop .3s}
+.done-badge{display:none}
+.ex.complete .done-badge{display:inline-block;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- practice ---------- */
+.scorebar{position:sticky;top:64px;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow)}
+.meter{flex:1;min-width:140px;height:10px;border-radius:99px;background:var(--bg2);overflow:hidden}
+.meter>div{height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--accent3));transition:width .4s}
+.q{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;background:var(--card);transition:border-color .3s}
+.q.right{border-color:var(--ok)} .q.wrong{border-color:var(--bad)}
+.q .qhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.q .qn{font-weight:800;color:var(--accent)}
+.q .prompt{font-size:1.07rem}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+@media (max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;justify-content:flex-start;font-family:var(--math);font-size:1.08rem;font-weight:500}
+.opt.sel-right{background:color-mix(in srgb,var(--ok) 16%,var(--card));border-color:var(--ok)}
+.opt.sel-wrong{background:color-mix(in srgb,var(--bad) 14%,var(--card));border-color:var(--bad)}
+.ansrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.ansrow input{flex:1;min-width:160px;width:auto}
+.preview{min-height:1.6em;font-size:.95rem;color:var(--muted)}
+.fb{display:none;margin-top:8px;padding:10px 12px;border-radius:12px;animation:pop .3s}
+.fb.on{display:block}
+.fb.ok{background:color-mix(in srgb,var(--ok) 12%,var(--card));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.fb.no{background:color-mix(in srgb,var(--bad) 10%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 40%,transparent)}
+.fb.info{background:var(--bg2)}
+.keypad{display:flex;gap:6px;flex-wrap:wrap}
+.keypad .btn{min-width:44px;font-family:var(--math)}
+
+@media (max-width:520px){.brand span{display:none}.topbar .row{padding:8px 10px}.scorebar{top:58px;padding:8px 10px;gap:8px;flex-wrap:nowrap}.scorebar #scoreSub{display:none}.scorebar .meter{min-width:50px}.scorebar .btn{padding:4px 8px;min-height:32px}}
+/* ---------- drill ---------- */
+.drill{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--card)),color-mix(in srgb,var(--accent2) 12%,var(--card)));}
+.drill-q{font-family:var(--math);font-size:clamp(2rem,7vw,3rem);text-align:center;font-weight:700;margin:10px 0;min-height:1.6em}
+.drill-stats{display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;text-align:center}
+.drill-stats div b{display:block;font-size:1.6rem}
+.timer{height:10px;border-radius:99px;background:var(--bg2);overflow:hidden;margin:8px 0}
+.timer>div{height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .2s linear}
+.drill .opts{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:620px){.drill .opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.drill .opt{justify-content:center;font-size:1.25rem;min-height:56px}
+.flash-ok{animation:fok .4s}.flash-no{animation:fno .4s}
+@keyframes fok{50%{box-shadow:0 0 0 4px var(--ok)}}
+@keyframes fno{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+/* ---------- cheat sheet ---------- */
+.cheat-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.cheat-grid{grid-template-columns:minmax(0,1fr)}}
+.cheat h4{margin:12px 0 4px;color:var(--accent);font-size:1rem}
+.cheat .formula{font-size:1rem;padding:6px 10px;margin:4px 0}
+footer{padding:40px 0 60px;text-align:center;color:var(--muted);font-size:.9rem}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:100;width:100%;height:100%}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:101;transition:transform .35s;box-shadow:var(--shadow)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ---------- print: cheat sheet only ---------- */
+@media print{
+  @page{margin:12mm}
+  html,body{background:#fff!important;color:#000!important}
+  html[data-theme="dark"]{--bg:#fff;--card:#fff;--text:#000;--muted:#333;--line:#bbb;--bg2:#f1f1f1;--grid:#ddd;--axis:#777}
+  .topbar,footer,section:not(#cheat),.noprint,#confetti,.toast{display:none!important}
+  section#cheat{padding:0}
+  .sec-head{margin:0 0 4px}.sec-num{display:none}
+  .cheat-grid{display:block}
+  .cheat .card{box-shadow:none;border:1px solid #bbb;margin:6px 0;padding:8px}
+  .cheat .card:first-child{border:0;padding:0}
+  #cheatSvg{width:4.3in;margin:0 auto}
+  .cheat .card:last-child{columns:2;column-gap:14px;font-size:12px}
+  .cheat h4{break-after:avoid;margin:6px 0 2px;font-size:12px}
+  .cheat .formula{background:#f3f3f3;break-inside:avoid;font-size:12px;padding:4px 8px;margin:3px 0}
+  .cheat .formula .m{white-space:normal}
+  .cheat p{break-inside:avoid;font-size:11px;margin:4px 0}
+}
+}
+
+/* ================= chemistry additions ================= */
+.chemf{font-weight:700;white-space:nowrap}
+.chemf sub,.chemf sup{font-size:.7em;line-height:0}
+/* periodic table */
+.ptable{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.ptable .gh{font-size:.72rem;color:var(--muted);text-align:center;font-weight:700}
+.el{position:relative;aspect-ratio:1/1.05;border-radius:12px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;transition:transform .12s,box-shadow .2s,border-color .2s;color:var(--text);font:inherit;min-width:0}
+.el:hover{transform:translateY(-2px);border-color:var(--accent)}
+.el.on{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.el .z{position:absolute;top:3px;left:6px;font-size:.62rem;color:var(--muted)}
+.el .sym{font-weight:800;font-size:clamp(.95rem,2.6vw,1.35rem);line-height:1}
+.el .ve{font-size:.62rem;color:var(--muted)}
+.el.g1{background:color-mix(in srgb,#ff6b6b 13%,var(--card))}.el.g2{background:color-mix(in srgb,#ffa94d 13%,var(--card))}
+.el.g13{background:color-mix(in srgb,#ffd43b 14%,var(--card))}.el.g14{background:color-mix(in srgb,#69db7c 13%,var(--card))}
+.el.g15{background:color-mix(in srgb,#38d9a9 13%,var(--card))}.el.g16{background:color-mix(in srgb,#4dabf7 13%,var(--card))}
+.el.g17{background:color-mix(in srgb,#9775fa 13%,var(--card))}.el.g18{background:color-mix(in srgb,#f783ac 13%,var(--card))}
+@media (max-width:520px){.ptable{gap:3px}.el{border-radius:8px}.el .z{display:none}.el .ve{font-size:.55rem}}
+.stepper{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stepper .cnt{font-weight:800;font-size:1.3rem;min-width:46px;text-align:center}
+/* builder */
+.board{width:100%;background:var(--card);border-radius:14px;touch-action:manipulation}
+.board .hitb{stroke:transparent;stroke-width:22;cursor:pointer}
+.board .hita{fill:transparent;cursor:pointer}
+.board .hitb:hover+.vb,.board .bondg:hover .vb{opacity:.8}
+.lpdot{fill:var(--lp)}
+.atomlbl{font-weight:800;font-family:system-ui,sans-serif;dominant-baseline:central;text-anchor:middle;fill:var(--text)}
+.fclbl{font-weight:800;font-family:system-ui,sans-serif;dominant-baseline:central;text-anchor:middle;fill:#fff}
+.pop{animation:popin .45s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes popin{from{opacity:0;transform:scale(.2)}to{opacity:1;transform:none}}
+.pop{transform-box:fill-box;transform-origin:center}
+.counter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.counter div{background:var(--bg2);border-radius:12px;padding:8px 4px}
+.counter b{display:block;font-size:1.5rem}
+.counter .neg b{color:var(--bad)} .counter .zero b{color:var(--ok)}
+.atomtbl{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:8px}
+.atomtbl td,.atomtbl th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:center}
+.atomtbl th{color:var(--muted);font-size:.8rem}
+.okc{color:var(--ok);font-weight:700}.warnc{color:var(--tan);font-weight:700}.badc{color:var(--bad);font-weight:700}.expc{color:var(--accent2);font-weight:700}
+.feedback{margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--bg2);min-height:48px}
+.feedback.ok{background:color-mix(in srgb,var(--ok) 13%,var(--card));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.feedback.no{background:color-mix(in srgb,var(--bad) 10%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
+.feedback.info{background:color-mix(in srgb,var(--accent) 10%,var(--card));border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.toolseg button{min-width:0}
+.molgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:10px}
+.molcard{text-align:center;margin:0;padding:10px}
+.molcard svg{width:100%;height:auto;max-height:180px;min-height:90px}
+.molcard .cap{font-size:.85rem;color:var(--muted)}
+.steps .pic{margin-top:6px;max-width:360px}
+.steps .pic svg{width:100%;height:auto;max-height:200px}
+canvas.v3d{width:100%;display:block;border-radius:14px;background:var(--card);touch-action:none;cursor:grab}
+.shape-btns{display:flex;flex-wrap:wrap;gap:6px}
+.shape-btns .btn.on{background:var(--accent);color:#fff;border-color:transparent}
+.vtbl tr{cursor:pointer}.vtbl tr:hover td{background:var(--bg2)}
+.vtbl tr.on td{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.resarrow{font-size:1.6rem;color:var(--muted)}
+.fcbig{font-size:2rem;font-weight:800;font-family:var(--math)}
+.qpic svg{max-width:280px;width:100%;height:auto;display:block;margin:6px auto}
+.ex .goal,.steps .expr{font-family:inherit;font-size:1.02rem;line-height:1.6}
+.bigval,.readout dd{font-family:inherit}
+.toast{visibility:hidden;transition:transform .35s,visibility 0s .35s}
+.toast.on{visibility:visible;transition:transform .35s,visibility 0s}
+.cheat .formula{font-family:inherit;font-size:.95rem}
+#excGrid{grid-template-columns:repeat(auto-fill,minmax(min(46%,200px),1fr))}
+@media (max-width:560px){
+  .vtbl th:nth-child(3),.vtbl td:nth-child(3){display:none}
+  .vtbl th,.vtbl td{padding:6px 4px;font-size:.82rem}
+  #excGrid .molcard{padding:8px}
+  #excGrid .molcard .cap{font-size:.78rem}
+}
+@media print{
+  .cheat-grid.cheat{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+  .cheat .card,.cheat .card:first-child,.cheat .card:last-child{columns:auto;border:1px solid #bbb;padding:8px 10px;margin:0;font-size:11px;box-shadow:none}
+  .cheat .formula{font-size:11px;line-height:1.45}
+  .cheat table{font-size:10.5px}.cheat th,.cheat td{padding:2.5px 3px}
+  #printBtn{display:none}
+  section#cheat .lead{display:none}
+  section#cheat h2{font-size:20px}
+}
+@media print{
+  .cheat .card,.cheat .card:first-child,.cheat .card:last-child{font-size:12.5px}
+  .cheat .formula{font-size:12.5px}
+  .cheat table{font-size:12px}
+  .cheat h4{font-size:13.5px;margin:8px 0 3px}
+}
+@media print{
+  .cheat-grid.cheat{grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr)}
+  .cheat .card,.cheat .card:first-child,.cheat .card:last-child{font-size:12px}
+  .cheat .formula{font-size:12px}
+  .cheat table{font-size:11.5px}.cheat td,.cheat th{white-space:nowrap}
+}
+
+</style>
+</head>
+<body>
+<noscript><div style="padding:12px;background:#ffe9a8;color:#000;text-align:center">This lesson needs JavaScript turned on for the interactive parts.</div></noscript>
+<header class="topbar">
+  <div class="row">
+    <a class="brand" href="#welcome" aria-label="Back to top">
+      <svg class="logo" viewBox="-14 -14 28 28" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0e9f8e"/><stop offset="1" stop-color="#7c4dff"/></linearGradient></defs><circle r="11.5" fill="url(#lg)"/><text x="0" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="system-ui">e</text><circle cx="-4" cy="-13" r="1.8" fill="#7c4dff"/><circle cx="4" cy="-13" r="1.8" fill="#7c4dff"/></svg>
+      <span>Lewis Lab</span>
+    </a>
+    <nav class="navchips" id="navchips" aria-label="Lesson sections"></nav>
+    <button class="iconbtn" id="themeBtn" title="Toggle light/dark mode" aria-label="Toggle light or dark mode">◐</button>
+  </div>
+  <div class="progress"><div id="progbar"></div></div>
+</header>
+
+<main>
+<!-- 1 WELCOME -->
+<section id="welcome" class="hero" data-title="Welcome">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">⚗️ An interactive general chemistry lesson by Grok Bot</span>
+        <h1>Lewis <span class="grad">Lab</span></h1>
+        <p class="lead">Lewis structures are electron bookkeeping: where every valence electron lives, in bonds or lone pairs. Get the bookkeeping right and you can predict <b>formal charges, resonance, shapes, and polarity</b>.</p>
+        <p class="lead">Tap, build, and break things. The structure builder checks your work like a TA would.</p>
+        <div class="btnrow"><a class="btn primary" href="#valence">Start the lesson →</a><a class="btn" href="#builder">Go to the builder</a><a class="btn" href="#cheat">Cheat sheet</a></div>
+        <p class="small muted">Legend used everywhere: <b style="color:var(--lp)">●● lone pair</b> · <b style="color:var(--accent3)">● unpaired electron</b> · <span class="pill" style="background:var(--fcneg);color:#fff">−1</span> <span class="pill" style="background:var(--fcpos);color:#fff">+1</span> formal charges.</p>
+      </div>
+      <div class="card center" style="padding:14px">
+        <svg id="heroSvg" style="width:100%;height:260px" aria-label="Animated Lewis structures"></svg>
+        <div id="heroCap" class="small muted"></div>
+      </div>
+    </div>
+    <div class="howto">
+      <div class="card"><div class="ic">🧮</div><b>Count</b><div class="small muted">Valence electrons from the periodic table, including ion charges.</div></div>
+      <div class="card"><div class="ic">🛠️</div><b>Build</b><div class="small muted">32 molecules and ions with live electron counts, octets, and formal charges.</div></div>
+      <div class="card"><div class="ic">🔁</div><b>Understand</b><div class="small muted">Resonance, exceptions, and 3D shapes (VSEPR) you can rotate.</div></div>
+      <div class="card"><div class="ic">🎯</div><b>Practice</b><div class="small muted">15 exam-style questions, a timed drill, and a printable cheat sheet.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 VALENCE -->
+<section id="valence" data-title="Valence e⁻">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">2</div><h2>Valence electrons &amp; Lewis dot symbols</h2></div>
+    <p class="lead">For main-group elements, the number of <b>valence electrons</b> (outer-shell s + p electrons) equals the last digit of the group number (groups 13–18) or the group number itself (groups 1–2). Helium is the one oddball: group 18 but only 2. Those are the only electrons drawn in Lewis structures.</p>
+    <div class="split">
+      <div class="card"><div class="ptable" id="ptable"></div><p class="small muted" style="margin-top:8px">Main-group elements only (transition metals don't follow simple valence rules). Tap an element.</p></div>
+      <div class="card">
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <svg id="dotSvg" style="width:150px;height:125px;flex:none" aria-label="Lewis dot symbol"></svg>
+          <div><div class="bigval" id="elName"></div><div class="muted" id="elInfo"></div></div>
+        </div>
+        <dl class="readout" style="margin-top:6px">
+          <dt>Group</dt><dd id="elGroup"></dd>
+          <dt>Valence electrons</dt><dd id="elVe"></dd>
+          <dt>Electronegativity</dt><dd id="elEn"></dd>
+          <dt>Typical bonds (neutral)</dt><dd id="elBonds"></dd>
+        </dl>
+        <h3 style="margin-top:14px">Make an ion</h3>
+        <div class="stepper"><button class="btn small" id="ionMinus" aria-label="Remove an electron">− e⁻</button><span class="cnt" id="ionDots">0</span><button class="btn small" id="ionPlus" aria-label="Add an electron">+ e⁻</button><span class="muted small">electrons shown</span></div>
+        <p id="ionMsg" class="small" style="margin-top:8px"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 METHOD -->
+<section id="method" data-title="The method">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">3</div><h2>The step-by-step method</h2></div>
+    <p class="lead">This recipe works for almost every molecule and polyatomic ion in general chemistry.</p>
+    <div class="grid3">
+      <div class="card"><span class="pill">Step 1</span><h3>Count valence electrons</h3><p class="small">Add up valence electrons of all atoms. <b>Add</b> one per negative charge, <b>subtract</b> one per positive charge.</p></div>
+      <div class="card"><span class="pill">Step 2</span><h3>Pick the central atom</h3><p class="small">Usually the <b>least electronegative</b> atom (often the one there's only one of). <b>H and F are never central</b>. H forms only one bond.</p></div>
+      <div class="card"><span class="pill">Step 3</span><h3>Draw single bonds</h3><p class="small">Connect each outer atom to the central atom. Each bond uses 2 electrons; subtract them.</p></div>
+      <div class="card"><span class="pill">Step 4</span><h3>Complete outer octets</h3><p class="small">Give outer atoms lone pairs until each has 8 electrons (H: 2).</p></div>
+      <div class="card"><span class="pill">Step 5</span><h3>Leftovers on the center</h3><p class="small">Place any remaining electrons on the central atom (period 3+ atoms may exceed 8).</p></div>
+      <div class="card"><span class="pill">Step 6</span><h3>Multiple bonds &amp; FC</h3><p class="small">If the central atom lacks an octet, convert outer lone pairs into double/triple bonds. Check <b>formal charges</b>.</p></div>
+    </div>
+    <div class="split">
+      <div class="card">
+        <h3>🧮 Valence electron counter</h3>
+        <div class="grid2"><div><label class="ctl" for="cntF">Formula</label><input type="text" id="cntF" value="SO4" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+          <div><label class="ctl" for="cntQ">Charge</label><select id="cntQ"><option value="3">3+</option><option value="2">2+</option><option value="1">1+</option><option value="0">0 (neutral)</option><option value="-1">1−</option><option value="-2" selected>2−</option><option value="-3">3−</option></select></div></div>
+        <div id="cntOut" class="feedback info" style="font-size:1.05rem"></div>
+      </div>
+      <div class="card">
+        <h3>🎬 Watch the method</h3>
+        <select id="wmMol" aria-label="Choose a molecule"></select>
+        <svg id="wmSvg" class="board" style="height:220px;margin-top:8px"></svg>
+        <div id="wmText" class="feedback info"></div>
+        <div class="btnrow"><button class="btn small" id="wmPrev">◂ Back</button><button class="btn primary small" id="wmNext">Next ▸</button><span class="small muted" id="wmPos"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 BUILDER -->
+<section id="builder" data-title="Builder">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">4</div><h2>Lewis structure builder</h2></div>
+    <p class="lead">The skeleton (which atom bonds to which) is given. <b>Tap a dashed line or bond</b> to cycle none → single → double → triple. <b>Tap an atom</b> to add a lone pair (or use the tool buttons). Then press <b>Check</b>.</p>
+    <div class="split">
+      <div class="card" style="padding:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+          <select id="bMol" aria-label="Choose a molecule or ion" style="flex:1;min-width:200px"></select>
+          <span class="pill" id="bSolved"></span>
+        </div>
+        <svg id="bSvg" class="board" style="height:min(62vw,380px);margin-top:8px" aria-label="Lewis structure board"></svg>
+        <div class="btnrow" style="justify-content:center">
+          <div class="seg toolseg" id="bTool" role="group" aria-label="Atom tool"><button class="on" data-t="pair">＋ pair</button><button data-t="single">＋ single e⁻</button><button data-t="erase">− remove</button></div>
+          <label class="toggle"><input type="checkbox" id="bFC" checked> show formal charges</label>
+        </div>
+        <div class="btnrow" style="justify-content:center">
+          <button class="btn primary" id="bCheck">✓ Check</button><button class="btn" id="bHint">💡 Hint</button><button class="btn" id="bStep">⏭ Next step</button><button class="btn" id="bUndo">↶ Undo</button><button class="btn" id="bReset">↺ Reset</button><button class="btn" id="bShow">👀 Answer</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="counter"><div><span class="small muted">Available</span><b id="cAvail"></b></div><div><span class="small muted">Used</span><b id="cUsed"></b></div><div id="cLeftBox"><span class="small muted">Left</span><b id="cLeft"></b></div></div>
+          <div class="small muted" id="cBreak" style="margin-top:6px"></div>
+          <table class="atomtbl"><thead><tr><th>Atom</th><th>e⁻ around</th><th>Octet</th><th>FC</th></tr></thead><tbody id="atomRows"></tbody></table>
+          <p class="small muted" style="margin-top:6px">Ring colors: <span class="okc">green</span> = satisfied, <span class="warnc">amber</span> = short, <span class="badc">red</span> = too many, <span class="expc">violet</span> = expanded octet (period 3+), <span style="color:var(--accent3);font-weight:700">orange</span> = allowed exception.</p>
+        </div>
+        <div id="bFeedback" class="feedback">Pick a molecule and start building!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 FORMAL CHARGE -->
+<section id="fc" data-title="Formal charge">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">5</div><h2>Formal charge: choosing the best structure</h2></div>
+    <p class="lead">Formal charge pretends every bond is shared perfectly equally and asks: does this atom "own" more or fewer electrons than it brought?</p>
+    <div class="eq" style="font-family:var(--math)">FC = V − L − <span class="fr"><span>B</span><span>2</span></span>
+      <div class="small muted" style="font-family:system-ui;margin-top:6px">V = valence electrons of the free atom · L = nonbonding (lone-pair) electrons · B = bonding electrons around the atom (so B/2 = number of bonds)</div></div>
+    <div class="split">
+      <div class="card">
+        <h3>FC calculator</h3>
+        <label class="ctl" for="fcEl">Atom</label><select id="fcEl"></select>
+        <div class="grid2"><div><label class="ctl">Lone-pair electrons (L)</label><div class="stepper"><button class="btn small" data-fc="L-">−2</button><span class="cnt" id="fcL">4</span><button class="btn small" data-fc="L+">+2</button></div></div>
+          <div><label class="ctl">Bonds (B/2)</label><div class="stepper"><button class="btn small" data-fc="B-">−1</button><span class="cnt" id="fcB">2</span><button class="btn small" data-fc="B+">+1</button></div></div></div>
+        <div class="btnrow small" id="fcPresets"></div>
+      </div>
+      <div class="card center">
+        <svg id="fcSvg" style="width:100%;max-width:260px;height:190px;margin:auto"></svg>
+        <div class="fcbig" id="fcOut"></div>
+        <div class="muted" id="fcExpl"></div>
+      </div>
+    </div>
+    <div class="tip"><b>Rules for the best structure:</b> (1) formal charges as close to zero as possible; (2) negative formal charge on the <b>more electronegative</b> atom; (3) avoid like charges on adjacent atoms; (4) the formal charges must add up to the overall charge.</div>
+    <h3>Compare the candidates</h3>
+    <div class="seg" id="cmpSel"><button class="on" data-c="CO2">CO₂</button><button data-c="SCN-">SCN⁻</button><button data-c="SO4">SO₄²⁻ debate</button></div>
+    <div class="molgrid" id="cmpGrid" style="margin-top:10px"></div>
+    <div class="tip" id="cmpNote"></div>
+  </div>
+</section>
+
+<!-- 6 RESONANCE -->
+<section id="resonance" data-title="Resonance">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">6</div><h2>Resonance</h2></div>
+    <p class="lead">When one Lewis structure can't capture the bonding, we draw several <b>resonance forms</b> that differ only in where electrons sit (atoms never move). The real molecule is a single <b>hybrid</b>, an average of the forms, not a molecule flipping back and forth.</p>
+    <div class="card">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between">
+        <div class="seg" id="resSel"><button class="on" data-m="O3">O₃</button><button data-m="NO3-">NO₃⁻</button><button data-m="CO3^2-">CO₃²⁻</button><button data-m="SO2">SO₂</button><button data-m="C6H6">C₆H₆</button></div>
+        <div class="btnrow" style="margin:0"><button class="btn small" id="resPlay">⏸ Pause</button><button class="btn small" id="resNext">Next form ▸</button><label class="toggle"><input type="checkbox" id="resArrows" checked> curved arrows</label></div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <div><div class="small muted center" id="resLbl"></div><svg id="resSvg" class="board" style="height:280px"></svg></div>
+        <div><div class="small muted center">Resonance hybrid (what's really there)</div><svg id="hybSvg" class="board" style="height:280px"></svg></div>
+      </div>
+      <div id="resInfo" class="tip"></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>Reading curved arrows</h3><p class="small">A curved arrow shows an <b>electron pair</b> moving: tail = where the pair starts (lone pair or bond), head = where it ends up. Going from one resonance form to the next, a lone pair becomes a new π bond, and an old π bond becomes a lone pair.</p></div>
+      <div class="card"><h3>Bond order in the hybrid</h3><p class="small">Average bond order = total bonds between equivalent positions ÷ number of positions. NO₃⁻: 4 bonds over 3 N–O links = <b>4/3</b>. O₃: 3 bonds over 2 links = <b>1.5</b>. More bonds means shorter and stronger: O₃'s two O–O bonds are identical (128 pm), between O–O (148 pm) and O=O (121 pm).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 EXCEPTIONS -->
+<section id="exceptions" data-title="Exceptions">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">7</div><h2>Exceptions to the octet rule</h2></div>
+    <div class="grid3">
+      <div class="card"><h3>1. Incomplete octets</h3><p class="small">Be and B (and Al in some gas-phase compounds) can be stable with fewer than 8 electrons. These <b>electron-deficient</b> molecules are Lewis acids: BF₃ readily accepts a lone pair from NH₃.</p></div>
+      <div class="card"><h3>2. Odd-electron species</h3><p class="small">An odd electron total means at least one unpaired electron: a <b>free radical</b>. Radicals are usually very reactive. Put the odd electron where formal charges are best (often on the less electronegative atom).</p></div>
+      <div class="card"><h3>3. Expanded octets</h3><p class="small">Atoms from <b>period 3 and below</b> (P, S, Cl, Br, I, Xe…) can be surrounded by more than 8 electrons. They're larger, so more atoms fit around them. Period-2 atoms (C, N, O, F) <b>never</b> exceed 8.</p></div>
+    </div>
+    <div class="molgrid" id="excGrid"></div>
+    <div class="tip warn"><b>About "d orbitals":</b> older texts say expanded octets use empty 3d orbitals. Modern calculations show d orbitals contribute very little. Hypervalent bonding is better described by delocalized (3-center, 4-electron) bonds plus ionic character. For Lewis structures and exams, the rule "period 3+ can exceed an octet" is what matters.</div>
+  </div>
+</section>
+
+<!-- 8 VSEPR -->
+<section id="vsepr" data-title="VSEPR">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">8</div><h2>From Lewis structure to 3D shape (VSEPR)</h2></div>
+    <p class="lead">Count <b>electron domains</b> on the central atom: each lone pair, single bond, double bond, or triple bond counts as <b>one</b> domain. Domains spread out as far as possible (<b>electron geometry</b>); the <b>molecular shape</b> describes only where the atoms are.</p>
+    <div class="split">
+      <div class="card" style="padding:12px">
+        <canvas id="v3d" class="v3d" aria-label="Rotatable 3D model; drag to rotate"></canvas>
+        <div class="btnrow" style="justify-content:center"><label class="toggle"><input type="checkbox" id="vLP" checked> show lone pairs</label><label class="toggle"><input type="checkbox" id="vDip"> show dipoles</label><label class="toggle"><input type="checkbox" id="vSpin" checked> auto-rotate</label></div>
+        <p class="small muted center">Drag to rotate.</p>
+      </div>
+      <div class="card">
+        <div class="bigval" id="vName"></div>
+        <dl class="readout" style="margin-top:6px">
+          <dt>Example</dt><dd id="vEx"></dd><dt>Domains (bonded + lone)</dt><dd id="vDom"></dd><dt>Electron geometry</dt><dd id="vEG"></dd><dt>Molecular shape</dt><dd id="vShape"></dd><dt>Bond angle(s)</dt><dd id="vAng"></dd><dt>Polarity</dt><dd id="vPol"></dd>
+        </dl>
+        <p class="small" id="vNote" style="margin-top:8px"></p>
+      </div>
+    </div>
+    <div class="card scrollx"><table class="tbl vtbl" id="vTable"><thead><tr><th>Domains</th><th>Lone pairs</th><th>Electron geometry</th><th>Molecular shape</th><th>Angle</th><th>Example</th></tr></thead><tbody></tbody></table></div>
+    <div class="tip"><b>Polarity in two questions:</b> (1) Are there polar bonds (electronegativity difference)? (2) Do the bond dipoles cancel by symmetry? Symmetric shapes with identical outer atoms (linear, trigonal planar, tetrahedral, trigonal bipyramidal, octahedral, square planar) are <b>nonpolar</b>. Lone pairs on the central atom usually make the shape asymmetric → <b>polar</b> (exceptions: XeF₂, XeF₄, I₃⁻).</div>
+  </div>
+</section>
+
+<!-- 9 EXAMPLES -->
+<section id="examples" data-title="Examples">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">9</div><h2>Worked examples</h2></div>
+    <p class="lead">Try each step yourself first. Tap <b>💡 Hint</b> for a nudge, then <b>Next step</b> to check.</p>
+    <div id="exList"></div>
+  </div>
+</section>
+
+<!-- 10 PRACTICE -->
+<section id="practice" data-title="Practice">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">10</div><h2>Practice 🎯</h2></div>
+    <p class="lead">15 exam-style questions. Your <b>first</b> answer counts toward your score; keep trying until you get it.</p>
+    <div class="practice-wrap"><div class="scorebar"><b id="scoreTxt">Score: 0 / 15</b><div class="meter"><div id="scoreMeter"></div></div><span class="small muted" id="scoreSub">0 answered</span><button class="btn small" id="practiceReset">↺ Reset</button></div>
+    <div id="qList"></div></div>
+    <div class="card drill" id="drill">
+      <h3>⚡ 60-second electron drill</h3>
+      <p class="small">Mixed rapid-fire: valence electrons, total electron counts, and formal charges on the highlighted atom.</p>
+      <div class="drill-stats"><div><span class="small muted">Score</span><b id="dScore">0</b></div><div><span class="small muted">Streak</span><b id="dStreak">0</b></div><div><span class="small muted">Time</span><b id="dTime">60</b></div><div><span class="small muted">Best 🏆</span><b id="dBest">0</b></div></div>
+      <div class="timer"><div id="dTimer"></div></div>
+      <div id="dQ" class="center" style="min-height:3em;font-size:1.25rem;font-weight:700;margin:10px 0">Ready?</div>
+      <div id="dPic" class="qpic"></div>
+      <div class="opts" id="dOpts"></div>
+      <div class="center"><button class="btn primary" id="dStart">Start drill</button></div>
+      <p class="center small muted" id="dMsg"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 11 CHEAT SHEET -->
+<section id="cheat" data-title="Cheat sheet">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">11</div><h2>Cheat sheet</h2></div>
+    <p class="lead noprint">One page. Tap <b>Print</b> (or Save as PDF) and only this section prints.</p>
+    <div class="btnrow noprint"><button class="btn primary" id="printBtn">🖨️ Print / Save as PDF</button></div>
+    <div class="cheat-grid cheat">
+      <div class="card">
+        <h4>Drawing a Lewis structure</h4>
+        <div class="formula">1. Total valence e⁻ (−charge adds, +charge subtracts)<br>2. Central atom = least electronegative (never H or F)<br>3. Single bonds to every outer atom (2 e⁻ each)<br>4. Complete outer octets (H: 2)<br>5. Leftovers → central atom<br>6. Central short? Lone pair → multiple bond<br>7. Check formal charges; brackets + charge for ions</div>
+        <h4>Formal charge</h4>
+        <div class="formula">FC = V − L − B/2 &nbsp; (= valence − dots − bonds)<br>Best: FCs near 0; − on most electronegative atom; ΣFC = overall charge</div>
+        <h4>Valence electrons by group</h4>
+        <div class="formula">Group 1: 1 · 2: 2 · 13: 3 · 14: 4 · 15: 5 · 16: 6 · 17: 7 · 18: 8 (He: 2)</div>
+        <h4>Typical neutral bonding</h4>
+        <div class="formula">H, F, Cl: 1 bond + 0/3 lone pairs · O: 2 bonds + 2 LP · N: 3 bonds + 1 LP · C: 4 bonds · B: 3 bonds (6 e⁻)</div>
+        <h4>Octet exceptions</h4>
+        <div class="formula">Incomplete: B, Be (BF₃, BeCl₂) · Odd e⁻ (radicals): NO, NO₂ · Expanded (period 3+ only): PCl₅, SF₆, XeF₄, I₃⁻</div>
+        <h4>Resonance</h4>
+        <div class="formula">Same atoms, different electron placement · real molecule = hybrid · bond order = bonds ÷ positions (NO₃⁻, CO₃²⁻: 4/3; O₃, SO₂, C₆H₆: 1.5)</div>
+      </div>
+      <div class="card">
+        <h4>VSEPR (domains on central atom; multiple bond = 1 domain)</h4>
+        <table class="tbl small" id="cheatV"></table>
+        <h4>Polarity</h4>
+        <div class="formula">Polar bonds + asymmetric shape → polar molecule. Symmetric shapes with identical outer atoms → nonpolar (CO₂, BF₃, CH₄, PCl₅, SF₆, XeF₄). Usually polar: H₂O, NH₃, SO₂, SF₄, ClF₃, BrF₅.</div>
+        <h4>Electronegativity (Pauling)</h4>
+        <div class="formula">F 3.98 &gt; O 3.44 &gt; Cl 3.16 &gt; N 3.04 &gt; Br 2.96 &gt; I 2.66 > S 2.58 ≈ C 2.55 &gt; H 2.20 ≈ P 2.19 &gt; B 2.04</div>
+        <h4>Must-know structures</h4>
+        <div class="formula">CO₂ O=C=O · HCN H–C≡N · N₂ N≡N · CO₃²⁻ / NO₃⁻: 3 resonance forms · O₃, SO₂: 2 forms · NH₄⁺: N is +1 · OH⁻: O is −1 · CN⁻: C is −1</div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer>Made with ❤️ by <b>Grok Bot</b>. Works offline: save this file and open it anytime.</footer>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   Lewis Lab: chemistry data + pure logic (no DOM; unit-tested in Node)
+   ========================================================= */
+const ELEMENTS = [
+  // sym, name, Z, group, period, valence e-, Pauling EN (null = not defined)
+  ["H", "Hydrogen", 1, 1, 1, 1, 2.20], ["He", "Helium", 2, 18, 1, 2, null],
+  ["Li", "Lithium", 3, 1, 2, 1, 0.98], ["Be", "Beryllium", 4, 2, 2, 2, 1.57], ["B", "Boron", 5, 13, 2, 3, 2.04], ["C", "Carbon", 6, 14, 2, 4, 2.55],
+  ["N", "Nitrogen", 7, 15, 2, 5, 3.04], ["O", "Oxygen", 8, 16, 2, 6, 3.44], ["F", "Fluorine", 9, 17, 2, 7, 3.98], ["Ne", "Neon", 10, 18, 2, 8, null],
+  ["Na", "Sodium", 11, 1, 3, 1, 0.93], ["Mg", "Magnesium", 12, 2, 3, 2, 1.31], ["Al", "Aluminum", 13, 13, 3, 3, 1.61], ["Si", "Silicon", 14, 14, 3, 4, 1.90],
+  ["P", "Phosphorus", 15, 15, 3, 5, 2.19], ["S", "Sulfur", 16, 16, 3, 6, 2.58], ["Cl", "Chlorine", 17, 17, 3, 7, 3.16], ["Ar", "Argon", 18, 18, 3, 8, null],
+  ["K", "Potassium", 19, 1, 4, 1, 0.82], ["Ca", "Calcium", 20, 2, 4, 2, 1.00], ["Ga", "Gallium", 31, 13, 4, 3, 1.81], ["Ge", "Germanium", 32, 14, 4, 4, 2.01],
+  ["As", "Arsenic", 33, 15, 4, 5, 2.18], ["Se", "Selenium", 34, 16, 4, 6, 2.55], ["Br", "Bromine", 35, 17, 4, 7, 2.96], ["Kr", "Krypton", 36, 18, 4, 8, 3.00],
+  ["Rb", "Rubidium", 37, 1, 5, 1, 0.82], ["Sr", "Strontium", 38, 2, 5, 2, 0.95], ["In", "Indium", 49, 13, 5, 3, 1.78], ["Sn", "Tin", 50, 14, 5, 4, 1.96],
+  ["Sb", "Antimony", 51, 15, 5, 5, 2.05], ["Te", "Tellurium", 52, 16, 5, 6, 2.10], ["I", "Iodine", 53, 17, 5, 7, 2.66], ["Xe", "Xenon", 54, 18, 5, 8, 2.60]
+].map(([sym, name, z, group, period, ve, en]) => ({ sym, name, z, group, period, ve, en }));
+const EL = Object.fromEntries(ELEMENTS.map(e => [e.sym, e]));
+
+/* ---------- layout helpers (screen coords, y down) ---------- */
+function star(c, outs, angles, L = 78, cx = 200, cy = 150) {
+  const pos = [[cx, cy]].concat(angles.map(a => [Math.round(cx + L * Math.cos(a * Math.PI / 180)), Math.round(cy - L * Math.sin(a * Math.PI / 180))]));
+  return { atoms: [c].concat(outs), pos, edges: outs.map((_, i) => [0, i + 1]) };
+}
+const rep = (x, n) => Array(n).fill(x);
+const mol = (o, layout) => Object.assign({ q: 0, eq: [], center: 0, note: "" }, layout || {}, o);
+
+/* ---------- molecule library ----------
+   ans: accepted structures. b = bond order per edge, lp = lone pairs per atom, se = single (unpaired) electrons per atom.
+   kind 'major' = the preferred structure(s); 'alt' = also accepted, with an explanatory note.
+   eq = groups of symmetry-equivalent atoms; all permutations of each answer are accepted automatically. */
+const MOLS = [
+  mol({ id: "H2O", angle: "≈104.5°", name: "Water", f: "H<sub>2</sub>O", cat: "Basics", eq: [[1, 2]], ans: [{ b: [1, 1], lp: [2, 0, 0] }] }, star("O", ["H", "H"], [210, 330])),
+  mol({ id: "NH3", angle: "≈107°", name: "Ammonia", f: "NH<sub>3</sub>", cat: "Basics", eq: [[1, 2, 3]], ans: [{ b: [1, 1, 1], lp: [1, 0, 0, 0] }] }, star("N", ["H", "H", "H"], [200, 340, 270])),
+  mol({ id: "CH4", name: "Methane", f: "CH<sub>4</sub>", cat: "Basics", eq: [[1, 2, 3, 4]], ans: [{ b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }] }, star("C", rep("H", 4), [0, 90, 180, 270])),
+  mol({ id: "CH3OH", name: "Methanol", f: "CH<sub>3</sub>OH", cat: "Basics", eq: [[2, 3, 4]], atoms: ["C", "O", "H", "H", "H", "H"],
+    pos: [[165, 150], [240, 150], [165, 75], [90, 150], [165, 225], [285, 210]], edges: [[0, 1], [0, 2], [0, 3], [0, 4], [1, 5]], ans: [{ b: [1, 1, 1, 1, 1], lp: [0, 2, 0, 0, 0, 0] }] }),
+  mol({ id: "H2O2", angle: "<109.5° (measured H–O–O ≈ 95–102°, varies with phase)", name: "Hydrogen peroxide", f: "H<sub>2</sub>O<sub>2</sub>", cat: "Basics", eq: [], atoms: ["O", "O", "H", "H"],
+    pos: [[165, 150], [235, 150], [110, 200], [290, 100]], edges: [[0, 1], [0, 2], [1, 3]], ans: [{ b: [1, 1, 1], lp: [2, 2, 0, 0] }] }),
+  mol({ id: "CO2", name: "Carbon dioxide", f: "CO<sub>2</sub>", cat: "Multiple bonds", eq: [[1, 2]], ans: [{ b: [2, 2], lp: [0, 2, 2] }] }, star("C", ["O", "O"], [180, 0])),
+  mol({ id: "HCN", name: "Hydrogen cyanide", f: "HCN", cat: "Multiple bonds", atoms: ["C", "H", "N"], pos: [[200, 150], [122, 150], [278, 150]], edges: [[0, 1], [0, 2]], ans: [{ b: [1, 3], lp: [0, 0, 1] }] }),
+  mol({ id: "N2", name: "Nitrogen", f: "N<sub>2</sub>", cat: "Multiple bonds", eq: [[0, 1]], atoms: ["N", "N"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [3], lp: [1, 1] }] }),
+  mol({ id: "O2", name: "Oxygen", f: "O<sub>2</sub>", cat: "Multiple bonds", eq: [[0, 1]], atoms: ["O", "O"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [2], lp: [2, 2] }],
+    note: "Heads-up: this Lewis structure pairs every electron, but liquid O<sub>2</sub> sticks to a magnet: it is <b>paramagnetic</b>, with two unpaired electrons. Molecular orbital theory explains this; Lewis structures can't." }),
+  mol({ id: "CH2O", name: "Formaldehyde", f: "CH<sub>2</sub>O", cat: "Multiple bonds", eq: [[2, 3]], ans: [{ b: [2, 1, 1], lp: [0, 2, 0, 0] }] }, star("C", ["O", "H", "H"], [90, 210, 330])),
+  mol({ id: "C2H4", name: "Ethene (ethylene)", f: "C<sub>2</sub>H<sub>4</sub>", cat: "Multiple bonds", eq: [[2, 3], [4, 5]], atoms: ["C", "C", "H", "H", "H", "H"],
+    pos: [[163, 150], [237, 150], [118, 100], [118, 200], [282, 100], [282, 200]], edges: [[0, 1], [0, 2], [0, 3], [1, 4], [1, 5]], ans: [{ b: [2, 1, 1, 1, 1], lp: [0, 0, 0, 0, 0, 0] }] }),
+  mol({ id: "C2H2", name: "Ethyne (acetylene)", f: "C<sub>2</sub>H<sub>2</sub>", cat: "Multiple bonds", atoms: ["C", "C", "H", "H"],
+    pos: [[163, 150], [237, 150], [90, 150], [310, 150]], edges: [[0, 1], [0, 2], [1, 3]], ans: [{ b: [3, 1, 1], lp: [0, 0, 0, 0] }] }),
+  mol({ id: "CH3COOH", name: "Acetic acid", f: "CH<sub>3</sub>COOH", cat: "Multiple bonds", eq: [[5, 6, 7]], center: 1, atoms: ["C", "C", "O", "O", "H", "H", "H", "H"],
+    pos: [[140, 160], [215, 160], [215, 85], [280, 198], [345, 160], [140, 88], [68, 160], [140, 232]],
+    edges: [[0, 1], [1, 2], [1, 3], [3, 4], [0, 5], [0, 6], [0, 7]], ans: [{ b: [1, 2, 1, 1, 1, 1, 1], lp: [0, 0, 2, 2, 0, 0, 0, 0] }] }),
+  mol({ id: "NH4+", name: "Ammonium", f: "NH<sub>4</sub><sup>+</sup>", q: 1, cat: "Ions", eq: [[1, 2, 3, 4]], ans: [{ b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }] }, star("N", rep("H", 4), [0, 90, 180, 270])),
+  mol({ id: "H3O+", angle: "<109.5° (VSEPR prediction)", name: "Hydronium", f: "H<sub>3</sub>O<sup>+</sup>", q: 1, cat: "Ions", eq: [[1, 2, 3]], ans: [{ b: [1, 1, 1], lp: [1, 0, 0, 0] }] }, star("O", ["H", "H", "H"], [200, 340, 270])),
+  mol({ id: "OH-", name: "Hydroxide", f: "OH<sup>−</sup>", q: -1, cat: "Ions", atoms: ["O", "H"], pos: [[170, 150], [245, 150]], edges: [[0, 1]], ans: [{ b: [1], lp: [3, 0] }] }),
+  mol({ id: "CN-", name: "Cyanide", f: "CN<sup>−</sup>", q: -1, cat: "Ions", atoms: ["C", "N"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [3], lp: [1, 1] }] }),
+  mol({ id: "SCN-", name: "Thiocyanate", f: "SCN<sup>−</sup>", q: -1, cat: "Ions", atoms: ["C", "S", "N"], pos: [[200, 150], [122, 150], [278, 150]], edges: [[0, 1], [0, 2]],
+    ans: [{ b: [2, 2], lp: [0, 2, 2] }, { b: [1, 3], lp: [0, 3, 1], kind: "alt", note: "[S–C≡N]<sup>−</sup> is also a significant resonance contributor (all octets, FC −1 on S). The S=C=N form is usually ranked best because its −1 sits on N, the more electronegative atom." }] }),
+  mol({ id: "NO3-", name: "Nitrate", f: "NO<sub>3</sub><sup>−</sup>", q: -1, cat: "Resonance", eq: [[1, 2, 3]], ans: [{ b: [2, 1, 1], lp: [0, 2, 3, 3] }] }, star("N", ["O", "O", "O"], [90, 210, 330])),
+  mol({ id: "CO3^2-", name: "Carbonate", f: "CO<sub>3</sub><sup>2−</sup>", q: -2, cat: "Resonance", eq: [[1, 2, 3]], ans: [{ b: [2, 1, 1], lp: [0, 2, 3, 3] }] }, star("C", ["O", "O", "O"], [90, 210, 330])),
+  mol({ id: "O3", angle: "≈117°", name: "Ozone", f: "O<sub>3</sub>", cat: "Resonance", eq: [[1, 2]], ans: [{ b: [2, 1], lp: [1, 2, 3] }] }, star("O", ["O", "O"], [210, 330])),
+  mol({ id: "SO2", angle: "≈119°", name: "Sulfur dioxide", f: "SO<sub>2</sub>", cat: "Resonance", eq: [[1, 2]],
+    ans: [{ b: [2, 1], lp: [1, 2, 3] }, { b: [2, 2], lp: [1, 2, 2], kind: "alt", note: "The expanded-octet form O=S=O (all formal charges 0) is also accepted; many textbooks draw it. Modern calculations favor the octet resonance forms with real charge separation, so both views appear in courses. Check which one your instructor wants." }] }, star("S", ["O", "O"], [210, 330])),
+  mol({ id: "SO4^2-", name: "Sulfate", f: "SO<sub>4</sub><sup>2−</sup>", q: -2, cat: "Resonance", eq: [[1, 2, 3, 4]],
+    ans: [{ b: [2, 2, 1, 1], lp: [0, 2, 2, 3, 3], note: "This expanded-octet form minimizes formal charge (S = 0) and is the textbook \"best\" structure by the formal-charge rule." },
+      { b: [1, 1, 1, 1], lp: [0, 3, 3, 3, 3], kind: "alt", note: "The all-single-bond octet form (S = +2, each O = −1) is also accepted. Modern bonding analyses suggest it describes the real electron distribution better; the S–O bonds are strengthened by ionic attraction rather than true d-orbital double bonds." }] }, star("S", rep("O", 4), [0, 90, 180, 270])),
+  mol({ id: "C6H6", name: "Benzene", f: "C<sub>6</sub>H<sub>6</sub>", cat: "Resonance", ring: [0, 1, 2, 3, 4, 5],
+    atoms: rep("C", 6).concat(rep("H", 6)),
+    pos: [90, 30, -30, -90, -150, 150].map(a => [Math.round(200 + 58 * Math.cos(a * Math.PI / 180)), Math.round(150 - 58 * Math.sin(a * Math.PI / 180))])
+      .concat([90, 30, -30, -90, -150, 150].map(a => [Math.round(200 + 112 * Math.cos(a * Math.PI / 180)), Math.round(150 - 112 * Math.sin(a * Math.PI / 180))])),
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]],
+    ans: [{ b: [2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1], lp: rep(0, 12) }, { b: [1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1], lp: rep(0, 12) }] }),
+  mol({ id: "BF3", name: "Boron trifluoride", f: "BF<sub>3</sub>", cat: "Exceptions", eq: [[1, 2, 3]], ans: [{ b: [1, 1, 1], lp: [0, 3, 3, 3] }],
+    note: "Boron ends with only <b>6</b> electrons: an incomplete octet. Making a B=F double bond would put a + formal charge on F, the most electronegative element, so the 6-electron structure is preferred." }, star("B", ["F", "F", "F"], [90, 210, 330])),
+  mol({ id: "BeCl2", name: "Beryllium chloride (gas)", f: "BeCl<sub>2</sub>", cat: "Exceptions", eq: [[1, 2]], ans: [{ b: [1, 1], lp: [0, 3, 3] }], note: "Be has only <b>4</b> electrons here (gas-phase molecule)." }, star("Be", ["Cl", "Cl"], [180, 0], 84)),
+  mol({ id: "NO", name: "Nitric oxide", f: "NO", cat: "Exceptions", atoms: ["N", "O"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [2], lp: [1, 2], se: [1, 0] }],
+    note: "11 valence electrons: an odd number, so one electron must be unpaired (a <b>radical</b>). Put it on N: that gives every atom formal charge 0." }),
+  mol({ id: "NO2", angle: "≈134° (a lone electron repels less than a lone pair)", name: "Nitrogen dioxide", f: "NO<sub>2</sub>", cat: "Exceptions", eq: [[1, 2]], ans: [{ b: [2, 1], lp: [0, 2, 3], se: [1, 0, 0] }, { b: [2, 1], lp: [1, 2, 2], se: [0, 0, 1], kind: "alt", note: "Putting the unpaired electron on the singly bonded O gives every atom formal charge 0, so the formal-charge rule likes it, and it is accepted. Most textbooks still draw the odd electron on N because experiments show it spends most of its time there; that is also why two NO<sub>2</sub> molecules join through an N–N bond to make N<sub>2</sub>O<sub>4</sub>." }],
+    note: "17 electrons: a radical. Most textbooks draw the unpaired electron on N (N has 7 electrons), giving two resonance forms. NO<sub>2</sub> molecules pair up (dimerize) to form N<sub>2</sub>O<sub>4</sub>." }, star("N", ["O", "O"], [210, 330])),
+  mol({ id: "PCl5", name: "Phosphorus pentachloride", f: "PCl<sub>5</sub>", cat: "Exceptions", eq: [[1, 2, 3, 4, 5]], ans: [{ b: [1, 1, 1, 1, 1], lp: [0, 3, 3, 3, 3, 3] }], note: "P has <b>10</b> electrons: an expanded octet (period 3)." }, star("P", rep("Cl", 5), [90, 162, 234, 306, 18], 88)),
+  mol({ id: "SF6", name: "Sulfur hexafluoride", f: "SF<sub>6</sub>", cat: "Exceptions", eq: [[1, 2, 3, 4, 5, 6]], ans: [{ b: rep(1, 6), lp: [0].concat(rep(3, 6)) }], note: "S has <b>12</b> electrons: an expanded octet." }, star("S", rep("F", 6), [0, 60, 120, 180, 240, 300], 86)),
+  mol({ id: "XeF4", name: "Xenon tetrafluoride", f: "XeF<sub>4</sub>", cat: "Exceptions", eq: [[1, 2, 3, 4]], ans: [{ b: [1, 1, 1, 1], lp: [2, 3, 3, 3, 3] }], note: "Xe ends with 12 electrons (4 bonds + 2 lone pairs)." }, star("Xe", rep("F", 4), [0, 90, 180, 270], 86)),
+  mol({ id: "I3-", name: "Triiodide", f: "I<sub>3</sub><sup>−</sup>", q: -1, cat: "Exceptions", eq: [[1, 2]], ans: [{ b: [1, 1], lp: [3, 3, 3] }], note: "The central I holds 3 lone pairs + 2 bonds = 10 electrons, and carries the −1 formal charge." }, star("I", ["I", "I"], [180, 0], 88))
+];
+const MOL = Object.fromEntries(MOLS.map(m => [m.id, m]));
+
+/* ---------- electron bookkeeping ---------- */
+const emptyState = m => ({ b: rep(0, m.edges.length), lp: rep(0, m.atoms.length), se: rep(0, m.atoms.length) });
+const norm = (m, s) => ({ b: s.b.slice(), lp: s.lp.slice(), se: (s.se || rep(0, m.atoms.length)).slice() });
+const stateKey = s => s.b.join("") + "|" + s.lp.join("") + "|" + s.se.join("");
+function totalValence(m) { return m.atoms.reduce((t, a) => t + EL[a].ve, 0) - m.q; }
+function valenceBreakdown(m) {
+  const cnt = {}; m.atoms.forEach(a => cnt[a] = (cnt[a] || 0) + 1);
+  return { parts: Object.entries(cnt).map(([el, n]) => ({ el, n, ve: EL[el].ve, sub: n * EL[el].ve })), q: m.q, total: totalValence(m) };
+}
+function bondOrderSum(m, s, i) { let t = 0; m.edges.forEach(([a, c], k) => { if (a === i || c === i) t += s.b[k]; }); return t; }
+function usedElectrons(s) { return 2 * s.b.reduce((a, c) => a + c, 0) + 2 * s.lp.reduce((a, c) => a + c, 0) + s.se.reduce((a, c) => a + c, 0); }
+function atomElectrons(m, s, i) { return 2 * bondOrderSum(m, s, i) + 2 * s.lp[i] + s.se[i]; }
+function formalCharge(m, s, i) { return EL[m.atoms[i]].ve - (2 * s.lp[i] + s.se[i]) - bondOrderSum(m, s, i); }
+/* octet status: 'ok' | 'short' | 'over' | 'expanded' | 'allowed-short' */
+function octetStatus(m, s, i) {
+  const e = atomElectrons(m, s, i), el = m.atoms[i], P = EL[el].period;
+  if (el === "H") return e === 2 ? "ok" : e < 2 ? "short" : "over";
+  if (P === 2) {
+    if (e > 8) return "over";
+    if (e === 8) return "ok";
+    if (el === "B" && e === 6) return "allowed-short";
+    if (el === "Be" && e === 4) return "allowed-short";
+    if (totalValence(m) % 2 === 1 && e === 7) return "allowed-short";
+    return "short";
+  }
+  if (e === 8) return "ok";
+  if (e > 8) return m.edges.filter(x => x.includes(i)).length <= 1 ? "over" : "expanded"; // only central atoms expand
+  if (totalValence(m) % 2 === 1 && e === 7) return "allowed-short";
+  return "short";
+}
+const isRadical = m => totalValence(m) % 2 === 1;
+
+/* ---------- accepted answers incl. symmetry permutations ---------- */
+function permutations(arr) { if (arr.length <= 1) return [arr.slice()]; const out = []; arr.forEach((x, i) => permutations(arr.slice(0, i).concat(arr.slice(i + 1))).forEach(p => out.push([x].concat(p)))); return out; }
+function edgeIndex(m, a, c) { return m.edges.findIndex(([x, y]) => (x === a && y === c) || (x === c && y === a)); }
+function applyPerm(m, s, map) {
+  const out = { b: rep(0, m.edges.length), lp: rep(0, m.atoms.length), se: rep(0, m.atoms.length) };
+  s.lp.forEach((v, i) => out.lp[map[i]] = v); s.se.forEach((v, i) => out.se[map[i]] = v);
+  m.edges.forEach(([a, c], k) => { const j = edgeIndex(m, map[a], map[c]); if (j < 0) throw new Error("bad symmetry group in " + m.id); out.b[j] = s.b[k]; });
+  return out;
+}
+const _ansCache = {};
+function acceptedForms(m) {
+  if (_ansCache[m.id]) return _ansCache[m.id];
+  let maps = [m.atoms.map((_, i) => i)];
+  for (const g of m.eq) {
+    const next = [];
+    for (const base of maps) for (const p of permutations(g)) { const mp = base.slice(); g.forEach((orig, k) => mp[orig] = p[k]); next.push(mp); }
+    maps = next;
+  }
+  const forms = [], seen = new Set();
+  m.ans.forEach((a, ai) => {
+    const s0 = norm(m, a);
+    for (const mp of maps) { const s = applyPerm(m, s0, mp), k = stateKey(s); if (!seen.has(k)) { seen.add(k); forms.push({ s, key: k, kind: a.kind || "major", note: a.note || "", ai }); } }
+  });
+  return (_ansCache[m.id] = forms);
+}
+const majorForms = m => acceptedForms(m).filter(f => f.kind === "major");
+function matchAnswer(m, s) { const k = stateKey(norm(m, s)); return acceptedForms(m).find(f => f.key === k) || null; }
+
+/* ---------- VSEPR ---------- */
+const VSEPR = {
+  "2,0": { eg: "linear", shape: "linear", angle: "180°" },
+  "3,0": { eg: "trigonal planar", shape: "trigonal planar", angle: "120°" },
+  "3,1": { eg: "trigonal planar", shape: "bent", angle: "<120° (≈117–119°)" },
+  "4,0": { eg: "tetrahedral", shape: "tetrahedral", angle: "109.5°" },
+  "4,1": { eg: "tetrahedral", shape: "trigonal pyramidal", angle: "<109.5° (≈107°)" },
+  "4,2": { eg: "tetrahedral", shape: "bent", angle: "<109.5° (≈104.5°)" },
+  "4,3": { eg: "tetrahedral", shape: "linear", angle: "(diatomic)" },
+  "5,0": { eg: "trigonal bipyramidal", shape: "trigonal bipyramidal", angle: "90°, 120°, 180°" },
+  "5,1": { eg: "trigonal bipyramidal", shape: "seesaw", angle: "<90°, <120°" },
+  "5,2": { eg: "trigonal bipyramidal", shape: "T-shaped", angle: "<90°" },
+  "5,3": { eg: "trigonal bipyramidal", shape: "linear", angle: "180°" },
+  "6,0": { eg: "octahedral", shape: "octahedral", angle: "90°, 180°" },
+  "6,1": { eg: "octahedral", shape: "square pyramidal", angle: "<90°" },
+  "6,2": { eg: "octahedral", shape: "square planar", angle: "90°, 180°" }
+};
+function domainsAt(m, s, i) {
+  if (m.atoms.length === 2) return { bonded: 1, lone: s.lp[i], domains: 0, info: { eg: "—", shape: "linear (diatomic)", angle: "—" } };
+  const nb = m.edges.filter(([a, c], k) => (a === i || c === i) && s.b[k] > 0).length;
+  const lone = s.lp[i] + (s.se[i] ? 1 : 0);   // a single electron counts as a (small) domain
+  let info = VSEPR[(nb + lone) + "," + lone] || null;
+  if (info && i === m.center && m.angle) info = Object.assign({}, info, { angle: m.angle });
+  return { bonded: nb, lone, domains: nb + lone, info };
+}
+
+/* ---------- the textbook method, as stages ---------- */
+function centralAtoms(m) {
+  const deg = m.atoms.map((_, i) => m.edges.filter(e => e.includes(i)).length);
+  let c = m.atoms.map((_, i) => i).filter(i => deg[i] > 1);
+  if (!c.length) { // diatomic: less electronegative atom plays "central"
+    const [a, b] = [0, 1]; c = [(EL[m.atoms[a]].en || 9) <= (EL[m.atoms[b]].en || 9) ? a : b];
+  }
+  return c;
+}
+function stages(m) {
+  const T = totalValence(m), out = [];
+  const s1 = emptyState(m); s1.b = rep(1, m.edges.length);
+  let left = T - usedElectrons(s1);
+  out.push({ s: norm(m, s1), title: "Connect with single bonds", text: `${m.edges.length} single bond${m.edges.length > 1 ? "s" : ""} use ${2 * m.edges.length} electrons, leaving <b>${left}</b>.` });
+  const s2 = norm(m, s1), cen = centralAtoms(m);
+  const outer = m.atoms.map((_, i) => i).filter(i => !cen.includes(i) && m.atoms[i] !== "H");
+  for (const i of outer) { while (atomElectrons(m, s2, i) < 8 && left >= 2) { s2.lp[i]++; left -= 2; } }
+  out.push({ s: s2, title: "Complete the outer atoms' octets", text: outer.length ? `Give each outer atom lone pairs until it has 8 electrons (H needs only 2). Electrons left: <b>${left}</b>.` : "No outer atoms other than H, which are already happy with 2." });
+  const s3 = norm(m, s2);
+  while (left >= 2) { const i = cen.slice().sort((a, b) => atomElectrons(m, s3, a) - atomElectrons(m, s3, b))[0]; s3.lp[i]++; left -= 2; }
+  if (left === 1) { const i = cen.slice().sort((a, b) => atomElectrons(m, s3, a) - atomElectrons(m, s3, b))[0]; s3.se[i] = 1; left = 0; }
+  const shortC = cen.filter(i => ["short"].includes(octetStatus(m, s3, i)));
+  out.push({ s: s3, title: "Put leftovers on the central atom", text: `Any remaining electrons go on the central atom${cen.length > 1 ? "s" : ""}. ${shortC.length ? `Now ${shortC.map(i => m.atoms[i]).join(", ")} still lack${shortC.length === 1 ? "s" : ""} an octet.` : "Every atom is satisfied."}` });
+  const fin = majorForms(m)[0].s, extra = fin.b.reduce((a, c) => a + c, 0) - m.edges.length;
+  if (extra && !shortC.length) {
+    const fc3 = cen.map(i => `${m.atoms[i]} ${formalCharge(m, s3, i) > 0 ? "+" : ""}${formalCharge(m, s3, i)}`).join(", ");
+    out.push({ s: norm(m, fin), title: "Lower formal charges (expanded octet)", text: `Every atom already has an octet, but the formal charges are large (${fc3}). A period-3 central atom may hold more than 8 electrons, so turning ${extra} outer lone pair${extra > 1 ? "s" : ""} into double bonds lowers the formal charges. Many textbooks call this the best structure; the octet form is also accepted (see the formal-charge section).` });
+    return out;
+  }
+  out.push({ s: norm(m, fin), title: extra ? "Form multiple bonds" : "Check formal charges", text: extra ? `Turn ${extra} outer lone pair${extra > 1 ? "s" : ""} into bonding pair${extra > 1 ? "s" : ""} (${extra > 1 ? "multiple bonds" : "a double bond"}) so every atom has an octet, then check formal charges.` : "No multiple bonds needed. Check the formal charges: they should be as close to zero as possible and add up to the overall charge." });
+  return out;
+}
+
+/* ---------- diagnose a student structure ---------- */
+function diagnose(m, s) {
+  s = norm(m, s);
+  const T = totalValence(m), U = usedElectrons(s), name = i => `${m.atoms[i]}${m.atoms.filter(a => a === m.atoms[i]).length > 1 ? "" : ""}`;
+  const hit = matchAnswer(m, s);
+  if (hit) return { ok: true, form: hit };
+  const missing = m.edges.findIndex((_, k) => s.b[k] === 0);
+  if (missing >= 0) { const [a, c] = m.edges[missing]; return { ok: false, msg: `Every atom has to be connected. The ${m.atoms[a]}–${m.atoms[c]} link still has no bond (tap the dashed line).` }; }
+  if (U !== T) return { ok: false, msg: U < T ? `You've placed ${U} electrons, but ${m.f} has <b>${T}</b>. Add ${T - U} more.` : `You've placed ${U} electrons, but ${m.f} only has <b>${T}</b>. Remove ${U - T}.` };
+  for (let i = 0; i < m.atoms.length; i++) { const st = octetStatus(m, s, i), e = atomElectrons(m, s, i);
+    if (m.atoms[i] === "H" && st !== "ok") return { ok: false, msg: `Hydrogen holds exactly 2 electrons (one single bond, no lone pairs). One H has ${e}.` };
+    if (st === "over") return { ok: false, msg: EL[m.atoms[i]].period === 2 ? `${m.atoms[i]} has ${e} electrons. Period-2 atoms can't exceed an octet (only 4 orbitals: 2s + 2p).` : `An outer ${m.atoms[i]} has ${e} electrons. Outer (terminal) atoms keep a plain octet; only a central atom from period 3 or below can hold more than 8.` }; }
+  for (let i = 0; i < m.atoms.length; i++) { if (octetStatus(m, s, i) === "short") { const e = atomElectrons(m, s, i);
+    return { ok: false, msg: `${m.atoms[i]} has only ${e} electrons. ${m.atoms[i] === "B" || m.atoms[i] === "Be" ? "" : "Try turning a lone pair on a neighbor into a shared (multiple) bond."}` }; } }
+  const fcs = s.lp.map((_, i) => formalCharge(m, s, i)), sum = fcs.reduce((a, c) => a + Math.abs(c), 0);
+  const best = Math.min(...majorForms(m).map(f => f.s.lp.reduce((a, _, i) => a + Math.abs(formalCharge(m, f.s, i)), 0)));
+  if (sum > best) return { ok: false, valid: true, msg: `This is a <b>valid</b> Lewis structure (right electron count, octets satisfied), but not the best one: your formal charges add up to Σ|FC| = ${sum}, and a structure with Σ|FC| = ${best} exists. Minimize formal charges!` };
+  return { ok: false, valid: true, msg: "Valid electron count and octets, but the formal charges are on the wrong atoms. Negative formal charge belongs on the more electronegative atom." };
+}
+
+/* fractions for resonance averages */
+function frac(x) {
+  if (Math.abs(x - Math.round(x)) < 1e-9) return String(Math.round(x)).replace("-", "−");
+  for (let d = 2; d <= 6; d++) { const n = Math.round(x * d); if (Math.abs(n / d - x) < 1e-9) return (n < 0 ? "−" : "") + Math.abs(n) + "/" + d; }
+  return x.toFixed(2);
+}
+if (typeof module !== "undefined") module.exports = { ELEMENTS, EL, MOLS, MOL, totalValence, valenceBreakdown, usedElectrons, atomElectrons, formalCharge, octetStatus, acceptedForms, majorForms, matchAnswer, domainsAt, VSEPR, stages, diagnose, norm, emptyState, stateKey, frac, isRadical, bondOrderSum, centralAtoms };
+
+/* =========================================================
+   UI core: helpers, theme, nav, confetti, structure renderer, step-by-step widget
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const TAU = Math.PI * 2;
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("lewisLab." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("lewisLab." + k, JSON.stringify(v)); } catch (e) {} }
+};
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fcText = v => v === 0 ? "0" : (v > 0 ? "+" : "−") + Math.abs(v);
+const chargeText = q => q === 0 ? "" : (Math.abs(q) === 1 ? "" : Math.abs(q)) + (q > 0 ? "+" : "−");
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const SVGNS = "http://www.w3.org/2000/svg";
+function S(tag, attrs = {}, parent) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) { if (k === "text") el.textContent = attrs[k]; else el.setAttribute(k, attrs[k]); }
+  if (parent) parent.appendChild(el);
+  return el;
+}
+const redrawers = []; const onRedraw = f => (redrawers.push(f), f);
+function redrawAll() { redrawers.forEach(f => { try { f(); } catch (e) { console.error(e); } }); }
+
+/* ---------- theme ---------- */
+(function theme() {
+  const saved = LS.get("theme", null);
+  const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  $("#themeBtn").addEventListener("click", () => {
+    const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = t; LS.set("theme", t); redrawAll();
+  });
+})();
+/* ---------- nav ---------- */
+(function nav() {
+  const secs = $$("main section"), box = $("#navchips"), visited = new Set(LS.get("visited", []));
+  const chips = secs.map((s, i) => {
+    const a = document.createElement("a"); a.className = "chip"; a.href = "#" + s.id;
+    a.innerHTML = `<span class="n">${visited.has(s.id) ? "✓" : i + 1}</span>${s.dataset.title}`;
+    if (visited.has(s.id)) a.classList.add("visited"); box.appendChild(a); return a;
+  });
+  let current = -1;
+  function update() {
+    const H = document.documentElement.scrollHeight - innerHeight;
+    $("#progbar").style.width = (H > 0 ? scrollY / H * 100 : 0) + "%";
+    let idx = 0; secs.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * 0.35) idx = i; });
+    if (idx !== current) {
+      current = idx; chips.forEach((c, i) => c.classList.toggle("active", i === idx));
+      const c = chips[idx]; box.scrollTo({ left: c.offsetLeft - box.clientWidth / 2 + c.clientWidth / 2, behavior: "smooth" });
+      const id = secs[idx].id;
+      if (!visited.has(id)) { visited.add(id); LS.set("visited", [...visited]); c.classList.add("visited"); c.querySelector(".n").textContent = "✓"; }
+    }
+  }
+  addEventListener("scroll", update, { passive: true }); addEventListener("resize", update); update();
+})();
+/* ---------- confetti & toast ---------- */
+const Confetti = (() => {
+  const cv = document.getElementById("confetti"); let parts = [], raf = 0;
+  function burst(n = 140) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const W = innerWidth, H = innerHeight, cols = [cssVar("--accent"), cssVar("--accent2"), cssVar("--accent3"), cssVar("--tan"), cssVar("--ok")];
+    for (let i = 0; i < n; i++) parts.push({ x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35, vx: (Math.random() - .5) * 14, vy: -Math.random() * 13 - 4, r: Math.random() * TAU, vr: (Math.random() - .5) * .4, s: 5 + Math.random() * 6, c: cols[i % cols.length], life: 0 });
+    if (!raf) loop();
+  }
+  function loop() {
+    const dpr = devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    parts = parts.filter(p => p.y < H + 20 && p.life < 260);
+    for (const p of parts) { p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.c; c.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); c.restore(); }
+    raf = parts.length ? requestAnimationFrame(loop) : (c.clearRect(0, 0, W, H), 0);
+  }
+  return { burst };
+})();
+let toastT; function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
+
+/* ---------- element colors ---------- */
+const ELCOL = { H: "#e9ecf3", C: "#9aa3b5", N: "#7aa7ff", O: "#ff8a8a", F: "#8ee08e", Cl: "#7fd67f", Br: "#d98a6a", I: "#c39bff", S: "#ffd85c", P: "#ffb067", B: "#ffb8a8", Be: "#c8e6a0", Xe: "#6fd3d8" };
+
+/* ---------- lone-pair placement: spread pairs as far as possible from bonds and each other ---------- */
+const _slotCache = {};
+function angDist(a, b) { let d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
+function bestSlots(bondAngles, k) {
+  if (k <= 0) return [];
+  const key = bondAngles.map(a => Math.round(a)).sort((a, b) => a - b).join(",") + "|" + k;
+  if (_slotCache[key]) return _slotCache[key];
+  const slots = []; for (let a = 0; a < 360; a += 15) slots.push(a);
+  let best = null, bestScore = -1;
+  const pick = (start, chosen) => {
+    if (chosen.length === k) {
+      const all = bondAngles.concat(chosen); let mn = 999, sum = 0;
+      for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) { const d = angDist(all[i], all[j]); mn = Math.min(mn, d); if (i >= bondAngles.length || j >= bondAngles.length) sum += d; }
+      const card = chosen.filter(a => a % 90 === 0).length;
+      const score = mn * 1e6 + card * 1e3 + sum;
+      if (score > bestScore) { bestScore = score; best = chosen.slice(); }
+      return;
+    }
+    for (let i = start; i < slots.length; i++) { chosen.push(slots[i]); pick(i + 1, chosen); chosen.pop(); }
+  };
+  pick(0, []);
+  return (_slotCache[key] = best);
+}
+
+/* ---------- structure renderer ----------
+   opts: interactive, showFC, octetColors, hl (atom index), pop, hybrid {orders, fc}, onBond(k), onAtom(i, e), scale */
+let _svgId = 0;
+function renderStructure(svg, m, s, opts = {}) {
+  s = norm(m, s);
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  if (!svg.id) svg.id = "sv" + (++_svgId);
+  const g = S("g", {}, svg), P = m.pos, R = 15;
+  const orders = opts.hybrid ? opts.hybrid.orders : s.b;
+  const stroke = "var(--bond)";
+  // bonds
+  m.edges.forEach(([a, c], k) => {
+    const [x1, y1] = P[a], [x2, y2] = P[c], dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+    const o = orders[k], bg = S("g", { class: "bondg" }, g);
+    const line = (off, dash, w = 3, pad = R * .6) => S("line", { x1: x1 + nx * off + dx / L * pad, y1: y1 + ny * off + dy / L * pad, x2: x2 + nx * off - dx / L * pad, y2: y2 + ny * off - dy / L * pad, stroke, "stroke-width": w, "stroke-linecap": "round", "stroke-dasharray": dash || "none", class: "vb" }, bg);
+    if (o === 0) { if (opts.interactive) line(0, "4 6", 2, R + 6).setAttribute("opacity", .45); }
+    else if (opts.hybrid && Math.abs(o - Math.round(o)) > 1e-9) { const n = Math.floor(o); const offs = n === 1 ? [-3.5, 3.5] : [-6, 0, 6]; offs.forEach((off, i) => line(off, i === offs.length - 1 ? "5 5" : null, 2.6)); }
+    else { const offs = o === 1 ? [0] : o === 2 ? [-3.8, 3.8] : [-6.5, 0, 6.5]; offs.forEach(off => line(off, null, o === 1 ? 3 : 2.6)); }
+    if (opts.hybrid && Math.abs(o - Math.round(o)) > 1e-9) S("text", { x: (x1 + x2) / 2 + nx * 15, y: (y1 + y2) / 2 + ny * 15 + 4, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "var(--accent2)", text: frac(o) }, bg);
+    if (opts.interactive) { const h = S("line", { x1, y1, x2, y2, class: "hitb" }, bg); h.addEventListener("click", e => { e.stopPropagation(); opts.onBond && opts.onBond(k); }); }
+  });
+  // atoms, lone pairs, FCs
+  const lpPos = [];
+  m.atoms.forEach((el, i) => {
+    const [x, y] = P[i];
+    const bondAngles = m.edges.filter(e => e.includes(i)).map(([a, c]) => { const j = a === i ? c : a; return (Math.atan2(-(P[j][1] - y), P[j][0] - x) * 180 / Math.PI + 360) % 360; });
+    const nlp = s.lp[i], nse = s.se[i];
+    const showFCHere = (opts.showFC || opts.hybrid) && (opts.hybrid ? Math.abs(opts.hybrid.fc[i]) > 1e-9 : formalCharge(m, s, i) !== 0);
+    const slots = bestSlots(bondAngles, nlp + nse + (showFCHere ? 1 : 0));
+    // put the FC badge in the slot nearest the upper-right, pairs in the rest
+    let fcSlot = null;
+    if (showFCHere) { fcSlot = slots.slice().sort((a, b) => angDist(a, 45) - angDist(b, 45))[0]; }
+    const lpSlots = slots.filter(a => a !== fcSlot);
+    const st = opts.octetColors ? octetStatus(m, s, i) : null;
+    const ring = { ok: "var(--ok)", short: "var(--tan)", over: "var(--bad)", expanded: "var(--accent2)", "allowed-short": "var(--accent3)" }[st];
+    const ag = S("g", {}, g);
+    if (opts.hl === i) S("circle", { cx: x, cy: y, r: R + 9, fill: "none", stroke: "var(--accent3)", "stroke-width": 3, "stroke-dasharray": "4 3" }, ag);
+    S("circle", { cx: x, cy: y, r: R, fill: ELCOL[el] || "#ccc", "fill-opacity": .35, stroke: ring || "none", "stroke-width": ring ? 2.5 : 0 }, ag);
+    S("text", { x, y: y + 1, class: "atomlbl", "font-size": el.length > 1 ? 15 : 17, text: el }, ag);
+    const mine = [];
+    lpSlots.forEach((a, n) => {
+      const r = el.length > 1 ? 25 : 23, rad = a * Math.PI / 180, cx = x + r * Math.cos(rad), cy = y - r * Math.sin(rad), px = -Math.sin(rad), py = -Math.cos(rad);
+      const single = n >= nlp;
+      const dg = S("g", { class: opts.pop ? "pop" : "", style: opts.pop ? `animation-delay:${(i * 3 + n) * 45}ms` : "" }, ag);
+      if (single) S("circle", { cx, cy, r: 2.9, class: "lpdot", fill: "var(--accent3)" }, dg);
+      else { S("circle", { cx: cx + px * 4, cy: cy + py * 4, r: 2.7, class: "lpdot" }, dg); S("circle", { cx: cx - px * 4, cy: cy - py * 4, r: 2.7, class: "lpdot" }, dg); }
+      mine.push([cx, cy, single]);
+    });
+    lpPos.push(mine);
+    if (showFCHere) {
+      const v = opts.hybrid ? opts.hybrid.fc[i] : formalCharge(m, s, i), rad = fcSlot * Math.PI / 180, fx = x + 24 * Math.cos(rad), fy = y - 24 * Math.sin(rad);
+      const t = opts.hybrid ? frac(v).replace(/^(?!−)/, "+") : fcText(v);
+      S("rect", { x: fx - (t.length > 2 ? 15 : 10), y: fy - 8, width: t.length > 2 ? 30 : 20, height: 16, rx: 8, fill: v > 0 ? "var(--fcpos)" : "var(--fcneg)" }, ag);
+      S("text", { x: fx, y: fy + .5, class: "fclbl", "font-size": 10.5, text: t }, ag);
+    }
+    if (opts.interactive) {
+      const h = S("circle", { cx: x, cy: y, r: R + 9, class: "hita" }, ag);
+      h.addEventListener("click", e => { e.stopPropagation(); opts.onAtom && opts.onAtom(i, e); });
+      h.addEventListener("contextmenu", e => { e.preventDefault(); opts.onAtom && opts.onAtom(i, e, true); });
+    }
+  });
+  // bounding box + brackets for ions
+  const xs = P.map(p => p[0]), ys = P.map(p => p[1]);
+  let x0 = Math.min(...xs) - 36, x1 = Math.max(...xs) + 36, y0 = Math.min(...ys) - 36, y1 = Math.max(...ys) + 36;
+  if (m.q !== 0) {
+    const br = (x, dir) => S("path", { d: `M ${x + dir * 8} ${y0} L ${x} ${y0} L ${x} ${y1} L ${x + dir * 8} ${y1}`, fill: "none", stroke: "var(--text)", "stroke-width": 2.2 }, g);
+    br(x0, 1); br(x1, -1);
+    S("text", { x: x1 + 5, y: y0 + 8, "font-size": 17, "font-weight": 800, fill: "var(--text)", text: chargeText(m.q) }, g);
+    x0 -= 6; x1 += 28; y0 -= 6; y1 += 6;
+  }
+  if (opts.fixedBox) svg.setAttribute("viewBox", opts.fixedBox);
+  else svg.setAttribute("viewBox", `${x0 - 6} ${y0 - 6} ${x1 - x0 + 12} ${y1 - y0 + 12}`);
+  return { lpPos };
+}
+/* small Lewis dot symbol for one atom / ion (periodic table) */
+function dotSymbol(svg, sym, dots, charge) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  svg.setAttribute("viewBox", "-60 -50 120 100");
+  S("text", { x: 0, y: 2, class: "atomlbl", "font-size": 30, text: sym }, svg);
+  const sides = [[0, -1], [1, 0], [0, 1], [-1, 0]], counts = [0, 0, 0, 0];
+  if (sym === "He" && dots === 2) counts[0] = 2;
+  else for (let n = 0; n < dots; n++) counts[n % 4]++;
+  sides.forEach(([sx, sy], k) => {
+    const r = sym.length > 1 ? 30 : 24, cx = sx * (sx ? r + 4 : 0), cy = sy * r;
+    for (let j = 0; j < counts[k]; j++) {
+      const off = counts[k] === 1 ? 0 : (j ? 5 : -5);
+      S("circle", { cx: cx + (sy ? off : 0), cy: cy + (sx ? off : 0), r: 3.4, class: "lpdot pop", style: `animation-delay:${(k + 4 * j) * 50}ms` }, svg);
+    }
+  });
+  if (charge) {
+    const L = sym.length > 1 ? -44 : -38, Rr = -L;
+    S("path", { d: `M ${L + 7} -36 L ${L} -36 L ${L} 36 L ${L + 7} 36`, fill: "none", stroke: "var(--text)", "stroke-width": 2 }, svg);
+    S("path", { d: `M ${Rr - 7} -36 L ${Rr} -36 L ${Rr} 36 L ${Rr - 7} 36`, fill: "none", stroke: "var(--text)", "stroke-width": 2 }, svg);
+    S("text", { x: Rr + 4, y: -26, "font-size": 16, "font-weight": 800, fill: "var(--text)", text: chargeText(charge) }, svg);
+  }
+}
+
+/* ---------- step-by-step widget ---------- */
+function buildSteps(host, ex, num) {
+  host.classList.add("ex");
+  host.innerHTML = `<h3>${num ? `<span class="pill">Example ${num}</span>` : ""}${ex.title}<span class="pill done-badge">✓ done</span></h3>
+    <div class="goal">${ex.goal}</div>
+    <ol class="steps">${ex.steps.map(st => `<li><div><div class="expr">${st.t}</div>${st.why ? `<div class="why">${st.why}</div>` : ""}${st.s ? `<div class="pic"><svg></svg></div>` : ""}</div></li>`).join("")}</ol>
+    <div class="tip hintbox"></div>
+    <div class="btnrow"><button class="btn primary small nx">Start ▸</button><button class="btn small hn">💡 Hint</button><button class="btn small all">Show all</button><button class="btn small rs">↺ Reset</button></div>`;
+  const lis = $$(".steps li", host), hint = $(".hintbox", host); let k = 0;
+  const m = MOL[ex.mol];
+  ex.steps.forEach((st, i) => { if (st.s) renderStructure($("svg", lis[i]), m, st.s, { showFC: !!st.fc, octetColors: !!st.oc }); });
+  function sync() {
+    lis.forEach((li, i) => li.classList.toggle("shown", i < k));
+    $(".nx", host).disabled = $(".hn", host).disabled = k >= lis.length;
+    $(".nx", host).textContent = k === 0 ? "Start ▸" : k >= lis.length ? "Done ✓" : "Next step ▸";
+    hint.classList.remove("on"); host.classList.toggle("complete", k >= lis.length);
+  }
+  $(".nx", host).onclick = () => { k++; sync(); if (k === lis.length) toast("Nice work! 🎉"); };
+  $(".hn", host).onclick = () => { hint.innerHTML = "💡 " + ex.steps[k].hint; hint.classList.add("on"); };
+  $(".all", host).onclick = () => { k = lis.length; sync(); };
+  $(".rs", host).onclick = () => { k = 0; sync(); };
+  sync();
+}
+
+/* =========================================================
+   Hero, valence electrons, method, builder
+   ========================================================= */
+/* ---------- hero ---------- */
+(function hero() {
+  const list = ["H2O", "CO2", "NH4+", "NO3-", "HCN", "SF6", "CH2O", "O3"]; let i = 0, timer = 0;
+  function show() {
+    const m = MOL[list[i % list.length]], f = majorForms(m)[0];
+    renderStructure($("#heroSvg"), m, f.s, { showFC: true, pop: true });
+    $("#heroCap").innerHTML = `<span class="chemf">${m.f}</span> · ${m.name} · ${totalValence(m)} valence electrons`;
+    i++;
+  }
+  show();
+  const io = new IntersectionObserver(e => { clearInterval(timer); if (e[0].isIntersecting) timer = setInterval(show, 2800); });
+  io.observe($("#heroSvg"));
+})();
+
+/* ---------- periodic table ---------- */
+(function ptable() {
+  const host = $("#ptable"), groups = [1, 2, 13, 14, 15, 16, 17, 18];
+  groups.forEach(g => { const d = document.createElement("div"); d.className = "gh"; d.textContent = g; host.appendChild(d); });
+  const grid = {}; ELEMENTS.forEach(e => grid[e.period + "-" + e.group] = e);
+  let cur = EL.O, dots = 6;
+  for (let p = 1; p <= 5; p++) groups.forEach(g => {
+    const e = grid[p + "-" + g];
+    if (!e) { host.appendChild(document.createElement("div")); return; }
+    const b = document.createElement("button"); b.className = "el g" + g; b.dataset.sym = e.sym;
+    b.innerHTML = `<span class="z">${e.z}</span><span class="sym">${e.sym}</span><span class="ve">${e.ve} e⁻</span>`;
+    b.setAttribute("aria-label", `${e.name}, ${e.ve} valence electrons`);
+    b.onclick = () => { cur = e; dots = e.ve; upd(); };
+    host.appendChild(b);
+  });
+  const BONDS = { 1: "1 (H) · metals form cations", 2: "2 (Be) · metals form cations", 13: "3 (B ends with 6 e⁻)", 14: "4 bonds, 0 lone pairs", 15: "3 bonds + 1 lone pair", 16: "2 bonds + 2 lone pairs", 17: "1 bond + 3 lone pairs", 18: "0 (noble gas; Kr and Xe can form compounds)" };
+  const NOBLE = { 2: "He", 10: "Ne", 18: "Ar", 36: "Kr", 54: "Xe" };
+  function upd() {
+    $$("#ptable .el").forEach(b => b.classList.toggle("on", b.dataset.sym === cur.sym));
+    const maxDots = cur.period === 1 ? 2 : 8, q = cur.ve - dots;
+    dotSymbol($("#dotSvg"), cur.sym, dots, q);
+    $("#elName").textContent = cur.name; $("#elInfo").textContent = `Z = ${cur.z} · period ${cur.period}`;
+    $("#elGroup").textContent = cur.group; $("#elVe").textContent = cur.ve; $("#elEn").textContent = cur.en === null ? "not defined" : cur.en.toFixed(2);
+    $("#elBonds").textContent = cur.sym === "H" ? "1 bond" : BONDS[cur.group];
+    $("#ionDots").textContent = dots;
+    $("#ionMinus").disabled = dots <= 0; $("#ionPlus").disabled = dots >= maxDots;
+    const totalE = cur.z - q, iso = NOBLE[totalE];
+    const label = `<span class="chemf">${cur.sym}${q ? `<sup>${chargeText(q)}</sup>` : ""}</span>`;
+    let msg = q === 0 ? `Neutral ${cur.name.toLowerCase()} atom: ${cur.ve} valence electron${cur.ve > 1 ? "s" : ""}.` : `${label}: ${q > 0 ? "lost" : "gained"} ${Math.abs(q)} electron${Math.abs(q) > 1 ? "s" : ""} → charge ${chargeText(q)}.`;
+    if (iso && q !== 0) msg += ` Now has ${totalE} electrons total: <b>isoelectronic with ${iso}</b> (noble-gas configuration) ✓`;
+    if (cur.group === 18 && q === 0) msg += " Already a full shell, so noble gases rarely bond.";
+    $("#ionMsg").innerHTML = msg;
+  }
+  $("#ionMinus").onclick = () => { dots = Math.max(0, dots - 1); upd(); };
+  $("#ionPlus").onclick = () => { dots = Math.min(cur.period === 1 ? 2 : 8, dots + 1); upd(); };
+  upd();
+})();
+
+/* ---------- valence electron counter (safe formula parser, no eval) ---------- */
+function parseFormula(str) {
+  const s = str.replace(/\s+/g, ""); if (!s) throw new Error("Type a formula like SO4 or CH3COOH");
+  if (!/^[A-Za-z0-9()]+$/.test(s)) throw new Error("Use element symbols, numbers, and parentheses only");
+  let i = 0;
+  function group() {
+    const counts = {};
+    while (i < s.length && s[i] !== ")") {
+      let part;
+      if (s[i] === "(") { i++; part = group(); if (s[i] !== ")") throw new Error("Missing )"); i++; }
+      else { const m = s.slice(i).match(/^[A-Z][a-z]?/); if (!m) throw new Error(`"${s[i]}" isn't an element symbol (symbols start with a capital letter)`);
+        const sym = EL[m[0]] ? m[0] : (EL[m[0][0]] && m[0].length === 2 && !EL[m[0]] ? null : m[0]);
+        if (sym === null || !EL[sym]) throw new Error(`"${m[0]}" isn't a main-group element in this lesson`);
+        i += sym.length; part = { [sym]: 1 }; }
+      const n = s.slice(i).match(/^\d+/); const k = n ? parseInt(n[0], 10) : 1; if (n) i += n[0].length;
+      if (k < 1 || k > 99) throw new Error("Subscripts must be between 1 and 99");
+      for (const e in part) counts[e] = (counts[e] || 0) + part[e] * k;
+    }
+    return counts;
+  }
+  const c = group(); if (i < s.length) throw new Error("Unmatched )"); return c;
+}
+(function counter() {
+  function upd() {
+    const out = $("#cntOut"), q = +$("#cntQ").value;
+    try {
+      const c = parseFormula($("#cntF").value); let t = 0;
+      const rows = Object.entries(c).map(([e, n]) => { t += n * EL[e].ve; return `${e}: ${n} × ${EL[e].ve} = ${n * EL[e].ve}`; });
+      const total = t - q;
+      out.className = "feedback info";
+      out.innerHTML = rows.join("<br>") + (q ? `<br>charge ${chargeText(q)}: ${q < 0 ? "add" : "subtract"} ${Math.abs(q)}` : "") + `<br><b>Total = ${total} valence electrons</b> (${total / 2 | 0} pair${total % 2 ? "s + 1 unpaired electron (radical!)" : "s"})`;
+      if (total <= 0) out.innerHTML += "<br>⚠ That charge removes all the valence electrons.";
+    } catch (e) { out.className = "feedback no"; out.textContent = e.message; }
+  }
+  $("#cntF").addEventListener("input", upd); $("#cntQ").addEventListener("change", upd); upd();
+})();
+
+/* ---------- watch the method ---------- */
+function moleculeOptions(sel, filter = () => true, solved) {
+  sel.innerHTML = "";
+  const cats = [...new Set(MOLS.map(m => m.cat))];
+  cats.forEach(c => {
+    const og = document.createElement("optgroup"); og.label = c;
+    MOLS.filter(m => m.cat === c && filter(m)).forEach(m => { const o = document.createElement("option"); o.value = m.id; o.textContent = `${solved && solved.has(m.id) ? "✓ " : ""}${m.f.replace(/<sub>(\d+)<\/sub>/g, (_, d) => d.split("").map(x => "₀₁₂₃₄₅₆₇₈₉"[x]).join("")).replace(/<sup>(.*?)<\/sup>/g, (_, t) => t.replace("2", "²").replace("3", "³").replace("+", "⁺").replace("−", "⁻"))}: ${m.name}`; og.appendChild(o); });
+    if (og.children.length) sel.appendChild(og);
+  });
+}
+function centralText(m) {
+  const cen = centralAtoms(m);
+  if (m.atoms.length === 2) return "Diatomic: just connect the two atoms.";
+  if (cen.length > 1) return `More than one "central" atom here (${cen.map(i => m.atoms[i]).join(", ")}). The skeleton follows the way the formula is written.`;
+  const c = m.atoms[cen[0]], others = [...new Set(m.atoms.filter((a, i) => i !== cen[0]))];
+  const why = others.includes("H") && others.length === 1 ? "H can only form one bond, so it's never central" : `${c} is the least electronegative (${EL[c].en}) of the non-H atoms${others.includes("H") ? "; H is never central" : ""}`;
+  return `Central atom: <b>${c}</b>. ${why}.`;
+}
+function breakdownText(m) {
+  const b = valenceBreakdown(m);
+  return b.parts.map(p => `${p.el}: ${p.n} × ${p.ve} = ${p.sub}`).join(" · ") + (m.q ? ` · charge ${Math.abs(m.q)}${m.q < 0 ? "−" : "+"} → ${m.q < 0 ? "add" : "subtract"} ${Math.abs(m.q)}` : "") + ` · <b>total ${b.total}</b>`;
+}
+(function watch() {
+  const sel = $("#wmMol"); moleculeOptions(sel); sel.value = "CO2"; let k = 0;
+  function show() {
+    const m = MOL[sel.value], st = stages(m), n = st.length + 1;
+    k = clamp(k, 0, n - 1);
+    if (k === 0) { renderStructure($("#wmSvg"), m, emptyState(m), { interactive: false }); $("#wmText").innerHTML = `<b>Count &amp; choose the center.</b> ${breakdownText(m)}<br>${centralText(m)}`; }
+    else { const S0 = st[k - 1]; renderStructure($("#wmSvg"), m, S0.s, { octetColors: true, showFC: k === n - 1 }); $("#wmText").innerHTML = `<b>${S0.title}.</b> ${S0.text}`; }
+    $("#wmPos").textContent = `${k + 1} / ${n}`; $("#wmPrev").disabled = k === 0; $("#wmNext").disabled = k === n - 1;
+  }
+  sel.onchange = () => { k = 0; show(); }; $("#wmPrev").onclick = () => { k--; show(); }; $("#wmNext").onclick = () => { k++; show(); };
+  show();
+})();
+
+/* ---------- the builder ---------- */
+const Builder = (function builder() {
+  const sel = $("#bMol"), svg = $("#bSvg"), solved = new Set(LS.get("solved", []));
+  let m, s, hist = [], tool = "pair", stageK = 0, hintK = 0, ansK = 0;
+  function load(id) { m = MOL[id]; s = emptyState(m); hist = []; stageK = 0; hintK = 0; ansK = 0; fb("", `Build <span class="chemf">${m.f}</span> (${m.name}). Start by counting: how many valence electrons are available?`); draw(); }
+  function fb(cls, html) { const f = $("#bFeedback"); f.className = "feedback " + cls; f.innerHTML = html; }
+  function push() { hist.push(norm(m, s)); if (hist.length > 100) hist.shift(); }
+  function draw() {
+    renderStructure(svg, m, s, { interactive: true, showFC: $("#bFC").checked && usedElectrons(s) > 0, octetColors: true, onBond, onAtom });
+    const T = totalValence(m), U = usedElectrons(s), L = T - U;
+    $("#cAvail").textContent = T; $("#cUsed").textContent = U; $("#cLeft").textContent = L;
+    $("#cLeftBox").className = L < 0 ? "neg" : L === 0 ? "zero" : "";
+    $("#cBreak").innerHTML = breakdownText(m);
+    const label = { ok: "✓ octet", short: "short", over: "too many", expanded: "expanded", "allowed-short": "exception OK" };
+    const cls = { ok: "okc", short: "warnc", over: "badc", expanded: "expc", "allowed-short": "" };
+    $("#atomRows").innerHTML = m.atoms.map((a, i) => { const st = octetStatus(m, s, i), fc = formalCharge(m, s, i);
+      return `<tr><td><b>${a}</b><sub class="muted">${i + 1}</sub></td><td>${atomElectrons(m, s, i)}</td><td class="${cls[st]}" style="${st === "allowed-short" ? "color:var(--accent3);font-weight:700" : ""}">${a === "H" && st === "ok" ? "✓ duet" : label[st]}</td><td>${$("#bFC").checked && U > 0 ? fcText(fc) : "–"}</td></tr>`; }).join("");
+    $("#bSolved").textContent = `Solved ${solved.size} / ${MOLS.length}`;
+    $("#bUndo").disabled = !hist.length;
+  }
+  function onBond(k) { push(); s.b[k] = (s.b[k] + 1) % 4; draw(); }
+  function onAtom(i, e, remove) {
+    push();
+    const t = remove ? "erase" : tool;
+    if (t === "pair") { if (s.lp[i] < 4) s.lp[i]++; else { hist.pop(); fb("info", "That's the most lone pairs an atom can hold here."); return; } }
+    else if (t === "single") s.se[i] = s.se[i] ? 0 : 1;
+    else { if (s.se[i]) s.se[i] = 0; else if (s.lp[i]) s.lp[i]--; else { hist.pop(); return; } }
+    draw();
+  }
+  function hints() {
+    const T = totalValence(m), E = m.edges.length, f = majorForms(m)[0].s, extra = f.b.reduce((a, c) => a + c, 0) - E;
+    const h = [`Count first: ${breakdownText(m)}.`, centralText(m), `Single bonds: ${E} bond${E > 1 ? "s" : ""} × 2 = ${2 * E} electrons, leaving ${T - 2 * E} for lone pairs${extra ? " and multiple bonds" : ""}.`];
+    if (extra) h.push(`After filling octets you'll come up short: the structure needs <b>${extra}</b> extra bond${extra > 1 ? "s" : ""} (${extra} double, or a triple if both go between the same two atoms). Convert outer lone pairs into bonds.`);
+    else h.push(isRadical(m) ? "Odd number of electrons: one atom will keep a single unpaired electron. Use the ＋ single e⁻ tool." : "No multiple bonds are needed here: single bonds plus lone pairs complete everything.");
+    h.push(m.note || "Finally, check formal charges: they should be as small as possible and add up to the overall charge.");
+    return h;
+  }
+  $("#bCheck").onclick = () => {
+    const d = diagnose(m, s);
+    if (d.ok) {
+      const forms = acceptedForms(m), maj = majorForms(m), fcs = s.lp.map((_, i) => formalCharge(m, s, i)), fcList = m.atoms.map((a, i) => fcs[i] ? `${a}${i + 1}: ${fcText(fcs[i])}` : null).filter(Boolean);
+      const dom = domainsAt(m, s, m.center), shape = dom.info ? ` Shape around ${m.atoms[m.center]}: <b>${dom.info.shape}</b>${dom.info.angle && dom.info.angle !== "—" ? ` (${dom.info.angle})` : ""}.` : "";
+      let msg = `✅ <b>${d.form.kind === "alt" ? "Accepted!" : "Correct!"}</b> ${fcList.length ? "Formal charges: " + fcList.join(", ") + "." : "Every formal charge is 0."}${shape}`;
+      if (maj.length > 1 && d.form.kind === "major") msg += ` This is one of <b>${maj.length}</b> equivalent resonance forms. Tap 👀 Answer to cycle through them.`;
+      if (d.form.note) msg += `<br><span class="small">${d.form.note}</span>`;
+      else if (m.note && d.form.kind === "major") msg += `<br><span class="small">${m.note}</span>`;
+      fb("ok", msg);
+      if (!solved.has(m.id)) { solved.add(m.id); LS.set("solved", [...solved]); moleculeOptions(sel, undefined, solved); sel.value = m.id; Confetti.burst(90); }
+      draw();
+    } else fb(d.valid ? "info" : "no", (d.valid ? "🤔 " : "❌ ") + d.msg);
+  };
+  $("#bHint").onclick = () => { const h = hints(); fb("info", `💡 <b>Hint ${Math.min(hintK, h.length - 1) + 1}/${h.length}:</b> ${h[Math.min(hintK, h.length - 1)]}`); hintK++; };
+  $("#bStep").onclick = () => { const st = stages(m); push(); const S0 = st[Math.min(stageK, st.length - 1)]; s = norm(m, S0.s); fb("info", `⏭ <b>Step ${Math.min(stageK, st.length - 1) + 1}/${st.length}: ${S0.title}.</b> ${S0.text}`); stageK++; draw(); };
+  $("#bUndo").onclick = () => { if (hist.length) { s = hist.pop(); draw(); } };
+  $("#bReset").onclick = () => { push(); s = emptyState(m); stageK = 0; draw(); fb("", "Board cleared."); };
+  $("#bShow").onclick = () => { const forms = acceptedForms(m), f = forms[ansK % forms.length]; push(); s = norm(m, f.s); ansK++;
+    fb("info", `👀 Accepted structure ${((ansK - 1) % forms.length) + 1} of ${forms.length}${f.kind === "alt" ? " (alternative)" : ""}. ${f.note || (forms.length > 1 ? "Resonance forms differ only in where electrons are placed." : "")}`); draw(); };
+  $$("#bTool button").forEach(b => b.onclick = () => { $$("#bTool button").forEach(x => x.classList.toggle("on", x === b)); tool = b.dataset.t; });
+  $("#bFC").onchange = draw;
+  moleculeOptions(sel, undefined, solved); sel.value = "H2O"; sel.onchange = () => load(sel.value);
+  load("H2O");
+  return { load: id => { sel.value = id; load(id); }, get state() { return s; }, get mol() { return m; } };
+})();
+
+/* =========================================================
+   Formal charge, resonance, exceptions, VSEPR, examples, practice, drill, cheat sheet
+   ========================================================= */
+/* ---------- FC calculator ---------- */
+(function fcCalc() {
+  const els = ["H", "B", "C", "N", "O", "F", "P", "S", "Cl", "Br", "I", "Xe"], sel = $("#fcEl");
+  els.forEach(e => { const o = document.createElement("option"); o.value = e; o.textContent = `${e} (${EL[e].name}, V = ${EL[e].ve})`; sel.appendChild(o); });
+  let el = "O", L = 4, B = 2; sel.value = el;
+  $$("[data-fc]").forEach(b => { b.textContent = { "L-": "−1", "L+": "+1", "B-": "−1", "B+": "+1" }[b.dataset.fc]; b.onclick = () => { const k = b.dataset.fc; if (k === "L-") L = Math.max(0, L - 1); if (k === "L+") L = Math.min(8, L + 1); if (k === "B-") B = Math.max(0, B - 1); if (k === "B+") B = Math.min(6, B + 1); upd(); }; });
+  sel.onchange = () => { el = sel.value; upd(); };
+  const presets = [["N in NH₄⁺", "N", 0, 4], ["O in OH⁻", "O", 6, 1], ["O in H₃O⁺", "O", 2, 3], ["C in CO", "C", 2, 3], ["B in BF₄⁻", "B", 0, 4], ["S in SO₄²⁻ (octet form)", "S", 0, 4], ["N in NO (radical)", "N", 3, 2]];
+  presets.forEach(([t, e, l, b]) => { const x = document.createElement("button"); x.className = "btn small"; x.textContent = t; x.onclick = () => { el = e; L = l; B = b; sel.value = e; upd(); }; $("#fcPresets").appendChild(x); });
+  function upd() {
+    const V = EL[el].ve, fc = V - L - B;
+    $("#fcL").textContent = L; $("#fcB").textContent = B;
+    const angles = [0, 90, 180, 270, 45, 225].slice(0, B), fake = { id: "fc", atoms: [el].concat(angles.map(() => "R")), q: 0, eq: [], center: 0, pos: [[200, 150]].concat(angles.map(a => [200 + 70 * Math.cos(a * Math.PI / 180), 150 - 70 * Math.sin(a * Math.PI / 180)])), edges: angles.map((_, i) => [0, i + 1]) };
+    const st = { b: angles.map(() => 1), lp: [Math.floor(L / 2)].concat(angles.map(() => 0)), se: [L % 2].concat(angles.map(() => 0)) };
+    renderStructure($("#fcSvg"), fake, st, {});
+    $("#fcOut").innerHTML = `FC = ${V} − ${L} − ${B} = <span style="color:${fc > 0 ? "var(--fcpos)" : fc < 0 ? "var(--fcneg)" : "var(--ok)"}">${fcText(fc)}</span>`;
+    const tot = L + 2 * B;
+    $("#fcExpl").innerHTML = `${el} brought ${V} valence e⁻ and "owns" ${L} + ${B} = ${L + B} here. ${tot > 8 && EL[el].period === 2 ? "<br>⚠ " + tot + " electrons around a period-2 atom is impossible." : `Electrons around ${el}: ${tot}.`}`;
+  }
+  upd();
+})();
+
+/* ---------- compare candidate structures ---------- */
+(function compare() {
+  const C = {
+    CO2: { mol: "CO2", cands: [{ s: { b: [2, 2], lp: [0, 2, 2] }, cap: "O=C=O", best: true }, { s: { b: [3, 1], lp: [0, 1, 3] }, cap: "O≡C–O" }],
+      note: "Both have 16 electrons and full octets, but O=C=O has all formal charges 0, while O≡C–O has +1 and −1. <b>O=C=O wins</b>." },
+    "SCN-": { mol: "SCN-", cands: [{ s: { b: [2, 2], lp: [0, 2, 2] }, cap: "[S=C=N]⁻", best: true }, { s: { b: [1, 3], lp: [0, 3, 1] }, cap: "[S–C≡N]⁻" }, { s: { b: [3, 1], lp: [0, 1, 3] }, cap: "[S≡C–N]⁻" }],
+      note: "All three obey the octet rule. The third has large charges (+1, −2): worst. The first two each have Σ|FC| = 1; the first puts the −1 on <b>N (3.04)</b>, more electronegative than S (2.58), so <b>[S=C=N]⁻</b> is best. The second is still a significant resonance contributor; real SCN⁻ is a blend." },
+    SO4: { mol: "SO4^2-", cands: [{ s: { b: [2, 2, 1, 1], lp: [0, 2, 2, 3, 3] }, cap: "expanded octet (S has 12 e⁻)", best: true }, { s: { b: [1, 1, 1, 1], lp: [0, 3, 3, 3, 3] }, cap: "octet form (S +2)", best: true }],
+      note: "<b>A fair summary:</b> the formal-charge rule picks the expanded structure (S = 0, Σ|FC| = 2), and many general chemistry textbooks teach it. Computational studies find little true S=O double-bond (d-orbital) character; the octet form with S<sup>2+</sup>-like charge plus strong ionic attraction describes the electron density well. Both are accepted in this lesson's builder. Use the one your course uses." }
+  };
+  function show(k) {
+    const c = C[k], m = MOL[c.mol], grid = $("#cmpGrid"); grid.innerHTML = "";
+    c.cands.forEach(cd => {
+      const s = norm(m, cd.s), fcs = s.lp.map((_, i) => formalCharge(m, s, i)), sum = fcs.reduce((a, x) => a + Math.abs(x), 0);
+      const card = document.createElement("div"); card.className = "card molcard"; card.innerHTML = `<svg></svg><b>${cd.cap}</b><div class="cap">${usedElectrons(s)} e⁻ · Σ|FC| = ${sum}</div><div class="cap">${cd.best ? "⭐ preferred" : "less favorable"}</div>`;
+      grid.appendChild(card); renderStructure($("svg", card), m, s, { showFC: true });
+      if (cd.best) card.style.borderColor = "var(--ok)";
+    });
+    $("#cmpNote").innerHTML = c.note;
+  }
+  $$("#cmpSel button").forEach(b => b.onclick = () => { $$("#cmpSel button").forEach(x => x.classList.toggle("on", x === b)); show(b.dataset.c); });
+  show("CO2");
+})();
+
+/* ---------- resonance ---------- */
+(function resonance() {
+  let m, forms, k = 0, playing = true, timer = 0;
+  const svg = $("#resSvg");
+  function hybrid() {
+    const n = forms.length, orders = m.edges.map((_, e) => forms.reduce((a, f) => a + f.s.b[e], 0) / n), fc = m.atoms.map((_, i) => forms.reduce((a, f) => a + formalCharge(m, f.s, i), 0) / n);
+    return { orders, fc };
+  }
+  function arrows(A, B, lay) {
+    const g = S("g", {}, svg), P = m.pos, cx = P[m.center][0], cy = P[m.center][1];
+    const defs = S("defs", {}, svg), mk = S("marker", { id: "ah" + svg.id, viewBox: "0 0 10 10", refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, defs);
+    S("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "var(--accent3)" }, mk);
+    const curve = (x1, y1, x2, y2, bend = 26) => {
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+      let nx = -dy / L, ny = dx / L; if ((mx + nx - cx) ** 2 + (my + ny - cy) ** 2 < (mx - nx - cx) ** 2 + (my - ny - cy) ** 2) { nx = -nx; ny = -ny; }
+      S("path", { d: `M ${x1} ${y1} Q ${mx + nx * bend} ${my + ny * bend} ${x2} ${y2}`, fill: "none", stroke: "var(--accent3)", "stroke-width": 2.4, "marker-end": `url(#ah${svg.id})`, class: "pop" }, g);
+    };
+    const mid = e => { const [a, c] = m.edges[e]; return [(P[a][0] + P[c][0]) / 2, (P[a][1] + P[c][1]) / 2]; };
+    const inc = m.edges.map((_, e) => e).filter(e => B.b[e] > A.b[e]), dec = m.edges.map((_, e) => e).filter(e => B.b[e] < A.b[e]);
+    if (m.ring) {
+      const R = m.ring, ringEdge = (i, j) => m.edges.findIndex(([a, c]) => (a === R[i % 6] && c === R[j % 6]) || (a === R[j % 6] && c === R[i % 6]));
+      for (let i = 0; i < 6; i++) { const e = ringEdge(i, i + 1); if (dec.includes(e)) { const e2 = ringEdge(i + 1, i + 2); const [x1, y1] = mid(e), [x2, y2] = mid(e2); curve(x1 + (cx - x1) * .18, y1 + (cy - y1) * .18, x2 + (cx - x2) * .18, y2 + (cy - y2) * .18, -14); } }
+      return;
+    }
+    inc.forEach(e => { const [a, c] = m.edges[e], t = A.lp[a] > B.lp[a] ? a : c; const lp = lay.lpPos[t].filter(p => !p[2]); if (!lp.length) return;
+      const [px, py] = lp[lp.length - 1], [mx, my] = mid(e); curve(px, py, mx + (P[t][0] - mx) * .15, my + (P[t][1] - my) * .15); });
+    dec.forEach(e => { const [a, c] = m.edges[e], t = B.lp[a] > A.lp[a] ? a : c; const [mx, my] = mid(e), dx = P[t][0] - cx, dy = P[t][1] - cy, L = Math.hypot(dx, dy) || 1;
+      curve(mx, my, P[t][0] + dx / L * 26 + dy / L * 14, P[t][1] + dy / L * 26 - dx / L * 14); });
+  }
+  function draw() {
+    const f = forms[k % forms.length], next = forms[(k + 1) % forms.length];
+    svg.style.opacity = 0;
+    setTimeout(() => {
+      const lay = renderStructure(svg, m, f.s, { showFC: true });
+      if ($("#resArrows").checked && forms.length > 1) arrows(f.s, next.s, lay);
+      svg.style.opacity = 1;
+    }, 160);
+    $("#resLbl").textContent = `Resonance form ${(k % forms.length) + 1} of ${forms.length}${$("#resArrows").checked ? " · arrows show how to reach the next form" : ""}`;
+  }
+  function load(id) {
+    m = MOL[id]; forms = majorForms(m); k = 0;
+    const h = hybrid();
+    renderStructure($("#hybSvg"), m, { b: h.orders.map(() => 0), lp: m.atoms.map(() => 0), se: m.atoms.map(() => 0) }, { hybrid: h });
+    const eqBond = h.orders.find(o => Math.abs(o - Math.round(o)) > 1e-9);
+    const fcNon = [...new Set(h.fc.filter(x => Math.abs(x) > 1e-9 && Math.abs(x - Math.round(x)) > 1e-9).map(frac))];
+    const extra = { O3: "Both O–O bonds are identical (128 pm), with bond order 1.5. The central O carries +1 and the end O atoms share the −1 (−½ each).",
+      "NO3-": "All three N–O bonds are identical in length, with bond order 4/3; each O carries −2/3 on average. Trigonal planar, 120°.",
+      "CO3^2-": "All three C–O bonds are identical in length, with bond order 4/3; each O carries −2/3. Trigonal planar, 120°.",
+      SO2: "Octet resonance forms shown (S +1). Bond order 1.5 in this picture. The expanded-octet form O=S=O (all FC 0) is also commonly drawn; the builder accepts both.",
+      C6H6: "All six C–C bonds are identical (139 pm), between C–C (154 pm) and C=C (134 pm). That's why benzene is often drawn as a hexagon with a circle inside." }[id];
+    $("#resInfo").innerHTML = `<b>${forms.length} resonance forms.</b> ${eqBond ? `Hybrid bond order: <b>${frac(eqBond)}</b>. ` : ""}${fcNon.length ? `Average formal charge on equivalent atoms: <b>${fcNon.join(", ")}</b>. ` : ""}${extra}`;
+    draw();
+  }
+  function tick() { if (playing) { k++; draw(); } }
+  $$("#resSel button").forEach(b => b.onclick = () => { $$("#resSel button").forEach(x => x.classList.toggle("on", x === b)); load(b.dataset.m); });
+  $("#resPlay").onclick = () => { playing = !playing; $("#resPlay").textContent = playing ? "⏸ Pause" : "▶ Play"; };
+  $("#resNext").onclick = () => { k++; draw(); };
+  $("#resArrows").onchange = draw;
+  svg.style.transition = "opacity .16s";
+  new IntersectionObserver(e => { clearInterval(timer); if (e[0].isIntersecting) timer = setInterval(tick, 3200); }).observe(svg);
+  load("O3");
+})();
+
+/* ---------- exceptions gallery ---------- */
+(function exceptions() {
+  const list = [["BF3", "Incomplete octet: B has 6"], ["BeCl2", "Incomplete octet: Be has 4"], ["NO", "Radical: 11 e⁻, N has 7"], ["NO2", "Radical: 17 e⁻, N has 7"], ["PCl5", "Expanded: P has 10"], ["SF6", "Expanded: S has 12"], ["XeF4", "Expanded: Xe has 12"], ["I3-", "Expanded: central I has 10"]];
+  list.forEach(([id, cap]) => {
+    const m = MOL[id], c = document.createElement("div"); c.className = "card molcard";
+    c.innerHTML = `<svg></svg><b class="chemf">${m.f}</b><div class="cap">${cap}</div><button class="btn small" style="margin-top:6px">Build it ▸</button>`;
+    $("#excGrid").appendChild(c); renderStructure($("svg", c), m, majorForms(m)[0].s, { showFC: true, octetColors: true });
+    $("button", c).onclick = () => { Builder.load(id); $("#builder").scrollIntoView({ behavior: "smooth" }); };
+  });
+})();
+
+/* ---------- VSEPR 3D viewer ---------- */
+const SHAPES = (() => {
+  const t = Math.sqrt(8 / 9), tet = [[0, 1, 0], [t, -1 / 3, 0], [t * Math.cos((2 * Math.PI / 3)), -1 / 3, t * Math.sin(2 * Math.PI / 3)], [t * Math.cos((4 * Math.PI / 3)), -1 / 3, t * Math.sin(4 * Math.PI / 3)]];
+  const eq = a => [Math.cos(a * Math.PI / 180), 0, Math.sin(a * Math.PI / 180)], tri = a => [Math.cos(a * Math.PI / 180), Math.sin(a * Math.PI / 180), 0];
+  const ax = [[0, 1, 0], [0, -1, 0]], oct = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  return [
+    { key: "2,0", ex: "CO₂", c: "C", o: "O", b: [[1, 0, 0], [-1, 0, 0]], l: [], ang: "180°", note: "Two domains point in opposite directions. The double bonds each count as one domain." },
+    { key: "3,0", ex: "BF₃", c: "B", o: "F", b: [tri(90), tri(210), tri(330)], l: [], ang: "120°", note: "Three domains in a flat triangle." },
+    { key: "3,1", ex: "SO₂", c: "S", o: "O", b: [tri(210), tri(330)], l: [tri(90)], ang: "≈119°", note: "Same electron geometry as BF₃, but one domain is a lone pair, so the molecule is bent." },
+    { key: "4,0", ex: "CH₄", c: "C", o: "H", b: tet, l: [], ang: "109.5°", note: "Four domains point to the corners of a tetrahedron." },
+    { key: "4,1", ex: "NH₃", c: "N", o: "H", b: tet.slice(1), l: [tet[0]], ang: "≈107°", note: "Lone pairs take up more room than bonding pairs, squeezing the H–N–H angle below 109.5°." },
+    { key: "4,2", ex: "H₂O", c: "O", o: "H", b: tet.slice(2), l: tet.slice(0, 2), ang: "≈104.5°", note: "Two lone pairs squeeze the angle even more: 104.5°." },
+    { key: "5,0", ex: "PCl₅", c: "P", o: "Cl", b: ax.concat([eq(0), eq(120), eq(240)]), l: [], ang: "90°, 120°, 180°", note: "Two different positions: axial (up/down) and equatorial (around the middle)." },
+    { key: "5,1", ex: "SF₄", c: "S", o: "F", b: ax.concat([eq(120), eq(240)]), l: [eq(0)], ang: "≈102° (eq), ≈173° (ax)", note: "Lone pairs go equatorial (fewer 90° repulsions)." },
+    { key: "5,2", ex: "ClF₃", c: "Cl", o: "F", b: ax.concat([eq(0)]), l: [eq(120), eq(240)], ang: "≈87.5°", note: "Two equatorial lone pairs → T shape." },
+    { key: "5,3", ex: "XeF₂", c: "Xe", o: "F", b: ax, l: [eq(0), eq(120), eq(240)], ang: "180°", note: "Three equatorial lone pairs leave the two F atoms opposite each other. I₃⁻ has this shape too." },
+    { key: "6,0", ex: "SF₆", c: "S", o: "F", b: oct, l: [], ang: "90°, 180°", note: "Six domains: all angles 90° or 180°." },
+    { key: "6,1", ex: "BrF₅", c: "Br", o: "F", b: oct.filter((_, i) => i !== 3), l: [oct[3]], ang: "≈85°", note: "One lone pair → square pyramid." },
+    { key: "6,2", ex: "XeF₄", c: "Xe", o: "F", b: oct.filter((_, i) => i !== 2 && i !== 3), l: [oct[2], oct[3]], ang: "90°, 180°", note: "Two lone pairs sit opposite each other (180°) → square planar." }
+  ].map(sh => { const d = sh.b.reduce((a, v) => [a[0] + v[0], a[1] + v[1], a[2] + v[2]], [0, 0, 0]).map(x => x * (EL[sh.o].en - EL[sh.c].en)); return Object.assign(sh, VSEPR[sh.key], { dip: d, polar: Math.hypot(...d) > 1e-4 }); });
+})();
+(function vsepr() {
+  const cv = $("#v3d"); let sh = SHAPES[5], yaw = .6, pitch = .35, drag = null, last = 0, visible = false, looping = false;
+  const tb = $("#vTable tbody");
+  SHAPES.forEach((s, i) => { const tr = document.createElement("tr"); const [d, l] = s.key.split(","); tr.innerHTML = `<td>${d}</td><td>${l}</td><td>${s.eg}</td><td><b>${s.shape}</b></td><td>${s.ang}</td><td>${s.ex}</td>`; tr.onclick = () => { sh = s; info(); draw(); }; tb.appendChild(tr); s.tr = tr; });
+  function info() {
+    SHAPES.forEach(s => s.tr.classList.toggle("on", s === sh));
+    const [d, l] = sh.key.split(",");
+    $("#vName").textContent = sh.shape[0].toUpperCase() + sh.shape.slice(1); $("#vEx").textContent = sh.ex;
+    $("#vDom").textContent = `${d} (${d - l} bonded + ${l} lone)`; $("#vEG").textContent = sh.eg; $("#vShape").textContent = sh.shape; $("#vAng").textContent = sh.ang;
+    $("#vPol").innerHTML = sh.polar ? `<span class="badc" style="color:var(--accent3)">polar</span> (bond dipoles don't cancel)` : `<span class="okc">nonpolar</span> (bond dipoles cancel)`;
+    $("#vNote").textContent = sh.note + " Model drawn with ideal angles.";
+  }
+  function rot([x, y, z]) { const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch); const x1 = x * cy + z * sy, z1 = -x * sy + z * cy; return [x1, y * cp - z1 * sp, y * sp + z1 * cp]; }
+  function draw() {
+    const narrow = cv.clientWidth < 500, w0 = Math.max(240, cv.clientWidth), h0 = Math.round(w0 / (narrow ? 1 : 1.25));
+    cv.style.height = h0 + "px"; const dpr = Math.min(devicePixelRatio || 1, 2.5); cv.width = w0 * dpr; cv.height = h0 * dpr;
+    const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = w0, H = h0, sc = Math.min(W, H) * .33, cx = W / 2, cy = H / 2;
+    const proj = v => { const [x, y, z] = rot(v), f = 1 / (1 - z * .18); return [cx + x * sc * f, cy - y * sc * f, z, f]; };
+    const items = [];
+    const col = el => ELCOL[el] || "#ccc";
+    items.push({ z: 0, draw: () => ball(cx, cy, 26, col(sh.c), sh.c) });
+    sh.b.forEach(v => { const [x, y, z, f] = proj(v); items.push({ z: z * .5 - .01, draw: () => { c.strokeStyle = cssVar("--axis"); c.lineWidth = 9 * f; c.lineCap = "round"; c.beginPath(); c.moveTo(cx, cy); c.lineTo(x, y); c.stroke(); } });
+      items.push({ z, draw: () => ball(x, y, 19 * f, col(sh.o), sh.o) }); });
+    if ($("#vLP").checked) sh.l.forEach(v => { const [x, y, z, f] = proj(v.map(t => t * .62)); items.push({ z, draw: () => { const g = c.createRadialGradient(x, y, 0, x, y, 30 * f); g.addColorStop(0, "rgba(124,77,255,.55)"); g.addColorStop(1, "rgba(124,77,255,0)"); c.fillStyle = g; c.beginPath(); c.arc(x, y, 30 * f, 0, TAU); c.fill(); c.fillStyle = cssVar("--lp"); [-1, 1].forEach(s => { c.beginPath(); c.arc(x + s * 4, y, 3.2, 0, TAU); c.fill(); }); } }); });
+    if ($("#vDip").checked) {
+      sh.b.forEach(v => { const sgn = Math.sign(EL[sh.o].en - EL[sh.c].en); const a = v.map(t => t * (sgn > 0 ? .3 : .78)), b2 = v.map(t => t * (sgn > 0 ? .78 : .3)); const A = proj(a), B = proj(b2); items.push({ z: 2, draw: () => arrow(A, B, cssVar("--accent3"), 2.5) }); });
+      if (sh.polar) { const L = Math.hypot(...sh.dip), d = sh.dip.map(t => t / L * 1.05); items.push({ z: 3, draw: () => arrow(proj([0, 0, 0]), proj(d), cssVar("--bad"), 5) }); }
+    }
+    items.sort((a, b) => a.z - b.z).forEach(it => it.draw());
+    c.fillStyle = cssVar("--muted"); c.font = "13px system-ui"; c.textAlign = "left"; c.fillText(`${sh.ex} · ${sh.shape}`, 10, 18);
+    if ($("#vDip").checked) c.fillText(sh.polar ? "red arrow = net dipole (points to δ− end)" : "bond dipoles cancel → no net dipole", 10, H - 10);
+    function ball(x, y, r, color, label) { const g = c.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r); g.addColorStop(0, "#fff"); g.addColorStop(.35, color); g.addColorStop(1, shade(color)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); c.fillStyle = "#1c2033"; c.font = `700 ${Math.round(r * .75)}px system-ui`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(label, x, y + 1); c.textBaseline = "alphabetic"; }
+    function arrow(A, B, color, w) { c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w; c.beginPath(); c.moveTo(A[0], A[1]); c.lineTo(B[0], B[1]); c.stroke(); const ang = Math.atan2(B[1] - A[1], B[0] - A[0]), hs = 6 + w * 1.5; c.beginPath(); c.moveTo(B[0], B[1]); c.lineTo(B[0] - hs * Math.cos(ang - .45), B[1] - hs * Math.sin(ang - .45)); c.lineTo(B[0] - hs * Math.cos(ang + .45), B[1] - hs * Math.sin(ang + .45)); c.closePath(); c.fill();
+      const px = -Math.sin(ang) * 6, py = Math.cos(ang) * 6, tx = A[0] + (B[0] - A[0]) * .12, ty = A[1] + (B[1] - A[1]) * .12; c.lineWidth = Math.max(1.5, w * .6); c.beginPath(); c.moveTo(tx - px, ty - py); c.lineTo(tx + px, ty + py); c.stroke(); }
+  }
+  function shade(hex) { const n = parseInt(hex.slice(1), 16), r = (n >> 16) * .55, g = ((n >> 8) & 255) * .55, b = (n & 255) * .55; return `rgb(${r | 0},${g | 0},${b | 0})`; }
+  cv.addEventListener("pointerdown", e => { drag = [e.clientX, e.clientY, yaw, pitch]; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (!drag) return; yaw = drag[2] + (e.clientX - drag[0]) * .01; pitch = clamp(drag[3] + (e.clientY - drag[1]) * .01, -1.4, 1.4); draw(); });
+  ["pointerup", "pointercancel"].forEach(t => cv.addEventListener(t, () => drag = null));
+  ["vLP", "vDip"].forEach(id => $("#" + id).onchange = draw);
+  function frame(ts) { if (!visible) { looping = false; return; } const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts; if ($("#vSpin").checked && !drag) { yaw += dt * .5; draw(); } requestAnimationFrame(frame); }
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !looping) { looping = true; last = 0; requestAnimationFrame(frame); } }).observe(cv);
+  onRedraw(draw); info(); draw();
+})();
+
+/* ---------- worked examples ---------- */
+const EXAMPLES = [
+  { mol: "CO3^2-", title: "Carbonate, CO₃²⁻", goal: "Draw the best Lewis structure(s) of <b class='chemf'>CO<sub>3</sub><sup>2−</sup></b>.", steps: [
+    { t: "Count: C 4 + 3 × 6 = 22, plus 2 for the 2− charge = <b>24 valence electrons</b>.", hint: "Negative charge = extra electrons.", s: { b: [0, 0, 0], lp: [0, 0, 0, 0] } },
+    { t: "C is central (less electronegative than O). Three single bonds use 6 → <b>18 left</b>.", hint: "Which atom is least electronegative?", s: { b: [1, 1, 1], lp: [0, 0, 0, 0] } },
+    { t: "Complete the O octets: 3 lone pairs each = 18 → <b>0 left</b>.", hint: "Each terminal O needs 6 more electrons.", s: { b: [1, 1, 1], lp: [0, 3, 3, 3] }, oc: true },
+    { t: "C has only 6 electrons. Turn one O lone pair into a C=O double bond.", hint: "Who's short of an octet? Borrow from a neighbor's lone pair.", s: { b: [2, 1, 1], lp: [0, 2, 3, 3] }, oc: true },
+    { t: "Formal charges: C 4 − 0 − 4 = 0; double-bonded O 6 − 4 − 2 = 0; single-bonded O 6 − 6 − 1 = <b>−1</b> (×2). Sum = −2 ✓", hint: "FC = V − L − bonds for each atom.", s: { b: [2, 1, 1], lp: [0, 2, 3, 3] }, fc: true },
+    { t: "The double bond could be to any of the three O atoms → <b>3 resonance forms</b>. Hybrid: C–O bond order 4/3, each O −2/3. Three domains on C → <b>trigonal planar, 120°</b>.", hint: "How many equivalent places could the double bond go?" }] },
+  { mol: "SO2", title: "Sulfur dioxide, SO₂", goal: "Draw <b class='chemf'>SO<sub>2</sub></b> and predict its shape.", steps: [
+    { t: "Count: S 6 + 2 × 6 = <b>18 electrons</b>.", hint: "S and O are both in group 16." },
+    { t: "S is central (EN 2.58 vs 3.44). Two single bonds → <b>14 left</b>.", hint: "Least electronegative atom in the middle.", s: { b: [1, 1], lp: [0, 0, 0] } },
+    { t: "Complete O octets (6 each = 12) → <b>2 left</b>, which go on S as a lone pair.", hint: "Outer atoms first, then leftovers on the center.", s: { b: [1, 1], lp: [1, 3, 3] }, oc: true },
+    { t: "S has only 6 electrons → make one S=O. Now: S +1, single-bonded O −1, double-bonded O 0.", hint: "Central atom short? Form a double bond.", s: { b: [2, 1], lp: [1, 2, 3] }, fc: true },
+    { t: "<b>2 resonance forms</b> (bond order 1.5). Many textbooks also show the expanded-octet O=S=O (all FC 0); modern calculations favor the charge-separated octet picture. Both are accepted here.", hint: "Could the double bond go to the other O?", s: { b: [2, 2], lp: [1, 2, 2] }, fc: true },
+    { t: "Either way, S has 3 domains (2 bonded atoms + 1 lone pair) → <b>bent, ≈119°</b>, and the molecule is <b>polar</b>.", hint: "Multiple bonds count as ONE domain." }] },
+  { mol: "XeF4", title: "Xenon tetrafluoride, XeF₄", goal: "Draw <b class='chemf'>XeF<sub>4</sub></b> and determine its shape.", steps: [
+    { t: "Count: Xe 8 + 4 × 7 = <b>36 electrons</b>.", hint: "Noble gases have 8 valence electrons." },
+    { t: "Xe is central (F is never central). Four bonds use 8 → <b>28 left</b>.", hint: "F only forms one bond.", s: { b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] } },
+    { t: "F octets: 4 × 6 = 24 → <b>4 left</b>.", hint: "Three lone pairs per F.", s: { b: [1, 1, 1, 1], lp: [0, 3, 3, 3, 3] }, oc: true },
+    { t: "The last 4 electrons go on Xe as 2 lone pairs. Xe now has <b>12 electrons</b>: an expanded octet (period 5, allowed).", hint: "Leftovers go on the central atom, even past 8.", s: { b: [1, 1, 1, 1], lp: [2, 3, 3, 3, 3] }, oc: true },
+    { t: "Formal charges: Xe 8 − 4 − 4 = 0; F 7 − 6 − 1 = 0. All zero ✓", hint: "Count lone-pair electrons and bonds for Xe.", s: { b: [1, 1, 1, 1], lp: [2, 3, 3, 3, 3] }, fc: true },
+    { t: "6 domains → octahedral electron geometry. Lone pairs sit opposite (180°) → <b>square planar</b>, 90° F–Xe–F angles, <b>nonpolar</b>.", hint: "Where do two lone pairs go in an octahedron to be farthest apart?" }] },
+  { mol: "HCN", title: "Hydrogen cyanide, HCN", goal: "Draw <b class='chemf'>HCN</b>.", steps: [
+    { t: "Count: H 1 + C 4 + N 5 = <b>10 electrons</b>.", hint: "Add the group numbers." },
+    { t: "C is central: H forms only one bond, and C is less electronegative than N. H–C–N uses 4 → <b>6 left</b>.", hint: "H can never be central.", s: { b: [1, 1], lp: [0, 0, 0] } },
+    { t: "Complete N's octet: 3 lone pairs → <b>0 left</b>. But C has only 4 electrons.", hint: "Outer atoms first.", s: { b: [1, 1], lp: [0, 0, 3] }, oc: true },
+    { t: "Move one N lone pair into the C–N bond: H–C=N. C now has 6, still short.", hint: "Share a lone pair from N.", s: { b: [1, 2], lp: [0, 0, 2] }, oc: true },
+    { t: "Move a second lone pair: <b>H–C≡N</b>. C has 8, N has 8, H has 2. All formal charges 0.", hint: "One more shared pair.", s: { b: [1, 3], lp: [0, 0, 1] }, fc: true, oc: true },
+    { t: "2 domains on C → <b>linear, 180°</b>. Polar (N is much more electronegative than H).", hint: "A triple bond is one domain." }] },
+  { mol: "NH4+", title: "Ammonium, NH₄⁺", goal: "Draw <b class='chemf'>NH<sub>4</sub><sup>+</sup></b>.", steps: [
+    { t: "Count: N 5 + 4 × 1 = 9, minus 1 for the + charge = <b>8 electrons</b>.", hint: "Positive charge = missing electrons." },
+    { t: "N central with four N–H bonds: uses all 8. N has an octet, each H has 2.", hint: "H only bonds once, so N is central.", s: { b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }, oc: true },
+    { t: "Formal charge on N: 5 − 0 − 4 = <b>+1</b>; each H: 1 − 0 − 1 = 0. Sum = +1 ✓ Draw brackets with the charge.", hint: "N has no lone pairs and 4 bonds.", s: { b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }, fc: true },
+    { t: "4 domains, 0 lone pairs → <b>tetrahedral</b>, 109.5°. NH₄⁺ is isoelectronic with CH₄.", hint: "Same shape as methane?" }] },
+  { mol: "CH3COOH", title: "Acetic acid, CH₃COOH", goal: "Draw <b class='chemf'>CH<sub>3</sub>COOH</b> (the acid in vinegar).", steps: [
+    { t: "Count: 2 C × 4 + 4 H × 1 + 2 O × 6 = <b>24 electrons</b>.", hint: "Count every atom in the formula." },
+    { t: "Skeleton from the formula: CH₃–C(O)–O–H. The acidic H is on an O. Seven single bonds use 14 → <b>10 left</b>.", hint: "Formulas like this are written in bonding order.", s: { b: [1, 1, 1, 1, 1, 1, 1], lp: [0, 0, 0, 0, 0, 0, 0, 0] } },
+    { t: "Complete O octets: the end O needs 3 lone pairs (6), the O–H oxygen needs 2 (4) → <b>0 left</b>.", hint: "The terminal O has one bond, the OH oxygen has two.", s: { b: [1, 1, 1, 1, 1, 1, 1], lp: [0, 0, 3, 2, 0, 0, 0, 0] }, oc: true },
+    { t: "The second carbon has only 6 → form C=O using a lone pair of the end O. All octets complete; all formal charges 0.", hint: "Which carbon is short?", s: { b: [1, 2, 1, 1, 1, 1, 1], lp: [0, 0, 2, 2, 0, 0, 0, 0] }, fc: true, oc: true },
+    { t: "Shapes: CH₃ carbon tetrahedral (109.5°); C=O carbon trigonal planar (120°); O–H oxygen bent (≈105°). Molecules with several centers have a shape at each center.", hint: "Count domains on each central atom separately." }] }
+];
+EXAMPLES.forEach((ex, i) => { const d = document.createElement("div"); $("#exList").appendChild(d); buildSteps(d, ex, i + 1); });
+
+/* ---------- practice ---------- */
+const PROBLEMS = [
+  { type: "num", q: "How many valence electrons are in the sulfate ion, SO₄²⁻?", ans: 32, ex: "S 6 + 4 × 6 = 30, plus 2 for the 2− charge = <b>32</b>." },
+  { type: "num", q: "What is the formal charge on the highlighted N in nitrate, NO₃⁻?", draw: ["NO3-", 0], ans: 1, ex: "N: V = 5, L = 0, 4 bonds → 5 − 0 − 4 = <b>+1</b> (the same in all three resonance forms)." },
+  { type: "num", q: "What is the formal charge on the highlighted (singly bonded) O in carbonate?", draw: ["CO3^2-", 2], ans: -1, ex: "O: V = 6, L = 6, 1 bond → 6 − 6 − 1 = <b>−1</b>." },
+  { type: "mc", q: "Which atom is central in SO₂?", opts: ["S", "O"], ans: 0, ex: "S is less electronegative (2.58) than O (3.44), so S is central." },
+  { type: "mc", q: "Which is the best Lewis structure for CO₂?", opts: ["O=C=O, two lone pairs on each O", "O≡C–O, one lone pair on the triple-bonded O and three on the other", "C=O=O", "O–C–O with two lone pairs on C"], ans: 0, ex: "O=C=O has all formal charges 0. O≡C–O has +1/−1; the others have the wrong skeleton or electron count." },
+  { type: "mc", q: "Which is the best Lewis structure for thiocyanate, SCN⁻? (lone pairs omitted)", opts: ["[S=C=N]⁻", "[S–C≡N]⁻", "[S≡C–N]⁻", "[C=S=N]⁻"], ans: 0, ex: "[S=C=N]⁻ and [S–C≡N]⁻ both have Σ|FC| = 1, but the first puts the −1 on N, which is more electronegative than S. [S≡C–N]⁻ has +1 and −2. C is central (least electronegative)." },
+  { type: "num", q: "How many equivalent resonance structures does the nitrate ion (NO₃⁻) have?", ans: 3, ex: "The N=O double bond can point to any of the three O atoms → <b>3</b>." },
+  { type: "mc", q: "What is the average C–O bond order in carbonate, CO₃²⁻?", opts: ["1", "4/3", "3/2", "2"], ans: 1, ex: "4 bonds (one double + two single) spread over 3 positions: 4/3 ≈ 1.33." },
+  { type: "mc", q: "Which species has an odd number of valence electrons (a free radical)?", opts: ["NO₂", "CO₂", "SO₂", "O₃"], ans: 0, ex: "NO₂: 5 + 2 × 6 = <b>17</b> electrons (odd). CO₂ 16, SO₂ 18, O₃ 18." },
+  { type: "mc", q: "In which molecule does the central atom have an incomplete octet?", opts: ["BF₃", "NF₃", "CF₄", "SF₄"], ans: 0, ex: "B in BF₃ has only 6 electrons. N in NF₃ and C in CF₄ have octets; S in SF₄ has 10." },
+  { type: "mc", q: "What is the molecular shape of NH₃?", opts: ["trigonal planar", "trigonal pyramidal", "tetrahedral", "T-shaped"], ans: 1, ex: "4 domains (3 bonds + 1 lone pair): tetrahedral electron geometry, <b>trigonal pyramidal</b> shape." },
+  { type: "mc", q: "The H–O–H bond angle in water is closest to:", opts: ["90°", "104.5°", "109.5°", "120°"], ans: 1, ex: "4 domains would give 109.5°, but two lone pairs push the bonds closer: ≈104.5°." },
+  { type: "mc", q: "What is the molecular shape of XeF₄?", opts: ["tetrahedral", "seesaw", "square planar", "square pyramidal"], ans: 2, ex: "36 e⁻: 4 bonds + 2 lone pairs on Xe = 6 domains (octahedral). Lone pairs opposite → <b>square planar</b>." },
+  { type: "mc", q: "What is the molecular shape of SF₄?", opts: ["tetrahedral", "seesaw", "trigonal pyramidal", "square planar"], ans: 1, ex: "34 e⁻: 4 bonds + 1 lone pair on S = 5 domains (trigonal bipyramidal). The lone pair sits equatorial → <b>seesaw</b>." },
+  { type: "mc", q: "Which molecule is polar?", opts: ["CO₂", "BF₃", "CCl₄", "NH₃"], ans: 3, ex: "CO₂ (linear), BF₃ (trigonal planar), and CCl₄ (tetrahedral) are symmetric, so their bond dipoles cancel. NH₃ is trigonal pyramidal → polar." }
+];
+function gradeNum(P, v) {
+  const t = v.trim().replace(/[−–]/g, "-").replace(/\s+/g, "");
+  if (!/^[+-]?\d+$/.test(t)) return { nudge: "Enter a whole number, like 24, +1, or -1." };
+  const n = parseInt(t, 10);
+  if (n === P.ans) return { ok: true };
+  if (n === -P.ans && n !== 0) return { ok: false, msg: "Check the <b>sign</b>." };
+  return { ok: false };
+}
+(function practice() {
+  const list = $("#qList"), N = PROBLEMS.length, state = PROBLEMS.map(() => ({ first: null, solved: false }));
+  function score() {
+    const right = state.filter(s => s.first === true).length, answered = state.filter(s => s.first !== null).length;
+    $("#scoreTxt").textContent = `Score: ${right} / ${N}`; $("#scoreSub").textContent = `${answered} answered`; $("#scoreMeter").style.width = right / N * 100 + "%";
+    if (answered === N && !score.done) { score.done = true; if (right === N) { Confetti.burst(220); toast("PERFECT SCORE! 🏆"); } else if (right >= 12) { Confetti.burst(); toast(`${right}/${N}! Excellent! 🌟`); } else toast(`${right}/${N}. Review the explanations, then Reset and try again 💪`); }
+  }
+  function record(i, ok, card) { const s = state[i]; if (s.first === null) s.first = ok; if (ok) s.solved = true; card.classList.toggle("right", ok); card.classList.toggle("wrong", !ok && !s.solved); score(); }
+  function fb(card, cls, html) { const f = $(".fb", card); f.className = "fb on " + cls; f.innerHTML = html; }
+  function build() {
+    list.innerHTML = ""; score.done = false;
+    PROBLEMS.forEach((P, i) => {
+      const card = document.createElement("div"); card.className = "q";
+      const body = P.type === "mc" ? `<div class="opts">${shuffle(P.opts.map((_, k) => k)).map(k => `<button class="btn opt" style="font-family:inherit" data-k="${k}">${P.opts[k]}</button>`).join("")}</div>`
+        : `<div class="ansrow"><input type="text" inputmode="numeric" placeholder="your answer" autocomplete="off" aria-label="Your answer"><button class="btn primary chk">Check</button></div>`;
+      card.innerHTML = `<div class="qhead"><span class="qn">${i + 1}.</span><span class="prompt">${P.q}</span></div>${P.draw ? `<div class="qpic"><svg></svg></div>` : ""}${body}<div class="fb"></div>`;
+      list.appendChild(card);
+      if (P.draw) { const m = MOL[P.draw[0]]; renderStructure($("svg", card), m, majorForms(m)[0].s, { hl: P.draw[1] }); }
+      if (P.type === "mc") $$(".opt", card).forEach(b => b.onclick = () => {
+        const ok = +b.dataset.k === P.ans; b.classList.add(ok ? "sel-right" : "sel-wrong");
+        if (ok) { $$(".opt", card).forEach(x => x.disabled = true); fb(card, "ok", "✅ <b>Correct!</b> " + P.ex); }
+        else fb(card, "no", `❌ Not quite, try again! <details class="small"><summary>Show explanation</summary>${P.ex}</details>`);
+        record(i, ok, card);
+      });
+      else {
+        const inp = $("input", card);
+        const check = () => { if (state[i].solved || !inp.value.trim()) return; const r = gradeNum(P, inp.value); if (r.nudge) { fb(card, "info", r.nudge); return; }
+          record(i, r.ok, card);
+          if (r.ok) { inp.disabled = true; $(".chk", card).disabled = true; fb(card, "ok", "✅ <b>Correct!</b> " + P.ex); }
+          else fb(card, "no", `❌ ${r.msg || "Not quite."} Try again! <details class="small"><summary>Show explanation &amp; answer</summary>${P.ex}</details>`); };
+        $(".chk", card).onclick = check; inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+      }
+    });
+    score();
+  }
+  $("#practiceReset").onclick = () => { state.forEach(s => { s.first = null; s.solved = false; }); build(); };
+  build();
+})();
+
+/* ---------- drill ---------- */
+const Drill = (function drill() {
+  let score = 0, streak = 0, timeLeft = 60, timer = 0, running = false, cur = null, best = LS.get("drillBest", 0), answered = 0;
+  $("#dBest").textContent = best;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  function gen() {
+    const type = pick(["ve", "total", "fc", "fc"]);
+    if (type === "ve") { const e = pick(ELEMENTS); const opts = new Set([e.ve]); while (opts.size < 4) opts.add(1 + Math.floor(Math.random() * 8)); return { q: `Valence electrons in a neutral <b>${e.name}</b> (${e.sym}) atom?`, ans: String(e.ve), opts: [...opts].map(String), pic: null }; }
+    if (type === "total") { const m = pick(MOLS), T = totalValence(m), opts = new Set([T]); const cand = shuffle([T - 2, T + 2, T - 1, T + 1, T + 4, T - 4, T + 2 * m.q, T - 2 * m.q].filter(x => x > 0 && x !== T)); for (const c of cand) { if (opts.size >= 4) break; opts.add(c); } return { q: `Total valence electrons in <b class="chemf">${m.f}</b>?`, ans: String(T), opts: [...opts].map(String), pic: null }; }
+    const m = pick(MOLS.filter(x => x.atoms.length <= 8)), f = pick(majorForms(m)), idx = Math.random() < .75 ? pick(m.atoms.map((a, i) => i).filter(i => m.atoms[i] !== "H")) : Math.floor(Math.random() * m.atoms.length);
+    const fc = formalCharge(m, f.s, idx), all = [-2, -1, 0, 1, 2].filter(v => v !== fc), opts = shuffle(all).slice(0, 3).concat([fc]);
+    return { q: `Formal charge on the highlighted <b>${m.atoms[idx]}</b> in <span class="chemf">${m.f}</span>?`, ans: fcText(fc), opts: opts.sort((a, b) => a - b).map(fcText), pic: [m, f.s, idx] };
+  }
+  function newQ() {
+    cur = gen();
+    $("#dQ").innerHTML = cur.q; $("#dPic").innerHTML = cur.pic ? "<svg></svg>" : "";
+    if (cur.pic) renderStructure($("#dPic svg"), cur.pic[0], cur.pic[1], { hl: cur.pic[2] });
+    const order = cur.pic ? cur.opts : shuffle(cur.opts.slice());
+    $("#dOpts").innerHTML = order.map(o => `<button class="btn opt" style="font-family:inherit" data-v="${o}">${o}</button>`).join("");
+    $$("#dOpts .opt").forEach(b => b.onclick = () => pickAns(b));
+  }
+  function pickAns(b) {
+    if (!running) return; answered++;
+    const ok = b.dataset.v === cur.ans, card = $("#drill");
+    if (ok) { score++; streak++; } else streak = 0;
+    card.classList.remove("flash-ok", "flash-no"); void card.offsetWidth; card.classList.add(ok ? "flash-ok" : "flash-no");
+    $("#dMsg").innerHTML = ok ? (streak >= 5 && streak % 5 === 0 ? `🔥 ${streak} in a row!` : "✓") : `✗ It was <b>${cur.ans}</b>`;
+    $("#dScore").textContent = score; $("#dStreak").textContent = streak; newQ();
+  }
+  function tick() { timeLeft -= .2; $("#dTime").textContent = Math.max(0, Math.ceil(timeLeft)); $("#dTimer").style.width = Math.max(0, timeLeft / 60 * 100) + "%"; if (timeLeft <= 0) end(); }
+  function end() {
+    running = false; clearInterval(timer); $("#dOpts").innerHTML = ""; $("#dPic").innerHTML = ""; $("#dStart").textContent = "Play again";
+    const acc = answered ? Math.round(score / answered * 100) : 0; $("#dQ").innerHTML = `⏱ ${score} correct!`;
+    if (score > best) { best = score; LS.set("drillBest", best); $("#dBest").textContent = best; $("#dMsg").innerHTML = `🏆 <b>New best score!</b> Accuracy ${acc}%.`; if (score > 0) Confetti.burst(); }
+    else $("#dMsg").innerHTML = `Accuracy ${acc}%. Best: ${best}. Can you beat it?`;
+  }
+  $("#dStart").onclick = () => { if (running) return; score = 0; streak = 0; answered = 0; timeLeft = 60; running = true; $("#dScore").textContent = 0; $("#dStreak").textContent = 0; $("#dMsg").textContent = ""; $("#dStart").textContent = "Go go go!"; newQ(); timer = setInterval(tick, 200); };
+  return { gen, get cur() { return cur; } };
+})();
+
+/* ---------- cheat sheet ---------- */
+(function cheat() {
+  const ex = { "2,0": "CO₂", "3,0": "BF₃", "3,1": "SO₂", "4,0": "CH₄", "4,1": "NH₃", "4,2": "H₂O", "5,0": "PCl₅", "5,1": "SF₄", "5,2": "ClF₃", "5,3": "XeF₂, I₃⁻", "6,0": "SF₆", "6,1": "BrF₅", "6,2": "XeF₄" };
+  $("#cheatV").innerHTML = "<tr><th>Dom.</th><th>LP</th><th>Shape</th><th>Angle</th><th>Ex.</th></tr>" + Object.keys(ex).map(k => { const v = VSEPR[k], [d, l] = k.split(","); return `<tr><td>${d}</td><td>${l}</td><td>${v.shape}</td><td>${v.angle.replace(/ \(.*\)/, "")}</td><td>${ex[k]}</td></tr>`; }).join("");
+  $("#printBtn").onclick = () => window.print();
+})();
+let resizeT; addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(redrawAll, 150); });
+
+</script>
+</body>
+</html>
