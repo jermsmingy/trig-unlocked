@@ -1,4 +1,4 @@
-name: Assemble lesson and publish to Pages
+name: Assemble lesson from parts
 
 on:
   push:
@@ -8,58 +8,40 @@ on:
 permissions:
   contents: write
   pages: write
-  id-token: write
 
 concurrency:
-  group: assemble-pages
+  group: assemble-parts
   cancel-in-progress: false
 
 jobs:
   assemble:
     runs-on: ubuntu-latest
-    outputs:
-      assembled: ${{ steps.asm.outputs.assembled }}
     steps:
       - uses: actions/checkout@v4
       - id: asm
-        name: Assemble index.html from parts (only when all parts are present and verified)
+        name: Assemble file from parts (only when all parts are present and verified)
         run: |
           echo "assembled=false" >> "$GITHUB_OUTPUT"
-          if [ ! -f parts/SHA256SUMS ]; then echo "No parts manifest; nothing to assemble."; exit 0; fi
+          if [ ! -f parts/SHA256SUMS ] || [ ! -f parts/TARGET ]; then echo "Nothing to assemble."; exit 0; fi
+          read -r target expected msg < parts/TARGET
           cd parts
           if ! sha256sum -c SHA256SUMS; then echo "Parts incomplete or mismatched; skipping."; exit 0; fi
           perl -pi -e 's/\@\@E:([a-z#0-9]+)\@\@/chr(38).$1.";"/ge' part*.txt
-          perl -pi -e 's/<b>Drag \x26 slide<\/b>/"<b>Drag ".chr(38)."amp; slide<\/b>"/e' part01.txt
-          cat part*.txt > ../index.html
           cd ..
+          mkdir -p "$(dirname "$target")"
+          cat parts/part*.txt > "$target"
+          echo "$expected  $target" | sha256sum -c -
           echo "a39976aebd19a94c8785d6d5d3c197e56a8bb8d6e0728779c2984c401549c3b8  index.html" | sha256sum -c -
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git rm -r -q -f parts
-          git add index.html
-          git commit -m "Add interactive trig lesson"
+          git add "$target"
+          git commit -m "$msg"
           git push
           echo "assembled=true" >> "$GITHUB_OUTPUT"
-
-  pages:
-    needs: assemble
-    if: needs.assemble.outputs.assembled == 'true'
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Configure Pages (try to enable)
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - name: Stage site
-        run: mkdir _site && cp index.html _site/index.html && touch _site/.nojekyll
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Request a Pages rebuild
+        if: steps.asm.outputs.assembled == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

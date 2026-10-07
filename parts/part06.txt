@@ -1,0 +1,175 @@
+    if ($("#vDip").checked) c.fillText(sh.polar ? "red arrow = net dipole (points to δ− end)" : "bond dipoles cancel → no net dipole", 10, H - 10);
+    function ball(x, y, r, color, label) { const g = c.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r); g.addColorStop(0, "#fff"); g.addColorStop(.35, color); g.addColorStop(1, shade(color)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); c.fillStyle = "#1c2033"; c.font = `700 ${Math.round(r * .75)}px system-ui`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(label, x, y + 1); c.textBaseline = "alphabetic"; }
+    function arrow(A, B, color, w) { c.strokeStyle = color; c.fillStyle = color; c.lineWidth = w; c.beginPath(); c.moveTo(A[0], A[1]); c.lineTo(B[0], B[1]); c.stroke(); const ang = Math.atan2(B[1] - A[1], B[0] - A[0]), hs = 6 + w * 1.5; c.beginPath(); c.moveTo(B[0], B[1]); c.lineTo(B[0] - hs * Math.cos(ang - .45), B[1] - hs * Math.sin(ang - .45)); c.lineTo(B[0] - hs * Math.cos(ang + .45), B[1] - hs * Math.sin(ang + .45)); c.closePath(); c.fill();
+      const px = -Math.sin(ang) * 6, py = Math.cos(ang) * 6, tx = A[0] + (B[0] - A[0]) * .12, ty = A[1] + (B[1] - A[1]) * .12; c.lineWidth = Math.max(1.5, w * .6); c.beginPath(); c.moveTo(tx - px, ty - py); c.lineTo(tx + px, ty + py); c.stroke(); }
+  }
+  function shade(hex) { const n = parseInt(hex.slice(1), 16), r = (n >> 16) * .55, g = ((n >> 8) & 255) * .55, b = (n & 255) * .55; return `rgb(${r | 0},${g | 0},${b | 0})`; }
+  cv.addEventListener("pointerdown", e => { drag = [e.clientX, e.clientY, yaw, pitch]; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", e => { if (!drag) return; yaw = drag[2] + (e.clientX - drag[0]) * .01; pitch = clamp(drag[3] + (e.clientY - drag[1]) * .01, -1.4, 1.4); draw(); });
+  ["pointerup", "pointercancel"].forEach(t => cv.addEventListener(t, () => drag = null));
+  ["vLP", "vDip"].forEach(id => $("#" + id).onchange = draw);
+  function frame(ts) { if (!visible) { looping = false; return; } const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts; if ($("#vSpin").checked && !drag) { yaw += dt * .5; draw(); } requestAnimationFrame(frame); }
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !looping) { looping = true; last = 0; requestAnimationFrame(frame); } }).observe(cv);
+  onRedraw(draw); info(); draw();
+})();
+
+/* ---------- worked examples ---------- */
+const EXAMPLES = [
+  { mol: "CO3^2-", title: "Carbonate, CO₃²⁻", goal: "Draw the best Lewis structure(s) of <b class='chemf'>CO<sub>3</sub><sup>2−</sup></b>.", steps: [
+    { t: "Count: C 4 + 3 × 6 = 22, plus 2 for the 2− charge = <b>24 valence electrons</b>.", hint: "Negative charge = extra electrons.", s: { b: [0, 0, 0], lp: [0, 0, 0, 0] } },
+    { t: "C is central (less electronegative than O). Three single bonds use 6 → <b>18 left</b>.", hint: "Which atom is least electronegative?", s: { b: [1, 1, 1], lp: [0, 0, 0, 0] } },
+    { t: "Complete the O octets: 3 lone pairs each = 18 → <b>0 left</b>.", hint: "Each terminal O needs 6 more electrons.", s: { b: [1, 1, 1], lp: [0, 3, 3, 3] }, oc: true },
+    { t: "C has only 6 electrons. Turn one O lone pair into a C=O double bond.", hint: "Who's short of an octet? Borrow from a neighbor's lone pair.", s: { b: [2, 1, 1], lp: [0, 2, 3, 3] }, oc: true },
+    { t: "Formal charges: C 4 − 0 − 4 = 0; double-bonded O 6 − 4 − 2 = 0; single-bonded O 6 − 6 − 1 = <b>−1</b> (×2). Sum = −2 ✓", hint: "FC = V − L − bonds for each atom.", s: { b: [2, 1, 1], lp: [0, 2, 3, 3] }, fc: true },
+    { t: "The double bond could be to any of the three O atoms → <b>3 resonance forms</b>. Hybrid: C–O bond order 4/3, each O −2/3. Three domains on C → <b>trigonal planar, 120°</b>.", hint: "How many equivalent places could the double bond go?" }] },
+  { mol: "SO2", title: "Sulfur dioxide, SO₂", goal: "Draw <b class='chemf'>SO<sub>2</sub></b> and predict its shape.", steps: [
+    { t: "Count: S 6 + 2 × 6 = <b>18 electrons</b>.", hint: "S and O are both in group 16." },
+    { t: "S is central (EN 2.58 vs 3.44). Two single bonds → <b>14 left</b>.", hint: "Least electronegative atom in the middle.", s: { b: [1, 1], lp: [0, 0, 0] } },
+    { t: "Complete O octets (6 each = 12) → <b>2 left</b>, which go on S as a lone pair.", hint: "Outer atoms first, then leftovers on the center.", s: { b: [1, 1], lp: [1, 3, 3] }, oc: true },
+    { t: "S has only 6 electrons → make one S=O. Now: S +1, single-bonded O −1, double-bonded O 0.", hint: "Central atom short? Form a double bond.", s: { b: [2, 1], lp: [1, 2, 3] }, fc: true },
+    { t: "<b>2 resonance forms</b> (bond order 1.5). Many textbooks also show the expanded-octet O=S=O (all FC 0); modern calculations favor the charge-separated octet picture. Both are accepted here.", hint: "Could the double bond go to the other O?", s: { b: [2, 2], lp: [1, 2, 2] }, fc: true },
+    { t: "Either way, S has 3 domains (2 bonded atoms + 1 lone pair) → <b>bent, ≈119°</b>, and the molecule is <b>polar</b>.", hint: "Multiple bonds count as ONE domain." }] },
+  { mol: "XeF4", title: "Xenon tetrafluoride, XeF₄", goal: "Draw <b class='chemf'>XeF<sub>4</sub></b> and determine its shape.", steps: [
+    { t: "Count: Xe 8 + 4 × 7 = <b>36 electrons</b>.", hint: "Noble gases have 8 valence electrons." },
+    { t: "Xe is central (F is never central). Four bonds use 8 → <b>28 left</b>.", hint: "F only forms one bond.", s: { b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] } },
+    { t: "F octets: 4 × 6 = 24 → <b>4 left</b>.", hint: "Three lone pairs per F.", s: { b: [1, 1, 1, 1], lp: [0, 3, 3, 3, 3] }, oc: true },
+    { t: "The last 4 electrons go on Xe as 2 lone pairs. Xe now has <b>12 electrons</b>: an expanded octet (period 5, allowed).", hint: "Leftovers go on the central atom, even past 8.", s: { b: [1, 1, 1, 1], lp: [2, 3, 3, 3, 3] }, oc: true },
+    { t: "Formal charges: Xe 8 − 4 − 4 = 0; F 7 − 6 − 1 = 0. All zero ✓", hint: "Count lone-pair electrons and bonds for Xe.", s: { b: [1, 1, 1, 1], lp: [2, 3, 3, 3, 3] }, fc: true },
+    { t: "6 domains → octahedral electron geometry. Lone pairs sit opposite (180°) → <b>square planar</b>, 90° F–Xe–F angles, <b>nonpolar</b>.", hint: "Where do two lone pairs go in an octahedron to be farthest apart?" }] },
+  { mol: "HCN", title: "Hydrogen cyanide, HCN", goal: "Draw <b class='chemf'>HCN</b>.", steps: [
+    { t: "Count: H 1 + C 4 + N 5 = <b>10 electrons</b>.", hint: "Add the group numbers." },
+    { t: "C is central: H forms only one bond, and C is less electronegative than N. H–C–N uses 4 → <b>6 left</b>.", hint: "H can never be central.", s: { b: [1, 1], lp: [0, 0, 0] } },
+    { t: "Complete N's octet: 3 lone pairs → <b>0 left</b>. But C has only 4 electrons.", hint: "Outer atoms first.", s: { b: [1, 1], lp: [0, 0, 3] }, oc: true },
+    { t: "Move one N lone pair into the C–N bond: H–C=N. C now has 6, still short.", hint: "Share a lone pair from N.", s: { b: [1, 2], lp: [0, 0, 2] }, oc: true },
+    { t: "Move a second lone pair: <b>H–C≡N</b>. C has 8, N has 8, H has 2. All formal charges 0.", hint: "One more shared pair.", s: { b: [1, 3], lp: [0, 0, 1] }, fc: true, oc: true },
+    { t: "2 domains on C → <b>linear, 180°</b>. Polar (N is much more electronegative than H).", hint: "A triple bond is one domain." }] },
+  { mol: "NH4+", title: "Ammonium, NH₄⁺", goal: "Draw <b class='chemf'>NH<sub>4</sub><sup>+</sup></b>.", steps: [
+    { t: "Count: N 5 + 4 × 1 = 9, minus 1 for the + charge = <b>8 electrons</b>.", hint: "Positive charge = missing electrons." },
+    { t: "N central with four N–H bonds: uses all 8. N has an octet, each H has 2.", hint: "H only bonds once, so N is central.", s: { b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }, oc: true },
+    { t: "Formal charge on N: 5 − 0 − 4 = <b>+1</b>; each H: 1 − 0 − 1 = 0. Sum = +1 ✓ Draw brackets with the charge.", hint: "N has no lone pairs and 4 bonds.", s: { b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }, fc: true },
+    { t: "4 domains, 0 lone pairs → <b>tetrahedral</b>, 109.5°. NH₄⁺ is isoelectronic with CH₄.", hint: "Same shape as methane?" }] },
+  { mol: "CH3COOH", title: "Acetic acid, CH₃COOH", goal: "Draw <b class='chemf'>CH<sub>3</sub>COOH</b> (the acid in vinegar).", steps: [
+    { t: "Count: 2 C × 4 + 4 H × 1 + 2 O × 6 = <b>24 electrons</b>.", hint: "Count every atom in the formula." },
+    { t: "Skeleton from the formula: CH₃–C(O)–O–H. The acidic H is on an O. Seven single bonds use 14 → <b>10 left</b>.", hint: "Formulas like this are written in bonding order.", s: { b: [1, 1, 1, 1, 1, 1, 1], lp: [0, 0, 0, 0, 0, 0, 0, 0] } },
+    { t: "Complete O octets: the end O needs 3 lone pairs (6), the O–H oxygen needs 2 (4) → <b>0 left</b>.", hint: "The terminal O has one bond, the OH oxygen has two.", s: { b: [1, 1, 1, 1, 1, 1, 1], lp: [0, 0, 3, 2, 0, 0, 0, 0] }, oc: true },
+    { t: "The second carbon has only 6 → form C=O using a lone pair of the end O. All octets complete; all formal charges 0.", hint: "Which carbon is short?", s: { b: [1, 2, 1, 1, 1, 1, 1], lp: [0, 0, 2, 2, 0, 0, 0, 0] }, fc: true, oc: true },
+    { t: "Shapes: CH₃ carbon tetrahedral (109.5°); C=O carbon trigonal planar (120°); O–H oxygen bent (≈105°). Molecules with several centers have a shape at each center.", hint: "Count domains on each central atom separately." }] }
+];
+EXAMPLES.forEach((ex, i) => { const d = document.createElement("div"); $("#exList").appendChild(d); buildSteps(d, ex, i + 1); });
+
+/* ---------- practice ---------- */
+const PROBLEMS = [
+  { type: "num", q: "How many valence electrons are in the sulfate ion, SO₄²⁻?", ans: 32, ex: "S 6 + 4 × 6 = 30, plus 2 for the 2− charge = <b>32</b>." },
+  { type: "num", q: "What is the formal charge on the highlighted N in nitrate, NO₃⁻?", draw: ["NO3-", 0], ans: 1, ex: "N: V = 5, L = 0, 4 bonds → 5 − 0 − 4 = <b>+1</b> (the same in all three resonance forms)." },
+  { type: "num", q: "What is the formal charge on the highlighted (singly bonded) O in carbonate?", draw: ["CO3^2-", 2], ans: -1, ex: "O: V = 6, L = 6, 1 bond → 6 − 6 − 1 = <b>−1</b>." },
+  { type: "mc", q: "Which atom is central in SO₂?", opts: ["S", "O"], ans: 0, ex: "S is less electronegative (2.58) than O (3.44), so S is central." },
+  { type: "mc", q: "Which is the best Lewis structure for CO₂?", opts: ["O=C=O, two lone pairs on each O", "O≡C–O, one lone pair on the triple-bonded O and three on the other", "C=O=O", "O–C–O with two lone pairs on C"], ans: 0, ex: "O=C=O has all formal charges 0. O≡C–O has +1/−1; the others have the wrong skeleton or electron count." },
+  { type: "mc", q: "Which is the best Lewis structure for thiocyanate, SCN⁻? (lone pairs omitted)", opts: ["[S=C=N]⁻", "[S–C≡N]⁻", "[S≡C–N]⁻", "[C=S=N]⁻"], ans: 0, ex: "[S=C=N]⁻ and [S–C≡N]⁻ both have Σ|FC| = 1, but the first puts the −1 on N, which is more electronegative than S. [S≡C–N]⁻ has +1 and −2. C is central (least electronegative)." },
+  { type: "num", q: "How many equivalent resonance structures does the nitrate ion (NO₃⁻) have?", ans: 3, ex: "The N=O double bond can point to any of the three O atoms → <b>3</b>." },
+  { type: "mc", q: "What is the average C–O bond order in carbonate, CO₃²⁻?", opts: ["1", "4/3", "3/2", "2"], ans: 1, ex: "4 bonds (one double + two single) spread over 3 positions: 4/3 ≈ 1.33." },
+  { type: "mc", q: "Which species has an odd number of valence electrons (a free radical)?", opts: ["NO₂", "CO₂", "SO₂", "O₃"], ans: 0, ex: "NO₂: 5 + 2 × 6 = <b>17</b> electrons (odd). CO₂ 16, SO₂ 18, O₃ 18." },
+  { type: "mc", q: "In which molecule does the central atom have an incomplete octet?", opts: ["BF₃", "NF₃", "CF₄", "SF₄"], ans: 0, ex: "B in BF₃ has only 6 electrons. N in NF₃ and C in CF₄ have octets; S in SF₄ has 10." },
+  { type: "mc", q: "What is the molecular shape of NH₃?", opts: ["trigonal planar", "trigonal pyramidal", "tetrahedral", "T-shaped"], ans: 1, ex: "4 domains (3 bonds + 1 lone pair): tetrahedral electron geometry, <b>trigonal pyramidal</b> shape." },
+  { type: "mc", q: "The H–O–H bond angle in water is closest to:", opts: ["90°", "104.5°", "109.5°", "120°"], ans: 1, ex: "4 domains would give 109.5°, but two lone pairs push the bonds closer: ≈104.5°." },
+  { type: "mc", q: "What is the molecular shape of XeF₄?", opts: ["tetrahedral", "seesaw", "square planar", "square pyramidal"], ans: 2, ex: "36 e⁻: 4 bonds + 2 lone pairs on Xe = 6 domains (octahedral). Lone pairs opposite → <b>square planar</b>." },
+  { type: "mc", q: "What is the molecular shape of SF₄?", opts: ["tetrahedral", "seesaw", "trigonal pyramidal", "square planar"], ans: 1, ex: "34 e⁻: 4 bonds + 1 lone pair on S = 5 domains (trigonal bipyramidal). The lone pair sits equatorial → <b>seesaw</b>." },
+  { type: "mc", q: "Which molecule is polar?", opts: ["CO₂", "BF₃", "CCl₄", "NH₃"], ans: 3, ex: "CO₂ (linear), BF₃ (trigonal planar), and CCl₄ (tetrahedral) are symmetric, so their bond dipoles cancel. NH₃ is trigonal pyramidal → polar." }
+];
+function gradeNum(P, v) {
+  const t = v.trim().replace(/[−–]/g, "-").replace(/\s+/g, "");
+  if (!/^[+-]?\d+$/.test(t)) return { nudge: "Enter a whole number, like 24, +1, or -1." };
+  const n = parseInt(t, 10);
+  if (n === P.ans) return { ok: true };
+  if (n === -P.ans && n !== 0) return { ok: false, msg: "Check the <b>sign</b>." };
+  return { ok: false };
+}
+(function practice() {
+  const list = $("#qList"), N = PROBLEMS.length, state = PROBLEMS.map(() => ({ first: null, solved: false }));
+  function score() {
+    const right = state.filter(s => s.first === true).length, answered = state.filter(s => s.first !== null).length;
+    $("#scoreTxt").textContent = `Score: ${right} / ${N}`; $("#scoreSub").textContent = `${answered} answered`; $("#scoreMeter").style.width = right / N * 100 + "%";
+    if (answered === N && !score.done) { score.done = true; if (right === N) { Confetti.burst(220); toast("PERFECT SCORE! 🏆"); } else if (right >= 12) { Confetti.burst(); toast(`${right}/${N}! Excellent! 🌟`); } else toast(`${right}/${N}. Review the explanations, then Reset and try again 💪`); }
+  }
+  function record(i, ok, card) { const s = state[i]; if (s.first === null) s.first = ok; if (ok) s.solved = true; card.classList.toggle("right", ok); card.classList.toggle("wrong", !ok && !s.solved); score(); }
+  function fb(card, cls, html) { const f = $(".fb", card); f.className = "fb on " + cls; f.innerHTML = html; }
+  function build() {
+    list.innerHTML = ""; score.done = false;
+    PROBLEMS.forEach((P, i) => {
+      const card = document.createElement("div"); card.className = "q";
+      const body = P.type === "mc" ? `<div class="opts">${shuffle(P.opts.map((_, k) => k)).map(k => `<button class="btn opt" style="font-family:inherit" data-k="${k}">${P.opts[k]}</button>`).join("")}</div>`
+        : `<div class="ansrow"><input type="text" inputmode="numeric" placeholder="your answer" autocomplete="off" aria-label="Your answer"><button class="btn primary chk">Check</button></div>`;
+      card.innerHTML = `<div class="qhead"><span class="qn">${i + 1}.</span><span class="prompt">${P.q}</span></div>${P.draw ? `<div class="qpic"><svg></svg></div>` : ""}${body}<div class="fb"></div>`;
+      list.appendChild(card);
+      if (P.draw) { const m = MOL[P.draw[0]]; renderStructure($("svg", card), m, majorForms(m)[0].s, { hl: P.draw[1] }); }
+      if (P.type === "mc") $$(".opt", card).forEach(b => b.onclick = () => {
+        const ok = +b.dataset.k === P.ans; b.classList.add(ok ? "sel-right" : "sel-wrong");
+        if (ok) { $$(".opt", card).forEach(x => x.disabled = true); fb(card, "ok", "✅ <b>Correct!</b> " + P.ex); }
+        else fb(card, "no", `❌ Not quite, try again! <details class="small"><summary>Show explanation</summary>${P.ex}</details>`);
+        record(i, ok, card);
+      });
+      else {
+        const inp = $("input", card);
+        const check = () => { if (state[i].solved || !inp.value.trim()) return; const r = gradeNum(P, inp.value); if (r.nudge) { fb(card, "info", r.nudge); return; }
+          record(i, r.ok, card);
+          if (r.ok) { inp.disabled = true; $(".chk", card).disabled = true; fb(card, "ok", "✅ <b>Correct!</b> " + P.ex); }
+          else fb(card, "no", `❌ ${r.msg || "Not quite."} Try again! <details class="small"><summary>Show explanation @@E:amp@@ answer</summary>${P.ex}</details>`); };
+        $(".chk", card).onclick = check; inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+      }
+    });
+    score();
+  }
+  $("#practiceReset").onclick = () => { state.forEach(s => { s.first = null; s.solved = false; }); build(); };
+  build();
+})();
+
+/* ---------- drill ---------- */
+const Drill = (function drill() {
+  let score = 0, streak = 0, timeLeft = 60, timer = 0, running = false, cur = null, best = LS.get("drillBest", 0), answered = 0;
+  $("#dBest").textContent = best;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  function gen() {
+    const type = pick(["ve", "total", "fc", "fc"]);
+    if (type === "ve") { const e = pick(ELEMENTS); const opts = new Set([e.ve]); while (opts.size < 4) opts.add(1 + Math.floor(Math.random() * 8)); return { q: `Valence electrons in a neutral <b>${e.name}</b> (${e.sym}) atom?`, ans: String(e.ve), opts: [...opts].map(String), pic: null }; }
+    if (type === "total") { const m = pick(MOLS), T = totalValence(m), opts = new Set([T]); const cand = shuffle([T - 2, T + 2, T - 1, T + 1, T + 4, T - 4, T + 2 * m.q, T - 2 * m.q].filter(x => x > 0 && x !== T)); for (const c of cand) { if (opts.size >= 4) break; opts.add(c); } return { q: `Total valence electrons in <b class="chemf">${m.f}</b>?`, ans: String(T), opts: [...opts].map(String), pic: null }; }
+    const m = pick(MOLS.filter(x => x.atoms.length <= 8)), f = pick(majorForms(m)), idx = Math.random() < .75 ? pick(m.atoms.map((a, i) => i).filter(i => m.atoms[i] !== "H")) : Math.floor(Math.random() * m.atoms.length);
+    const fc = formalCharge(m, f.s, idx), all = [-2, -1, 0, 1, 2].filter(v => v !== fc), opts = shuffle(all).slice(0, 3).concat([fc]);
+    return { q: `Formal charge on the highlighted <b>${m.atoms[idx]}</b> in <span class="chemf">${m.f}</span>?`, ans: fcText(fc), opts: opts.sort((a, b) => a - b).map(fcText), pic: [m, f.s, idx] };
+  }
+  function newQ() {
+    cur = gen();
+    $("#dQ").innerHTML = cur.q; $("#dPic").innerHTML = cur.pic ? "<svg></svg>" : "";
+    if (cur.pic) renderStructure($("#dPic svg"), cur.pic[0], cur.pic[1], { hl: cur.pic[2] });
+    const order = cur.pic ? cur.opts : shuffle(cur.opts.slice());
+    $("#dOpts").innerHTML = order.map(o => `<button class="btn opt" style="font-family:inherit" data-v="${o}">${o}</button>`).join("");
+    $$("#dOpts .opt").forEach(b => b.onclick = () => pickAns(b));
+  }
+  function pickAns(b) {
+    if (!running) return; answered++;
+    const ok = b.dataset.v === cur.ans, card = $("#drill");
+    if (ok) { score++; streak++; } else streak = 0;
+    card.classList.remove("flash-ok", "flash-no"); void card.offsetWidth; card.classList.add(ok ? "flash-ok" : "flash-no");
+    $("#dMsg").innerHTML = ok ? (streak >= 5 && streak % 5 === 0 ? `🔥 ${streak} in a row!` : "✓") : `✗ It was <b>${cur.ans}</b>`;
+    $("#dScore").textContent = score; $("#dStreak").textContent = streak; newQ();
+  }
+  function tick() { timeLeft -= .2; $("#dTime").textContent = Math.max(0, Math.ceil(timeLeft)); $("#dTimer").style.width = Math.max(0, timeLeft / 60 * 100) + "%"; if (timeLeft <= 0) end(); }
+  function end() {
+    running = false; clearInterval(timer); $("#dOpts").innerHTML = ""; $("#dPic").innerHTML = ""; $("#dStart").textContent = "Play again";
+    const acc = answered ? Math.round(score / answered * 100) : 0; $("#dQ").innerHTML = `⏱ ${score} correct!`;
+    if (score > best) { best = score; LS.set("drillBest", best); $("#dBest").textContent = best; $("#dMsg").innerHTML = `🏆 <b>New best score!</b> Accuracy ${acc}%.`; if (score > 0) Confetti.burst(); }
+    else $("#dMsg").innerHTML = `Accuracy ${acc}%. Best: ${best}. Can you beat it?`;
+  }
+  $("#dStart").onclick = () => { if (running) return; score = 0; streak = 0; answered = 0; timeLeft = 60; running = true; $("#dScore").textContent = 0; $("#dStreak").textContent = 0; $("#dMsg").textContent = ""; $("#dStart").textContent = "Go go go!"; newQ(); timer = setInterval(tick, 200); };
+  return { gen, get cur() { return cur; } };
+})();
+
+/* ---------- cheat sheet ---------- */
+(function cheat() {
+  const ex = { "2,0": "CO₂", "3,0": "BF₃", "3,1": "SO₂", "4,0": "CH₄", "4,1": "NH₃", "4,2": "H₂O", "5,0": "PCl₅", "5,1": "SF₄", "5,2": "ClF₃", "5,3": "XeF₂, I₃⁻", "6,0": "SF₆", "6,1": "BrF₅", "6,2": "XeF₄" };
+  $("#cheatV").innerHTML = "<tr><th>Dom.</th><th>LP</th><th>Shape</th><th>Angle</th><th>Ex.</th></tr>" + Object.keys(ex).map(k => { const v = VSEPR[k], [d, l] = k.split(","); return `<tr><td>${d}</td><td>${l}</td><td>${v.shape}</td><td>${v.angle.replace(/ \(.*\)/, "")}</td><td>${ex[k]}</td></tr>`; }).join("");
+  $("#printBtn").onclick = () => window.print();
+})();
+let resizeT; addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(redrawAll, 150); });
+
+</script>
+</body>
+</html>

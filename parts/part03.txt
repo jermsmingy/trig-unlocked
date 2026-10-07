@@ -1,0 +1,233 @@
+        <h4>Must-know structures</h4>
+        <div class="formula">CO₂ O=C=O · HCN H–C≡N · N₂ N≡N · CO₃²⁻ / NO₃⁻: 3 resonance forms · O₃, SO₂: 2 forms · NH₄⁺: N is +1 · OH⁻: O is −1 · CN⁻: C is −1</div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer>Made with ❤️ by <b>Grok Bot</b>. Works offline: save this file and open it anytime.</footer>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   Lewis Lab: chemistry data + pure logic (no DOM; unit-tested in Node)
+   ========================================================= */
+const ELEMENTS = [
+  // sym, name, Z, group, period, valence e-, Pauling EN (null = not defined)
+  ["H", "Hydrogen", 1, 1, 1, 1, 2.20], ["He", "Helium", 2, 18, 1, 2, null],
+  ["Li", "Lithium", 3, 1, 2, 1, 0.98], ["Be", "Beryllium", 4, 2, 2, 2, 1.57], ["B", "Boron", 5, 13, 2, 3, 2.04], ["C", "Carbon", 6, 14, 2, 4, 2.55],
+  ["N", "Nitrogen", 7, 15, 2, 5, 3.04], ["O", "Oxygen", 8, 16, 2, 6, 3.44], ["F", "Fluorine", 9, 17, 2, 7, 3.98], ["Ne", "Neon", 10, 18, 2, 8, null],
+  ["Na", "Sodium", 11, 1, 3, 1, 0.93], ["Mg", "Magnesium", 12, 2, 3, 2, 1.31], ["Al", "Aluminum", 13, 13, 3, 3, 1.61], ["Si", "Silicon", 14, 14, 3, 4, 1.90],
+  ["P", "Phosphorus", 15, 15, 3, 5, 2.19], ["S", "Sulfur", 16, 16, 3, 6, 2.58], ["Cl", "Chlorine", 17, 17, 3, 7, 3.16], ["Ar", "Argon", 18, 18, 3, 8, null],
+  ["K", "Potassium", 19, 1, 4, 1, 0.82], ["Ca", "Calcium", 20, 2, 4, 2, 1.00], ["Ga", "Gallium", 31, 13, 4, 3, 1.81], ["Ge", "Germanium", 32, 14, 4, 4, 2.01],
+  ["As", "Arsenic", 33, 15, 4, 5, 2.18], ["Se", "Selenium", 34, 16, 4, 6, 2.55], ["Br", "Bromine", 35, 17, 4, 7, 2.96], ["Kr", "Krypton", 36, 18, 4, 8, 3.00],
+  ["Rb", "Rubidium", 37, 1, 5, 1, 0.82], ["Sr", "Strontium", 38, 2, 5, 2, 0.95], ["In", "Indium", 49, 13, 5, 3, 1.78], ["Sn", "Tin", 50, 14, 5, 4, 1.96],
+  ["Sb", "Antimony", 51, 15, 5, 5, 2.05], ["Te", "Tellurium", 52, 16, 5, 6, 2.10], ["I", "Iodine", 53, 17, 5, 7, 2.66], ["Xe", "Xenon", 54, 18, 5, 8, 2.60]
+].map(([sym, name, z, group, period, ve, en]) => ({ sym, name, z, group, period, ve, en }));
+const EL = Object.fromEntries(ELEMENTS.map(e => [e.sym, e]));
+
+/* ---------- layout helpers (screen coords, y down) ---------- */
+function star(c, outs, angles, L = 78, cx = 200, cy = 150) {
+  const pos = [[cx, cy]].concat(angles.map(a => [Math.round(cx + L * Math.cos(a * Math.PI / 180)), Math.round(cy - L * Math.sin(a * Math.PI / 180))]));
+  return { atoms: [c].concat(outs), pos, edges: outs.map((_, i) => [0, i + 1]) };
+}
+const rep = (x, n) => Array(n).fill(x);
+const mol = (o, layout) => Object.assign({ q: 0, eq: [], center: 0, note: "" }, layout || {}, o);
+
+/* ---------- molecule library ----------
+   ans: accepted structures. b = bond order per edge, lp = lone pairs per atom, se = single (unpaired) electrons per atom.
+   kind 'major' = the preferred structure(s); 'alt' = also accepted, with an explanatory note.
+   eq = groups of symmetry-equivalent atoms; all permutations of each answer are accepted automatically. */
+const MOLS = [
+  mol({ id: "H2O", angle: "≈104.5°", name: "Water", f: "H<sub>2</sub>O", cat: "Basics", eq: [[1, 2]], ans: [{ b: [1, 1], lp: [2, 0, 0] }] }, star("O", ["H", "H"], [210, 330])),
+  mol({ id: "NH3", angle: "≈107°", name: "Ammonia", f: "NH<sub>3</sub>", cat: "Basics", eq: [[1, 2, 3]], ans: [{ b: [1, 1, 1], lp: [1, 0, 0, 0] }] }, star("N", ["H", "H", "H"], [200, 340, 270])),
+  mol({ id: "CH4", name: "Methane", f: "CH<sub>4</sub>", cat: "Basics", eq: [[1, 2, 3, 4]], ans: [{ b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }] }, star("C", rep("H", 4), [0, 90, 180, 270])),
+  mol({ id: "CH3OH", name: "Methanol", f: "CH<sub>3</sub>OH", cat: "Basics", eq: [[2, 3, 4]], atoms: ["C", "O", "H", "H", "H", "H"],
+    pos: [[165, 150], [240, 150], [165, 75], [90, 150], [165, 225], [285, 210]], edges: [[0, 1], [0, 2], [0, 3], [0, 4], [1, 5]], ans: [{ b: [1, 1, 1, 1, 1], lp: [0, 2, 0, 0, 0, 0] }] }),
+  mol({ id: "H2O2", angle: "<109.5° (measured H–O–O ≈ 95–102°, varies with phase)", name: "Hydrogen peroxide", f: "H<sub>2</sub>O<sub>2</sub>", cat: "Basics", eq: [], atoms: ["O", "O", "H", "H"],
+    pos: [[165, 150], [235, 150], [110, 200], [290, 100]], edges: [[0, 1], [0, 2], [1, 3]], ans: [{ b: [1, 1, 1], lp: [2, 2, 0, 0] }] }),
+  mol({ id: "CO2", name: "Carbon dioxide", f: "CO<sub>2</sub>", cat: "Multiple bonds", eq: [[1, 2]], ans: [{ b: [2, 2], lp: [0, 2, 2] }] }, star("C", ["O", "O"], [180, 0])),
+  mol({ id: "HCN", name: "Hydrogen cyanide", f: "HCN", cat: "Multiple bonds", atoms: ["C", "H", "N"], pos: [[200, 150], [122, 150], [278, 150]], edges: [[0, 1], [0, 2]], ans: [{ b: [1, 3], lp: [0, 0, 1] }] }),
+  mol({ id: "N2", name: "Nitrogen", f: "N<sub>2</sub>", cat: "Multiple bonds", eq: [[0, 1]], atoms: ["N", "N"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [3], lp: [1, 1] }] }),
+  mol({ id: "O2", name: "Oxygen", f: "O<sub>2</sub>", cat: "Multiple bonds", eq: [[0, 1]], atoms: ["O", "O"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [2], lp: [2, 2] }],
+    note: "Heads-up: this Lewis structure pairs every electron, but liquid O<sub>2</sub> sticks to a magnet: it is <b>paramagnetic</b>, with two unpaired electrons. Molecular orbital theory explains this; Lewis structures can't." }),
+  mol({ id: "CH2O", name: "Formaldehyde", f: "CH<sub>2</sub>O", cat: "Multiple bonds", eq: [[2, 3]], ans: [{ b: [2, 1, 1], lp: [0, 2, 0, 0] }] }, star("C", ["O", "H", "H"], [90, 210, 330])),
+  mol({ id: "C2H4", name: "Ethene (ethylene)", f: "C<sub>2</sub>H<sub>4</sub>", cat: "Multiple bonds", eq: [[2, 3], [4, 5]], atoms: ["C", "C", "H", "H", "H", "H"],
+    pos: [[163, 150], [237, 150], [118, 100], [118, 200], [282, 100], [282, 200]], edges: [[0, 1], [0, 2], [0, 3], [1, 4], [1, 5]], ans: [{ b: [2, 1, 1, 1, 1], lp: [0, 0, 0, 0, 0, 0] }] }),
+  mol({ id: "C2H2", name: "Ethyne (acetylene)", f: "C<sub>2</sub>H<sub>2</sub>", cat: "Multiple bonds", atoms: ["C", "C", "H", "H"],
+    pos: [[163, 150], [237, 150], [90, 150], [310, 150]], edges: [[0, 1], [0, 2], [1, 3]], ans: [{ b: [3, 1, 1], lp: [0, 0, 0, 0] }] }),
+  mol({ id: "CH3COOH", name: "Acetic acid", f: "CH<sub>3</sub>COOH", cat: "Multiple bonds", eq: [[5, 6, 7]], center: 1, atoms: ["C", "C", "O", "O", "H", "H", "H", "H"],
+    pos: [[140, 160], [215, 160], [215, 85], [280, 198], [345, 160], [140, 88], [68, 160], [140, 232]],
+    edges: [[0, 1], [1, 2], [1, 3], [3, 4], [0, 5], [0, 6], [0, 7]], ans: [{ b: [1, 2, 1, 1, 1, 1, 1], lp: [0, 0, 2, 2, 0, 0, 0, 0] }] }),
+  mol({ id: "NH4+", name: "Ammonium", f: "NH<sub>4</sub><sup>+</sup>", q: 1, cat: "Ions", eq: [[1, 2, 3, 4]], ans: [{ b: [1, 1, 1, 1], lp: [0, 0, 0, 0, 0] }] }, star("N", rep("H", 4), [0, 90, 180, 270])),
+  mol({ id: "H3O+", angle: "<109.5° (VSEPR prediction)", name: "Hydronium", f: "H<sub>3</sub>O<sup>+</sup>", q: 1, cat: "Ions", eq: [[1, 2, 3]], ans: [{ b: [1, 1, 1], lp: [1, 0, 0, 0] }] }, star("O", ["H", "H", "H"], [200, 340, 270])),
+  mol({ id: "OH-", name: "Hydroxide", f: "OH<sup>−</sup>", q: -1, cat: "Ions", atoms: ["O", "H"], pos: [[170, 150], [245, 150]], edges: [[0, 1]], ans: [{ b: [1], lp: [3, 0] }] }),
+  mol({ id: "CN-", name: "Cyanide", f: "CN<sup>−</sup>", q: -1, cat: "Ions", atoms: ["C", "N"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [3], lp: [1, 1] }] }),
+  mol({ id: "SCN-", name: "Thiocyanate", f: "SCN<sup>−</sup>", q: -1, cat: "Ions", atoms: ["C", "S", "N"], pos: [[200, 150], [122, 150], [278, 150]], edges: [[0, 1], [0, 2]],
+    ans: [{ b: [2, 2], lp: [0, 2, 2] }, { b: [1, 3], lp: [0, 3, 1], kind: "alt", note: "[S–C≡N]<sup>−</sup> is also a significant resonance contributor (all octets, FC −1 on S). The S=C=N form is usually ranked best because its −1 sits on N, the more electronegative atom." }] }),
+  mol({ id: "NO3-", name: "Nitrate", f: "NO<sub>3</sub><sup>−</sup>", q: -1, cat: "Resonance", eq: [[1, 2, 3]], ans: [{ b: [2, 1, 1], lp: [0, 2, 3, 3] }] }, star("N", ["O", "O", "O"], [90, 210, 330])),
+  mol({ id: "CO3^2-", name: "Carbonate", f: "CO<sub>3</sub><sup>2−</sup>", q: -2, cat: "Resonance", eq: [[1, 2, 3]], ans: [{ b: [2, 1, 1], lp: [0, 2, 3, 3] }] }, star("C", ["O", "O", "O"], [90, 210, 330])),
+  mol({ id: "O3", angle: "≈117°", name: "Ozone", f: "O<sub>3</sub>", cat: "Resonance", eq: [[1, 2]], ans: [{ b: [2, 1], lp: [1, 2, 3] }] }, star("O", ["O", "O"], [210, 330])),
+  mol({ id: "SO2", angle: "≈119°", name: "Sulfur dioxide", f: "SO<sub>2</sub>", cat: "Resonance", eq: [[1, 2]],
+    ans: [{ b: [2, 1], lp: [1, 2, 3] }, { b: [2, 2], lp: [1, 2, 2], kind: "alt", note: "The expanded-octet form O=S=O (all formal charges 0) is also accepted; many textbooks draw it. Modern calculations favor the octet resonance forms with real charge separation, so both views appear in courses. Check which one your instructor wants." }] }, star("S", ["O", "O"], [210, 330])),
+  mol({ id: "SO4^2-", name: "Sulfate", f: "SO<sub>4</sub><sup>2−</sup>", q: -2, cat: "Resonance", eq: [[1, 2, 3, 4]],
+    ans: [{ b: [2, 2, 1, 1], lp: [0, 2, 2, 3, 3], note: "This expanded-octet form minimizes formal charge (S = 0) and is the textbook \"best\" structure by the formal-charge rule." },
+      { b: [1, 1, 1, 1], lp: [0, 3, 3, 3, 3], kind: "alt", note: "The all-single-bond octet form (S = +2, each O = −1) is also accepted. Modern bonding analyses suggest it describes the real electron distribution better; the S–O bonds are strengthened by ionic attraction rather than true d-orbital double bonds." }] }, star("S", rep("O", 4), [0, 90, 180, 270])),
+  mol({ id: "C6H6", name: "Benzene", f: "C<sub>6</sub>H<sub>6</sub>", cat: "Resonance", ring: [0, 1, 2, 3, 4, 5],
+    atoms: rep("C", 6).concat(rep("H", 6)),
+    pos: [90, 30, -30, -90, -150, 150].map(a => [Math.round(200 + 58 * Math.cos(a * Math.PI / 180)), Math.round(150 - 58 * Math.sin(a * Math.PI / 180))])
+      .concat([90, 30, -30, -90, -150, 150].map(a => [Math.round(200 + 112 * Math.cos(a * Math.PI / 180)), Math.round(150 - 112 * Math.sin(a * Math.PI / 180))])),
+    edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0], [0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]],
+    ans: [{ b: [2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1], lp: rep(0, 12) }, { b: [1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1], lp: rep(0, 12) }] }),
+  mol({ id: "BF3", name: "Boron trifluoride", f: "BF<sub>3</sub>", cat: "Exceptions", eq: [[1, 2, 3]], ans: [{ b: [1, 1, 1], lp: [0, 3, 3, 3] }],
+    note: "Boron ends with only <b>6</b> electrons: an incomplete octet. Making a B=F double bond would put a + formal charge on F, the most electronegative element, so the 6-electron structure is preferred." }, star("B", ["F", "F", "F"], [90, 210, 330])),
+  mol({ id: "BeCl2", name: "Beryllium chloride (gas)", f: "BeCl<sub>2</sub>", cat: "Exceptions", eq: [[1, 2]], ans: [{ b: [1, 1], lp: [0, 3, 3] }], note: "Be has only <b>4</b> electrons here (gas-phase molecule)." }, star("Be", ["Cl", "Cl"], [180, 0], 84)),
+  mol({ id: "NO", name: "Nitric oxide", f: "NO", cat: "Exceptions", atoms: ["N", "O"], pos: [[162, 150], [238, 150]], edges: [[0, 1]], ans: [{ b: [2], lp: [1, 2], se: [1, 0] }],
+    note: "11 valence electrons: an odd number, so one electron must be unpaired (a <b>radical</b>). Put it on N: that gives every atom formal charge 0." }),
+  mol({ id: "NO2", angle: "≈134° (a lone electron repels less than a lone pair)", name: "Nitrogen dioxide", f: "NO<sub>2</sub>", cat: "Exceptions", eq: [[1, 2]], ans: [{ b: [2, 1], lp: [0, 2, 3], se: [1, 0, 0] }, { b: [2, 1], lp: [1, 2, 2], se: [0, 0, 1], kind: "alt", note: "Putting the unpaired electron on the singly bonded O gives every atom formal charge 0, so the formal-charge rule likes it, and it is accepted. Most textbooks still draw the odd electron on N because experiments show it spends most of its time there; that is also why two NO<sub>2</sub> molecules join through an N–N bond to make N<sub>2</sub>O<sub>4</sub>." }],
+    note: "17 electrons: a radical. Most textbooks draw the unpaired electron on N (N has 7 electrons), giving two resonance forms. NO<sub>2</sub> molecules pair up (dimerize) to form N<sub>2</sub>O<sub>4</sub>." }, star("N", ["O", "O"], [210, 330])),
+  mol({ id: "PCl5", name: "Phosphorus pentachloride", f: "PCl<sub>5</sub>", cat: "Exceptions", eq: [[1, 2, 3, 4, 5]], ans: [{ b: [1, 1, 1, 1, 1], lp: [0, 3, 3, 3, 3, 3] }], note: "P has <b>10</b> electrons: an expanded octet (period 3)." }, star("P", rep("Cl", 5), [90, 162, 234, 306, 18], 88)),
+  mol({ id: "SF6", name: "Sulfur hexafluoride", f: "SF<sub>6</sub>", cat: "Exceptions", eq: [[1, 2, 3, 4, 5, 6]], ans: [{ b: rep(1, 6), lp: [0].concat(rep(3, 6)) }], note: "S has <b>12</b> electrons: an expanded octet." }, star("S", rep("F", 6), [0, 60, 120, 180, 240, 300], 86)),
+  mol({ id: "XeF4", name: "Xenon tetrafluoride", f: "XeF<sub>4</sub>", cat: "Exceptions", eq: [[1, 2, 3, 4]], ans: [{ b: [1, 1, 1, 1], lp: [2, 3, 3, 3, 3] }], note: "Xe ends with 12 electrons (4 bonds + 2 lone pairs)." }, star("Xe", rep("F", 4), [0, 90, 180, 270], 86)),
+  mol({ id: "I3-", name: "Triiodide", f: "I<sub>3</sub><sup>−</sup>", q: -1, cat: "Exceptions", eq: [[1, 2]], ans: [{ b: [1, 1], lp: [3, 3, 3] }], note: "The central I holds 3 lone pairs + 2 bonds = 10 electrons, and carries the −1 formal charge." }, star("I", ["I", "I"], [180, 0], 88))
+];
+const MOL = Object.fromEntries(MOLS.map(m => [m.id, m]));
+
+/* ---------- electron bookkeeping ---------- */
+const emptyState = m => ({ b: rep(0, m.edges.length), lp: rep(0, m.atoms.length), se: rep(0, m.atoms.length) });
+const norm = (m, s) => ({ b: s.b.slice(), lp: s.lp.slice(), se: (s.se || rep(0, m.atoms.length)).slice() });
+const stateKey = s => s.b.join("") + "|" + s.lp.join("") + "|" + s.se.join("");
+function totalValence(m) { return m.atoms.reduce((t, a) => t + EL[a].ve, 0) - m.q; }
+function valenceBreakdown(m) {
+  const cnt = {}; m.atoms.forEach(a => cnt[a] = (cnt[a] || 0) + 1);
+  return { parts: Object.entries(cnt).map(([el, n]) => ({ el, n, ve: EL[el].ve, sub: n * EL[el].ve })), q: m.q, total: totalValence(m) };
+}
+function bondOrderSum(m, s, i) { let t = 0; m.edges.forEach(([a, c], k) => { if (a === i || c === i) t += s.b[k]; }); return t; }
+function usedElectrons(s) { return 2 * s.b.reduce((a, c) => a + c, 0) + 2 * s.lp.reduce((a, c) => a + c, 0) + s.se.reduce((a, c) => a + c, 0); }
+function atomElectrons(m, s, i) { return 2 * bondOrderSum(m, s, i) + 2 * s.lp[i] + s.se[i]; }
+function formalCharge(m, s, i) { return EL[m.atoms[i]].ve - (2 * s.lp[i] + s.se[i]) - bondOrderSum(m, s, i); }
+/* octet status: 'ok' | 'short' | 'over' | 'expanded' | 'allowed-short' */
+function octetStatus(m, s, i) {
+  const e = atomElectrons(m, s, i), el = m.atoms[i], P = EL[el].period;
+  if (el === "H") return e === 2 ? "ok" : e < 2 ? "short" : "over";
+  if (P === 2) {
+    if (e > 8) return "over";
+    if (e === 8) return "ok";
+    if (el === "B" && e === 6) return "allowed-short";
+    if (el === "Be" && e === 4) return "allowed-short";
+    if (totalValence(m) % 2 === 1 && e === 7) return "allowed-short";
+    return "short";
+  }
+  if (e === 8) return "ok";
+  if (e > 8) return m.edges.filter(x => x.includes(i)).length <= 1 ? "over" : "expanded"; // only central atoms expand
+  if (totalValence(m) % 2 === 1 && e === 7) return "allowed-short";
+  return "short";
+}
+const isRadical = m => totalValence(m) % 2 === 1;
+
+/* ---------- accepted answers incl. symmetry permutations ---------- */
+function permutations(arr) { if (arr.length <= 1) return [arr.slice()]; const out = []; arr.forEach((x, i) => permutations(arr.slice(0, i).concat(arr.slice(i + 1))).forEach(p => out.push([x].concat(p)))); return out; }
+function edgeIndex(m, a, c) { return m.edges.findIndex(([x, y]) => (x === a && y === c) || (x === c && y === a)); }
+function applyPerm(m, s, map) {
+  const out = { b: rep(0, m.edges.length), lp: rep(0, m.atoms.length), se: rep(0, m.atoms.length) };
+  s.lp.forEach((v, i) => out.lp[map[i]] = v); s.se.forEach((v, i) => out.se[map[i]] = v);
+  m.edges.forEach(([a, c], k) => { const j = edgeIndex(m, map[a], map[c]); if (j < 0) throw new Error("bad symmetry group in " + m.id); out.b[j] = s.b[k]; });
+  return out;
+}
+const _ansCache = {};
+function acceptedForms(m) {
+  if (_ansCache[m.id]) return _ansCache[m.id];
+  let maps = [m.atoms.map((_, i) => i)];
+  for (const g of m.eq) {
+    const next = [];
+    for (const base of maps) for (const p of permutations(g)) { const mp = base.slice(); g.forEach((orig, k) => mp[orig] = p[k]); next.push(mp); }
+    maps = next;
+  }
+  const forms = [], seen = new Set();
+  m.ans.forEach((a, ai) => {
+    const s0 = norm(m, a);
+    for (const mp of maps) { const s = applyPerm(m, s0, mp), k = stateKey(s); if (!seen.has(k)) { seen.add(k); forms.push({ s, key: k, kind: a.kind || "major", note: a.note || "", ai }); } }
+  });
+  return (_ansCache[m.id] = forms);
+}
+const majorForms = m => acceptedForms(m).filter(f => f.kind === "major");
+function matchAnswer(m, s) { const k = stateKey(norm(m, s)); return acceptedForms(m).find(f => f.key === k) || null; }
+
+/* ---------- VSEPR ---------- */
+const VSEPR = {
+  "2,0": { eg: "linear", shape: "linear", angle: "180°" },
+  "3,0": { eg: "trigonal planar", shape: "trigonal planar", angle: "120°" },
+  "3,1": { eg: "trigonal planar", shape: "bent", angle: "<120° (≈117–119°)" },
+  "4,0": { eg: "tetrahedral", shape: "tetrahedral", angle: "109.5°" },
+  "4,1": { eg: "tetrahedral", shape: "trigonal pyramidal", angle: "<109.5° (≈107°)" },
+  "4,2": { eg: "tetrahedral", shape: "bent", angle: "<109.5° (≈104.5°)" },
+  "4,3": { eg: "tetrahedral", shape: "linear", angle: "(diatomic)" },
+  "5,0": { eg: "trigonal bipyramidal", shape: "trigonal bipyramidal", angle: "90°, 120°, 180°" },
+  "5,1": { eg: "trigonal bipyramidal", shape: "seesaw", angle: "<90°, <120°" },
+  "5,2": { eg: "trigonal bipyramidal", shape: "T-shaped", angle: "<90°" },
+  "5,3": { eg: "trigonal bipyramidal", shape: "linear", angle: "180°" },
+  "6,0": { eg: "octahedral", shape: "octahedral", angle: "90°, 180°" },
+  "6,1": { eg: "octahedral", shape: "square pyramidal", angle: "<90°" },
+  "6,2": { eg: "octahedral", shape: "square planar", angle: "90°, 180°" }
+};
+function domainsAt(m, s, i) {
+  if (m.atoms.length === 2) return { bonded: 1, lone: s.lp[i], domains: 0, info: { eg: "—", shape: "linear (diatomic)", angle: "—" } };
+  const nb = m.edges.filter(([a, c], k) => (a === i || c === i) && s.b[k] > 0).length;
+  const lone = s.lp[i] + (s.se[i] ? 1 : 0);   // a single electron counts as a (small) domain
+  let info = VSEPR[(nb + lone) + "," + lone] || null;
+  if (info && i === m.center && m.angle) info = Object.assign({}, info, { angle: m.angle });
+  return { bonded: nb, lone, domains: nb + lone, info };
+}
+
+/* ---------- the textbook method, as stages ---------- */
+function centralAtoms(m) {
+  const deg = m.atoms.map((_, i) => m.edges.filter(e => e.includes(i)).length);
+  let c = m.atoms.map((_, i) => i).filter(i => deg[i] > 1);
+  if (!c.length) { // diatomic: less electronegative atom plays "central"
+    const [a, b] = [0, 1]; c = [(EL[m.atoms[a]].en || 9) <= (EL[m.atoms[b]].en || 9) ? a : b];
+  }
+  return c;
+}
+function stages(m) {
+  const T = totalValence(m), out = [];
+  const s1 = emptyState(m); s1.b = rep(1, m.edges.length);
+  let left = T - usedElectrons(s1);
+  out.push({ s: norm(m, s1), title: "Connect with single bonds", text: `${m.edges.length} single bond${m.edges.length > 1 ? "s" : ""} use ${2 * m.edges.length} electrons, leaving <b>${left}</b>.` });
+  const s2 = norm(m, s1), cen = centralAtoms(m);
+  const outer = m.atoms.map((_, i) => i).filter(i => !cen.includes(i) && m.atoms[i] !== "H");
+  for (const i of outer) { while (atomElectrons(m, s2, i) < 8 && left >= 2) { s2.lp[i]++; left -= 2; } }
+  out.push({ s: s2, title: "Complete the outer atoms' octets", text: outer.length ? `Give each outer atom lone pairs until it has 8 electrons (H needs only 2). Electrons left: <b>${left}</b>.` : "No outer atoms other than H, which are already happy with 2." });
+  const s3 = norm(m, s2);
+  while (left >= 2) { const i = cen.slice().sort((a, b) => atomElectrons(m, s3, a) - atomElectrons(m, s3, b))[0]; s3.lp[i]++; left -= 2; }
+  if (left === 1) { const i = cen.slice().sort((a, b) => atomElectrons(m, s3, a) - atomElectrons(m, s3, b))[0]; s3.se[i] = 1; left = 0; }
+  const shortC = cen.filter(i => ["short"].includes(octetStatus(m, s3, i)));
+  out.push({ s: s3, title: "Put leftovers on the central atom", text: `Any remaining electrons go on the central atom${cen.length > 1 ? "s" : ""}. ${shortC.length ? `Now ${shortC.map(i => m.atoms[i]).join(", ")} still lack${shortC.length === 1 ? "s" : ""} an octet.` : "Every atom is satisfied."}` });
+  const fin = majorForms(m)[0].s, extra = fin.b.reduce((a, c) => a + c, 0) - m.edges.length;
+  if (extra && !shortC.length) {
+    const fc3 = cen.map(i => `${m.atoms[i]} ${formalCharge(m, s3, i) > 0 ? "+" : ""}${formalCharge(m, s3, i)}`).join(", ");
+    out.push({ s: norm(m, fin), title: "Lower formal charges (expanded octet)", text: `Every atom already has an octet, but the formal charges are large (${fc3}). A period-3 central atom may hold more than 8 electrons, so turning ${extra} outer lone pair${extra > 1 ? "s" : ""} into double bonds lowers the formal charges. Many textbooks call this the best structure; the octet form is also accepted (see the formal-charge section).` });
+    return out;
+  }
+  out.push({ s: norm(m, fin), title: extra ? "Form multiple bonds" : "Check formal charges", text: extra ? `Turn ${extra} outer lone pair${extra > 1 ? "s" : ""} into bonding pair${extra > 1 ? "s" : ""} (${extra > 1 ? "multiple bonds" : "a double bond"}) so every atom has an octet, then check formal charges.` : "No multiple bonds needed. Check the formal charges: they should be as close to zero as possible and add up to the overall charge." });
+  return out;
+}
+
+/* ---------- diagnose a student structure ---------- */
+function diagnose(m, s) {
+  s = norm(m, s);
+  const T = totalValence(m), U = usedElectrons(s), name = i => `${m.atoms[i]}${m.atoms.filter(a => a === m.atoms[i]).length > 1 ? "" : ""}`;
+  const hit = matchAnswer(m, s);
+  if (hit) return { ok: true, form: hit };
+  const missing = m.edges.findIndex((_, k) => s.b[k] === 0);
+  if (missing >= 0) { const [a, c] = m.edges[missing]; return { ok: false, msg: `Every atom has to be connected. The ${m.atoms[a]}–${m.atoms[c]} link still has no bond (tap the dashed line).` }; }
+  if (U !== T) return { ok: false, msg: U < T ? `You've placed ${U} electrons, but ${m.f} has <b>${T}</b>. Add ${T - U} more.` : `You've placed ${U} electrons, but ${m.f} only has <b>${T}</b>. Remove ${U - T}.` };
+  for (let i = 0; i < m.atoms.length; i++) { const st = octetStatus(m, s, i), e = atomElectrons(m, s, i);
+    if (m.atoms[i] === "H" && st !== "ok") return { ok: false, msg: `Hydrogen holds exactly 2 electrons (one single bond, no lone pairs). One H has ${e}.` };
+    if (st === "over") return { ok: false, msg: EL[m.atoms[i]].period === 2 ? `${m.atoms[i]} has ${e} electrons. Period-2 atoms can't exceed an octet (only 4 orbitals: 2s + 2p).` : `An outer ${m.atoms[i]} has ${e} electrons. Outer (terminal) atoms keep a plain octet; only a central atom from period 3 or below can hold more than 8.` }; }
+  for (let i = 0; i < m.atoms.length; i++) { if (octetStatus(m, s, i) === "short") { const e = atomElectrons(m, s, i);
+    return { ok: false, msg: `${m.atoms[i]} has only ${e} electrons. ${m.atoms[i] === "B" || m.atoms[i] === "Be" ? "" : "Try turning a lone pair on a neighbor into a shared (multiple) bond."}` }; } }
+  const fcs = s.lp.map((_, i) => formalCharge(m, s, i)), sum = fcs.reduce((a, c) => a + Math.abs(c), 0);
+  const best = Math.min(...majorForms(m).map(f => f.s.lp.reduce((a, _, i) => a + Math.abs(formalCharge(m, f.s, i)), 0)));
+  if (sum > best) return { ok: false, valid: true, msg: `This is a <b>valid</b> Lewis structure (right electron count, octets satisfied), but not the best one: your formal charges add up to Σ|FC| = ${sum}, and a structure with Σ|FC| = ${best} exists. Minimize formal charges!` };
