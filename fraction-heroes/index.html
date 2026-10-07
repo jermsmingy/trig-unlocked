@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fraction Heroes · A Fraction Adventure</title>
+<meta name="description" content="Fraction Heroes: an interactive superhero fraction adventure for 3rd graders (Common Core 3.NF).">
+<meta name="theme-color" content="#ffd23f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2 L37 9 V20 C37 30 29 36 20 39 C11 36 3 30 3 20 V9 Z' fill='%23ef3e36' stroke='%2316161d' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#16161d;--paper:#fff8dc;--card:#ffffff;--yellow:#ffd23f;--red:#ef3e36;--blue:#2e86de;--green:#1fb36b;--purple:#8e44ad;--orange:#ff8a1f;--pink:#ff5fa2;--sky:#bfe6ff;
+  --shade:#ff5a4f;--muted:#5a5a6e;--ok:#14a85c;--soft:#fff1b8;
+  --font:"Comic Neue","Comic Sans MS","Chalkboard SE","Marker Felt","Trebuchet MS",system-ui,sans-serif;
+  --head:"Arial Black","Segoe UI Black","Helvetica Neue",system-ui,sans-serif;
+  --r:18px;--bw:4px;--sh:6px 6px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{margin:0;font-family:var(--font);font-size:22px;line-height:1.4;color:var(--ink);
+  background:radial-gradient(circle,rgba(22,22,29,.09) 1.6px,transparent 1.8px) 0 0/16px 16px,var(--paper);min-height:100vh;
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+img,svg,canvas{max-width:100%}
+.hidden{display:none!important}
+/* ---------- top bar ---------- */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--yellow);border-bottom:var(--bw) solid var(--ink)}
+.brand{font-family:var(--head);font-size:1.05rem;letter-spacing:.5px;display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.brand svg{width:40px;height:40px;flex:none}
+.tb-btn{min-width:56px;height:56px;border:3px solid var(--ink);border-radius:14px;background:#fff;font-weight:900;font-size:1.05rem;box-shadow:3px 3px 0 var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px}
+.tb-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.tb-btn .lbl{font-size:.85rem}
+#badgeCount{font-family:var(--head)}
+main{max-width:1100px;margin:0 auto;padding:16px 14px 80px}
+.screen{display:none;animation:pop .35s ease}
+.screen.on{display:block}
+@keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+/* ---------- comic panels ---------- */
+.panel{background:var(--card);border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin:16px 0;position:relative}
+.panel.yellow{background:var(--soft)}
+.panel.sky{background:#e6f5ff}
+h1,h2,h3{font-family:var(--head);line-height:1.1;margin:0 0 10px;letter-spacing:.5px}
+h1{font-size:clamp(2rem,6vw,3.4rem);color:var(--red);-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);paint-order:stroke fill}
+h2{font-size:clamp(1.5rem,4.5vw,2.3rem)}
+h3{font-size:1.3rem}
+.tag{display:inline-block;font-family:var(--head);background:var(--red);color:#fff;border:3px solid var(--ink);border-radius:999px;padding:4px 14px;font-size:.85rem;transform:rotate(-2deg);box-shadow:3px 3px 0 var(--ink);margin-bottom:10px}
+.muted{color:var(--muted)}
+.small{font-size:.8rem}
+/* ---------- buttons ---------- */
+.btn{min-height:64px;min-width:64px;padding:10px 22px;border:var(--bw) solid var(--ink);border-radius:16px;background:#fff;font-weight:900;font-size:1.2rem;box-shadow:4px 4px 0 var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.go{background:var(--green);color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.35)}
+.btn.red{background:var(--red);color:#fff}
+.btn.blue{background:var(--blue);color:#fff}
+.btn.yellow{background:var(--yellow)}
+.btn.big{font-size:1.45rem;min-height:76px;padding:12px 30px}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.center{justify-content:center;text-align:center}
+/* ---------- speech bubble ---------- */
+.talk{display:flex;gap:12px;align-items:flex-start;margin:10px 0 6px}
+.talk .face{flex:none;width:86px;height:110px}
+.bubble{position:relative;flex:1;min-width:0;background:#fff;border:var(--bw) solid var(--ink);border-radius:22px;padding:14px 16px 14px 16px;font-size:1.25rem;font-weight:700;box-shadow:4px 4px 0 var(--ink)}
+.bubble::before{content:"";position:absolute;left:-17px;top:28px;border:14px solid transparent;border-right:16px solid var(--ink);border-left:0}
+.bubble::after{content:"";position:absolute;left:-10px;top:31px;border:11px solid transparent;border-right:12px solid #fff;border-left:0}
+.bubble p{margin:0 0 6px}.bubble p:last-child{margin:0}
+.say{float:right;margin:-4px -4px 6px 10px;width:56px;height:56px;border:3px solid var(--ink);border-radius:50%;background:var(--sky);font-size:1.5rem;display:inline-flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.say:active{transform:translate(2px,2px)}
+.say.speaking{background:var(--yellow);animation:wig .6s infinite}
+@keyframes wig{50%{transform:rotate(-8deg)}}
+/* ---------- fractions ---------- */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:var(--head);line-height:1;margin:0 .12em;font-size:1.05em}
+.fr .n,.fr .d{display:block;padding:0 .15em}
+.fr .n{border-bottom:.12em solid currentColor;padding-bottom:.08em}
+.fr .d{padding-top:.08em}
+.whole{font-family:var(--head)}
+/* ---------- HQ ---------- */
+.hero-banner{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px;align-items:center}
+.hero-art{display:flex;justify-content:center;align-items:flex-end;gap:4px}
+.hero-art svg{height:190px;width:auto}
+.progress{height:28px;border:3px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;margin:8px 0}
+.progress>i{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,var(--green) 0 14px,#3fd08a 14px 28px);transition:width .6s}
+.map{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:10px;position:relative}
+.mcard{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:14px 10px 16px;background:#fff;border:var(--bw) solid var(--ink);border-radius:var(--r);box-shadow:var(--sh);min-height:220px;transition:transform .12s}
+.mcard:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.mcard .num{position:absolute;top:-14px;left:-10px;width:46px;height:46px;border-radius:50%;background:var(--blue);color:#fff;border:3px solid var(--ink);font-family:var(--head);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.mcard svg.badge{width:96px;height:96px}
+.mcard .t{font-family:var(--head);font-size:1.05rem;line-height:1.15}
+.mcard .s{font-size:.9rem;color:var(--muted);font-weight:700}
+.mcard.done{background:#eafff2}
+.mcard.done .num{background:var(--green)}
+.mcard.next{animation:glow 1.6s infinite}
+.mcard.boss{background:#f3e8ff}
+.mcard .ribbon{position:absolute;top:8px;right:-6px;background:var(--yellow);border:3px solid var(--ink);font-family:var(--head);font-size:.75rem;padding:2px 8px;transform:rotate(8deg)}
+@keyframes glow{0%,100%{box-shadow:var(--sh)}50%{box-shadow:6px 6px 0 var(--ink),0 0 0 8px rgba(255,210,63,.8)}}
+details.grown{border:3px dashed var(--ink);border-radius:var(--r);background:#fff;padding:12px 16px;margin:22px 0;font-family:system-ui,sans-serif;font-size:1rem}
+details.grown summary{font-weight:800;cursor:pointer;min-height:48px;display:flex;align-items:center}
+details.grown li{margin:4px 0}
+/* ---------- mission frame ---------- */
+.mhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.stars{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.stars i{width:34px;height:34px;display:inline-block;background:no-repeat center/contain;filter:grayscale(1) opacity(.35);font-style:normal;font-size:28px;line-height:34px;text-align:center}
+.stars i.on{filter:none;animation:popin .4s}
+@keyframes popin{0%{transform:scale(.3)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+.feedback{min-height:64px;font-size:1.25rem;font-weight:800;text-align:center;padding:10px 14px;border-radius:16px;border:3px solid transparent;width:100%}
+.feedback.ok{background:#dcffe9;border-color:var(--ok)}
+.feedback.hint{background:#fff3c4;border-color:var(--orange)}
+.feedback:empty{visibility:hidden}
+/* shapes (mission 1) */
+.shapegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:100%}
+.shapebtn{background:#fff;border:var(--bw) solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:12px;min-height:150px;display:flex;align-items:center;justify-content:center;position:relative}
+.shapebtn svg{width:100%;height:130px}
+.shapebtn.saved{background:#dcffe9;border-color:var(--ok)}
+.shapebtn.saved::after{content:"SAVED!";position:absolute;top:6px;right:6px;background:var(--green);color:#fff;font-family:var(--head);font-size:.8rem;padding:3px 8px;border:2px solid var(--ink);border-radius:8px;transform:rotate(6deg)}
+.shapebtn.nope{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+/* splitter */
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:center;width:100%}
+.split svg.model{width:100%;max-height:340px}
+.dpick{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.dpick button{width:72px;height:72px;border:var(--bw) solid var(--ink);border-radius:50%;background:#fff;font-family:var(--head);font-size:1.6rem;box-shadow:3px 3px 0 var(--ink)}
+.dpick button.on{background:var(--yellow);transform:scale(1.08)}
+.seg{display:inline-flex;border:var(--bw) solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+.seg button{border:0;background:#fff;min-height:60px;padding:0 18px;font-weight:900;font-size:1.1rem}
+.seg button+button{border-left:3px solid var(--ink)}
+.seg button.on{background:var(--yellow)}
+.biglabel{display:flex;align-items:center;gap:14px;justify-content:center}
+.biglabel .fr{font-size:4.2rem}
+.legend{font-size:1.05rem;font-weight:800;line-height:1.3}
+.legend .top{color:var(--red)}.legend .bot{color:var(--blue)}
+.target{font-size:1.5rem;font-weight:900;text-align:center}
+.target .fr{font-size:2.6rem;color:var(--red)}
+.piece{cursor:pointer}
+.piece:hover{filter:brightness(.97)}
+/* choice questions */
+.qbox{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+.qprompt{font-size:1.5rem;font-weight:900;text-align:center}
+.qmodel{width:100%;display:flex;justify-content:center}
+.qmodel svg{width:min(100%,480px);height:auto;max-height:300px}
+.opts{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;width:100%}
+.opt{min-width:128px;min-height:120px;border:var(--bw) solid var(--ink);border-radius:20px;background:#fff;box-shadow:5px 5px 0 var(--ink);font-size:2.3rem;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px}
+.opt .fr{font-size:2.4rem}
+.opt .w{font-family:var(--head);font-size:2.6rem}
+.opt .cap{font-size:.85rem;font-weight:800;font-family:var(--font);margin-top:2px}
+.opt.shape svg{width:150px;height:110px}
+.opt.right{background:#dcffe9;border-color:var(--ok);transform:scale(1.06)}
+.opt.wrong{background:#ffe2e0;opacity:.6}
+.opt.wrong::after{content:"✗";position:absolute}
+.opt:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink)}
+.sym{font-family:var(--head);font-size:3rem}
+.answerline{font-size:1.6rem;font-weight:900;text-align:center}
+/* number line */
+.linewrap{width:100%;touch-action:none}
+.linewrap svg{width:100%;height:auto;display:block}
+.tickzone{fill:transparent;cursor:pointer}
+/* lab */
+.wall svg{width:100%;height:auto;touch-action:manipulation}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;width:100%}
+.fcard{min-height:150px;border:var(--bw) solid var(--ink);border-radius:18px;background:#fff;box-shadow:4px 4px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px}
+.fcard .fr{font-size:2.3rem}
+.fcard svg{width:100%;height:30px}
+.fcard.sel{background:var(--yellow);transform:translateY(-4px) rotate(-2deg)}
+.fcard.matched{visibility:hidden}
+.fcard.nope{animation:shake .45s}
+/* showdown */
+.vs{display:flex;align-items:center;justify-content:center;gap:16px;font-size:3.2rem}
+.vs .fr{font-size:3.4rem}
+.vs .slot{width:96px;height:96px;border:4px dashed var(--ink);border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:3.2rem;background:#fff}
+.vs .slot.filled{border-style:solid;background:#dcffe9}
+.tipcard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
+/* boss */
+.bossbar{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+.bossbar svg.villain{width:120px;height:140px}
+.meter{height:36px;border:4px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;position:relative}
+.meter i{display:block;height:100%;width:100%;background:repeating-linear-gradient(45deg,var(--purple) 0 16px,#a964cf 16px 32px);transition:width .6s}
+.meter b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:1.05rem;color:var(--ink);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 4px #fff,0 0 4px #fff}
+.villain.hit{animation:hit .6s}
+@keyframes hit{20%{transform:translateX(-10px) rotate(-6deg);filter:brightness(2)}60%{transform:translateX(8px) rotate(4deg)}}
+/* overlays */
+.burst{position:fixed;left:50%;top:42%;z-index:200;pointer-events:none;transform:translate(-50%,-50%) scale(.2);opacity:0}
+.burst.go{animation:burst .9s ease-out forwards}
+.burst svg{width:min(70vw,340px);height:auto}
+@keyframes burst{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-20deg)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(4deg)}70%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
+.modal{position:fixed;inset:0;z-index:150;background:rgba(22,22,29,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .panel{max-width:560px;width:100%;text-align:center;animation:pop .4s}
+.modal svg.badge{width:170px;height:170px;animation:spinin .8s}
+@keyframes spinin{from{transform:rotate(-200deg) scale(.2)}to{transform:none}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:300}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140px);visibility:hidden;background:var(--ink);color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;z-index:250;transition:transform .3s,visibility 0s .3s;max-width:92vw;text-align:center}
+.toast.on{transform:translateX(-50%);visibility:visible;transition:transform .3s}
+/* certificate */
+.cert{background:#fff;border:8px double var(--ink);border-radius:12px;padding:26px;text-align:center;position:relative;overflow:hidden}
+.cert .ctitle{font-family:var(--head);font-size:clamp(1.6rem,5vw,2.8rem);color:var(--blue);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill;margin:4px 0}
+.cert .cname{white-space:nowrap;max-width:100%;overflow:hidden;box-sizing:border-box;font-family:var(--head);font-size:clamp(1.8rem,6vw,3rem);color:var(--red);border-bottom:4px solid var(--ink);display:inline-block;min-width:60%;padding:0 10px;min-height:1.3em}
+.cert .cbadges{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0}
+.cert .cbadges svg{width:62px;height:62px}
+.cert .sig{display:flex;justify-content:space-around;gap:16px;flex-wrap:wrap;margin-top:14px;font-weight:800}
+.cert .sig div{border-top:3px solid var(--ink);padding-top:4px;min-width:180px}
+.namein{font:inherit;font-size:1.5rem;font-weight:800;padding:12px 16px;border:var(--bw) solid var(--ink);border-radius:14px;min-height:64px;width:min(100%,420px)}
+/* responsive */
+@media (max-width:900px){.map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  body{font-size:20px}
+  .hero-banner,.split,.tipcard{grid-template-columns:minmax(0,1fr)}
+  .hero-art svg{height:150px}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shapegrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:520px){
+  main{padding:10px 10px 70px}
+  .panel{padding:14px;box-shadow:4px 4px 0 var(--ink)}
+  .brand{white-space:normal;line-height:1;font-size:.92rem}
+  .tb-btn .lbl{display:none}
+  .talk .face{width:62px;height:80px}
+  .bubble{font-size:1.1rem;padding:12px}
+  .say{width:50px;height:50px}
+  .opt{min-width:92px;min-height:96px;font-size:2rem}
+  .opt.shape svg{width:120px;height:90px}
+  .vs{gap:8px}.vs .fr{font-size:2.6rem}.vs .slot{width:72px;height:72px;font-size:2.4rem}
+  .biglabel .fr{font-size:3.2rem}
+  .mcard{min-height:190px}
+  .mcard svg.badge{width:78px;height:78px}
+  .bossbar svg.villain{width:84px;height:100px}
+  .dpick button{width:60px;height:60px;font-size:1.4rem}
+}
+@media print{
+  @page{size:letter landscape;margin:10mm}
+  html,body{background:#fff!important}
+  .topbar,#confetti,.toast,.burst,.modal{display:none!important}
+  main{padding:0;max-width:none}
+  main>.screen{display:none!important}
+  main>#s-cert{display:block!important;animation:none}
+  #s-cert>*:not(#certCard){display:none!important}
+  #certCard{margin:0;box-shadow:none;border-width:8px;page-break-inside:avoid;break-inside:avoid}
+  .cert{padding:14px 30px;height:186mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center}
+  .cert>*{width:100%}
+  .cert .cname{width:auto;min-width:70%;font-size:3.4rem}
+  .cert .ctitle{font-size:3.6rem}
+  .cert .cfig{width:150px!important}.cert .cfig.small{width:130px!important}
+  .cert .cbadges svg{width:76px;height:76px}
+  .cert .cline{font-size:1.35rem!important}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+h1,h2,h3,.tag,.fr,.brand,#badgeCount,.whole,.opt .w,.sym,.mcard .t,.cert .ctitle,.cert .cname,.vs .slot,.dpick button,.meter b,.mcard .num{font-weight:900}
+[tabindex="-1"]:focus{outline:none}
+.legend{font-size:1.3rem}
+.biglabel .fr{color:var(--ink)}
+.biglabel .fr .n{color:var(--red)}.biglabel .fr .d{color:var(--blue)}
+@media (max-width:520px){.dpick{gap:6px}.dpick button{width:54px;height:54px;font-size:1.3rem}}
+body{font-variant-ligatures:no-common-ligatures}
+@media (max-width:520px){.cert{padding:16px 10px}.cert .cfig{width:58px!important}.cert .cfig.small{width:52px!important}.cert .ctitle{font-size:1.4rem}.cert .row.center{flex-wrap:nowrap}}
+
+</style>
+</head>
+<body>
+<noscript><div style="padding:16px;background:#ffd23f;font-size:20px;text-align:center">Fraction Heroes needs JavaScript turned on.</div></noscript>
+<header class="topbar">
+  <div class="brand"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 L37 9 V20 C37 30 29 36 20 39 C11 36 3 30 3 20 V9 Z" fill="#ef3e36" stroke="#16161d" stroke-width="3"/><text x="20" y="27" text-anchor="middle" font-size="17" font-weight="900" fill="#fff" font-family="Arial Black,system-ui">½</text></svg><span>Fraction <span class="full">Heroes</span></span></div>
+  <button class="tb-btn" id="hqBtn" aria-label="Go to Hero HQ">🏠<span class="lbl">HQ</span></button>
+  <button class="tb-btn" id="badgeBtn" aria-label="Badges earned">🏅<span id="badgeCount">0</span></button>
+  <button class="tb-btn" id="soundBtn" aria-label="Sound on. Tap to mute." aria-pressed="true">🔊<span class="lbl" id="soundLbl">Sound</span></button>
+</header>
+<main id="main">
+  <!-- HQ / mission map -->
+  <section class="screen" id="s-hq" aria-label="Hero HQ">
+    <div class="panel yellow hero-banner">
+      <div>
+        <span class="tag">HERO HQ</span>
+        <h1>FRACTION HEROES</h1>
+        <div class="talk" id="hqTalk"></div>
+      </div>
+      <div class="hero-art" id="hqArt"></div>
+    </div>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Mission Map</h2><b id="hqCount">0 of 8 badges</b></div>
+      <div class="progress" aria-hidden="true"><i id="hqBar"></i></div>
+      <div class="map" id="map"></div>
+      <div class="row center" style="margin-top:22px"><button class="btn yellow big" id="certBtn">📜 My Hero Certificate</button></div>
+    </div>
+    <details class="grown" id="grown">
+      <summary>👪 For grown-ups (tap to open)</summary>
+      <p><b>What this covers (Common Core grade 3, Number &amp; Operations: Fractions):</b></p>
+      <ul>
+        <li><b>3.NF.1</b> A fraction 1/b is one of b equal parts of a whole; a/b is a of those parts. Missions 1, 2, 3.</li>
+        <li><b>3.NF.2</b> Fractions on a number line: partition 0 to 1 into b equal parts, mark a/b by counting a lengths of 1/b, including fractions greater than 1. Mission 4.</li>
+        <li><b>3.NF.3a–b</b> Equivalent fractions are the same size or the same point on a number line (1/2 = 2/4 = 4/8, 1/3 = 2/6, 2/3 = 4/6, 3/4 = 6/8). Mission 5.</li>
+        <li><b>3.NF.3c</b> Whole numbers as fractions (3 = 3/1, 4/4 = 1, 8/4 = 2). Mission 7.</li>
+        <li><b>3.NF.3d</b> Compare two fractions with the same numerator or the same denominator, record with &lt;, &gt;, =, and justify with a model. Mission 6.</li>
+        <li>Mission 8 mixes all of the above. Denominators used: 2, 3, 4, 6, 8 (the grade-3 set).</li>
+      </ul>
+      <p><b>Tips:</b> Ask "How many equal pieces is the whole cut into?" before "How many are shaded?" Use real objects too: fold paper strips, cut sandwiches, share crackers. When comparing fractions with the same top number, ask "Which pieces are bigger?" (fewer pieces in the whole means bigger pieces). Comparisons only make sense when both fractions refer to the same size whole.</p>
+      <p><b>How it works:</b> No timers, no losing. Wrong answers get a hint and another try. The 🔈 buttons read text aloud using the device's built-in voice (if available). Sound effects are made by the browser and can be muted with the 🔊 button. Progress (badges, sound setting) is saved only in this browser on this device; nothing is sent anywhere, and the name typed on the certificate is not saved.</p>
+      <p><button class="btn small" id="resetBtn" style="min-height:52px;font-size:1rem">↺ Reset all progress</button></p>
+    </details>
+  </section>
+
+  <!-- missions are filled in by script -->
+  <section class="screen" id="s-m1" aria-label="Mission 1"></section>
+  <section class="screen" id="s-m2" aria-label="Mission 2"></section>
+  <section class="screen" id="s-m3" aria-label="Mission 3"></section>
+  <section class="screen" id="s-m4" aria-label="Mission 4"></section>
+  <section class="screen" id="s-m5" aria-label="Mission 5"></section>
+  <section class="screen" id="s-m6" aria-label="Mission 6"></section>
+  <section class="screen" id="s-m7" aria-label="Mission 7"></section>
+  <section class="screen" id="s-m8" aria-label="Mission 8"></section>
+
+  <!-- certificate -->
+  <section class="screen" id="s-cert" aria-label="Certificate">
+    <div class="panel sky">
+      <div class="talk" id="certTalk"></div>
+      <div class="row center" style="margin-top:8px">
+        <label for="certName" class="hidden">Your hero name</label>
+        <input id="certName" class="namein" type="text" maxlength="32" placeholder="Type your name" autocomplete="off" aria-label="Type your name">
+        <button class="btn go big" id="printBtn">🖨️ Print</button>
+      </div>
+    </div>
+    <div class="cert panel" id="certCard"></div>
+    <div class="row center"><button class="btn big" data-go="hq">🏠 Back to HQ</button></div>
+  </section>
+</main>
+<div class="burst" id="burst" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+"use strict";
+/* =========================================================
+   Fraction Heroes: math data, answer keys, and generators.
+   Pure functions only (also loaded by the Node tests).
+   ========================================================= */
+const DENOMS = [2, 3, 4, 6, 8];
+const NUMW = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"];
+const FNAME = { 1: ["whole", "wholes"], 2: ["half", "halves"], 3: ["third", "thirds"], 4: ["fourth", "fourths"], 5: ["fifth", "fifths"], 6: ["sixth", "sixths"], 7: ["seventh", "sevenths"], 8: ["eighth", "eighths"], 9: ["ninth", "ninths"] };
+const Fr = (n, d) => ({ n, d });
+const Wn = w => ({ w });
+const Sy = s => ({ s });
+const optVal = o => o.w !== undefined ? o.w : o.n / o.d;
+const sameVal = (a, b) => Math.abs(optVal(a) - optVal(b)) < 1e-12;
+const sameForm = (a, b) => a.w === undefined && b.w === undefined && a.n === b.n && a.d === b.d;
+function cmpSym(a, b) { const x = a.n * b.d - b.n * a.d; return x > 0 ? ">" : x < 0 ? "<" : "="; }
+function fracWords(n, d) {
+  if (d === 1) return `${NUMW[n]} over one`;
+  const nm = FNAME[d] || [d + "th", d + "ths"];
+  return `${NUMW[n] || n} ${n === 1 ? nm[0] : nm[1]}`;
+}
+const SYMWORD = { "<": "is less than", ">": "is greater than", "=": "is equal to" };
+
+/* ---------- seeded random (tests use fixed seeds) ---------- */
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const pick = (r, a) => a[Math.floor(r() * a.length)];
+function shuffle(r, a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const range = n => [...Array(n).keys()];
+
+/* ---------- shapes cut into parts (Mission 1 + boss) ----------
+   Every shape is a list of pieces: polygons or circle sectors.
+   Equal/unequal is DECLARED here and VERIFIED by area in the tests. */
+function shapeOf(sp) {
+  const W = sp.w || 100, H = sp.h || 100, poly = p => ({ t: "poly", p });
+  const strips = (cuts, vert) => { const s = [0, ...cuts, 1]; return s.slice(1).map((t, i) => vert ? poly([[s[i] * W, 0], [t * W, 0], [t * W, H], [s[i] * W, H]]) : poly([[0, s[i] * H], [W, s[i] * H], [W, t * H], [0, t * H]])); };
+  switch (sp.k) {
+    case "v": return { w: W, h: H, pieces: strips(sp.c, true) };
+    case "h": return { w: W, h: H, pieces: strips(sp.c, false) };
+    case "grid": { const out = []; for (let r = 0; r < sp.r; r++) for (let c = 0; c < sp.c; c++) out.push(poly([[c * W / sp.c, r * H / sp.r], [(c + 1) * W / sp.c, r * H / sp.r], [(c + 1) * W / sp.c, (r + 1) * H / sp.r], [c * W / sp.c, (r + 1) * H / sp.r]])); return { w: W, h: H, pieces: out }; }
+    case "cross": { const x = sp.x * W, y = sp.y * H; return { w: W, h: H, pieces: [poly([[0, 0], [x, 0], [x, y], [0, y]]), poly([[x, 0], [W, 0], [W, y], [x, y]]), poly([[0, y], [x, y], [x, H], [0, H]]), poly([[x, y], [W, y], [W, H], [x, H]])] }; }
+    case "circ": { const a = sp.a; return { w: 100, h: 100, circle: true, pieces: a.map((s, i) => ({ t: "sec", a0: s, a1: i + 1 < a.length ? a[i + 1] : a[0] + 360 })) }; }
+    case "diag": return { w: 100, h: 100, pieces: [poly([[0, 0], [100, 0], [100, 100]]), poly([[0, 0], [100, 100], [0, 100]])] };
+    case "diag4": return { w: 100, h: 100, pieces: [poly([[0, 0], [100, 0], [50, 50]]), poly([[100, 0], [100, 100], [50, 50]]), poly([[100, 100], [0, 100], [50, 50]]), poly([[0, 100], [0, 0], [50, 50]])] };
+    case "tri": { const bx = sp.bx; return { w: 100, h: 92, pieces: [poly([[50, 0], [0, 92], [bx, 92]]), poly([[50, 0], [bx, 92], [100, 92]])] }; }
+  }
+  throw new Error("unknown shape " + sp.k);
+}
+const CIRC_R = 46;
+function pieceArea(pc) {
+  if (pc.t === "sec") return Math.PI * CIRC_R * CIRC_R * (pc.a1 - pc.a0) / 360;
+  let s = 0; pc.p.forEach(([x, y], i) => { const [x2, y2] = pc.p[(i + 1) % pc.p.length]; s += x * y2 - x2 * y; }); return Math.abs(s) / 2;
+}
+function isEqualParts(sp) { const A = shapeOf(sp).pieces.map(pieceArea); return A.every(a => Math.abs(a - A[0]) < 1e-9 * A[0]); }
+const R43 = { w: 120, h: 80 };
+const M1_ROUNDS = [
+  [{ k: "v", c: [.5], ...R43, eq: true }, { k: "v", c: [.36], ...R43, eq: false }, { k: "circ", a: [0, 180], eq: true },
+   { k: "circ", a: [0, 140], eq: false }, { k: "diag", eq: true }, { k: "cross", x: .5, y: .3, ...R43, eq: false }],
+  [{ k: "circ", a: [0, 100, 220], eq: false }, { k: "v", c: [1 / 3, 2 / 3], ...R43, eq: true }, { k: "tri", bx: 30, eq: false },
+   { k: "circ", a: [0, 120, 240], eq: true }, { k: "v", c: [.2, .55], ...R43, eq: false }, { k: "grid", r: 2, c: 2, ...R43, eq: true }],
+  [{ k: "circ", a: [0, 45, 90, 135, 180, 225, 270, 315], eq: true }, { k: "v", c: [.12, .3, .55, .8], ...R43, eq: false }, { k: "grid", r: 2, c: 3, ...R43, eq: true },
+   { k: "diag4", eq: true }, { k: "circ", a: [0, 40, 110, 180, 230, 320], eq: false }, { k: "tri", bx: 50, eq: true }]
+];
+
+/* ---------- Mission 2: shade a fraction ---------- */
+const M2_CHALLENGES = [Fr(1, 2), Fr(1, 4), Fr(1, 3), Fr(1, 8), Fr(3, 4), Fr(4, 6)];
+function m2Check(target, d, shaded) {
+  if (d !== target.d) return { ok: false, hint: `The bottom number is ${target.d}. Cut it into ${target.d} equal pieces.` };
+  if (shaded !== target.n) return { ok: false, hint: shaded < target.n ? `The top number is ${target.n}. Shade ${target.n - shaded} more.` : `The top number is ${target.n}. Tap ${shaded - target.n} to unshade.` };
+  return { ok: true };
+}
+
+/* ---------- question helpers ----------
+   Every question carries a KEY the tests can check on their own:
+   name  -> model must show f, opts[ans] is exactly f
+   value -> opts[ans] has the same value as f (and no other option does)
+   cmp   -> opts[ans] is the right sign for a ? b
+   unit  -> opts[ans] is the only fraction with top number 1
+   equal -> opts[ans] is the only shape with equal parts            */
+const onFirst = k => range(k);
+function q(o) { return Object.assign({ hint: "", after: "" }, o); }
+
+/* ---------- Mission 3: name the fraction ---------- */
+const M3 = [
+  q({ prompt: "What fraction is shaded?", model: { k: "circle", d: 4, on: [0] }, opts: [Fr(1, 4), Fr(1, 3), Fr(3, 4)], ans: 0, key: { kind: "name", f: Fr(1, 4) }, hint: "Count all the pieces. That is the bottom number." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "bar", d: 3, on: [0, 1] }, opts: [Fr(1, 3), Fr(2, 3), Fr(3, 2)], ans: 1, key: { kind: "name", f: Fr(2, 3) }, hint: "Count the shaded pieces. That is the top number." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "circle", d: 8, on: [0, 1, 2] }, opts: [Fr(3, 5), Fr(5, 8), Fr(3, 8)], ans: 2, key: { kind: "name", f: Fr(3, 8) }, hint: "The bottom number counts ALL the pieces." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "grid", r: 2, c: 3, on: [0, 1, 2, 3, 4] }, opts: [Fr(5, 6), Fr(1, 6), Fr(6, 5)], ans: 0, key: { kind: "name", f: Fr(5, 6) }, hint: "Count the shaded squares. Then count all the squares." }),
+  q({ prompt: "What fraction of the masks are red?", model: { k: "set", icon: "mask", d: 4, on: [0, 2, 3] }, opts: [Fr(1, 4), Fr(4, 3), Fr(3, 4)], ans: 2, key: { kind: "name", f: Fr(3, 4) }, hint: "Count the red masks. Then count all the masks." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "bar", d: 2, on: [1] }, opts: [Fr(1, 2), Fr(2, 1), Fr(2, 2)], ans: 0, key: { kind: "name", f: Fr(1, 2) }, hint: "One piece is shaded. How many pieces in all?" }),
+  q({ prompt: "What fraction of the capes are blue?", model: { k: "set", icon: "cape", d: 6, on: [1, 4] }, opts: [Fr(2, 6), Fr(4, 6), Fr(2, 4)], ans: 0, key: { kind: "name", f: Fr(2, 6) }, hint: "Count the blue capes. Then count all the capes." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "bar", d: 8, on: onFirst(7) }, opts: [Fr(1, 8), Fr(7, 8), Fr(8, 7)], ans: 1, key: { kind: "name", f: Fr(7, 8) }, hint: "Only one piece is NOT shaded. Count the shaded ones." })
+];
+
+/* ---------- Mission 4: number line leaps ---------- */
+const M4 = [
+  { range: 1, d: 2, k: 1 }, { range: 1, d: 4, k: 3 }, { range: 1, d: 3, k: 2 }, { range: 1, d: 8, k: 5 },
+  { range: 1, d: 6, k: 1 }, { range: 2, d: 4, k: 6 }, { range: 2, d: 2, k: 3 }, { range: 2, d: 3, k: 4 }
+];
+const LINE = { x0: 50, x1: 590, w: 640, y: 110 };
+function tickX(k, d, rng_) { return LINE.x0 + (LINE.x1 - LINE.x0) * (k / d) / rng_; }
+function nearestTick(x, d, rng_) { const step = (LINE.x1 - LINE.x0) / rng_ / d; return Math.max(0, Math.min(d * rng_, Math.round((x - LINE.x0) / step))); }
+
+/* ---------- Mission 5: same-size lab ---------- */
+const WALL = [1, 2, 3, 4, 6, 8];
+const M5_STEPS = [
+  { row: 2, want: 1, ref: null, say: "Tap to shade one half." },
+  { row: 4, want: 2, ref: 2, say: "Shade fourths to match one half." },
+  { row: 8, want: 4, ref: 2, say: "Now shade eighths to match one half." },
+  { row: 3, want: 1, ref: null, say: "Shade one third." },
+  { row: 6, want: 2, ref: 3, say: "Shade sixths to match one third." }
+];
+const M5_ROUNDS = [
+  [Fr(1, 2), Fr(2, 4), Fr(1, 3), Fr(2, 6), Fr(3, 4), Fr(6, 8)],
+  [Fr(2, 3), Fr(4, 6), Fr(1, 4), Fr(2, 8), Fr(4, 8), Fr(1, 2), Fr(3, 3), Fr(6, 6)]
+];
+
+/* ---------- Mission 6: showdown ---------- */
+const cmpQ = (a, b, hint) => q({ prompt: "Which sign makes it true?", model: { k: "cmp", a, b }, opts: [Sy("<"), Sy("="), Sy(">")], ans: ["<", "=", ">"].indexOf(cmpSym(a, b)), key: { kind: "cmp", a, b }, hint });
+const SAME_D = "Same size pieces. Who has more pieces?";
+const SAME_N = "Same number of pieces. Fewer cuts make bigger pieces!";
+const M6 = [
+  cmpQ(Fr(3, 4), Fr(1, 4), SAME_D), cmpQ(Fr(2, 6), Fr(5, 6), SAME_D), cmpQ(Fr(1, 2), Fr(1, 8), SAME_N),
+  cmpQ(Fr(1, 6), Fr(1, 3), SAME_N), cmpQ(Fr(3, 8), Fr(7, 8), SAME_D), cmpQ(Fr(3, 4), Fr(3, 8), SAME_N),
+  cmpQ(Fr(2, 3), Fr(1, 3), SAME_D), cmpQ(Fr(2, 8), Fr(2, 3), SAME_N), cmpQ(Fr(3, 3), Fr(6, 6), "Look! Both bars are full. Both are one whole.")
+];
+
+/* ---------- Mission 7: whole numbers as fractions ---------- */
+const M7 = [
+  q({ prompt: "All the pieces are shaded. What is 4/4?", model: { k: "bar", d: 4, on: onFirst(4) }, opts: [Wn(1), Wn(4), Wn(0)], ans: 0, key: { kind: "value", f: Fr(4, 4) }, hint: "4 fourths fill the whole bar. That is 1 whole!" }),
+  q({ prompt: "Which fraction is 1 whole pizza?", model: { k: "circle", d: 8, on: onFirst(8) }, opts: [Fr(1, 8), Fr(4, 8), Fr(8, 8)], ans: 2, key: { kind: "value", f: Fr(1, 1) }, hint: "Count all 8 slices. They make the whole pizza." }),
+  q({ prompt: "3 whole pizzas. No cuts! What is 3/1?", model: { k: "wholes", count: 3, d: 1, on: 3 }, opts: [Fr(1, 3), Wn(1), Wn(3)], ans: 2, key: { kind: "value", f: Fr(3, 1) }, hint: "Each pizza is 1 whole piece. Count the pizzas." }),
+  q({ prompt: "What is 6/6?", model: { k: "bar", d: 6, on: onFirst(6) }, opts: [Wn(1), Wn(6), Wn(12)], ans: 0, key: { kind: "value", f: Fr(6, 6) }, hint: "The whole bar is full. That is 1." }),
+  q({ prompt: "Which fraction is equal to 1?", model: { k: "bars", list: [Fr(3, 3), Fr(3, 4), Fr(1, 3)] }, opts: [Fr(3, 3), Fr(3, 4), Fr(1, 3)], ans: 0, key: { kind: "value", f: Fr(1, 1) }, hint: "Find the bar that is all full." }),
+  q({ prompt: "Two full bars of fourths. What is 8/4?", model: { k: "wholes", count: 2, d: 4, on: 8 }, opts: [Wn(8), Wn(2), Wn(4)], ans: 1, key: { kind: "value", f: Fr(8, 4) }, hint: "Each full bar is 1 whole. How many bars?" }),
+  q({ prompt: "The hero is on 1. Which fraction is that?", model: { k: "line", range: 2, d: 2, dot: 2 }, opts: [Fr(1, 2), Fr(2, 2), Fr(2, 1)], ans: 1, key: { kind: "value", f: Fr(2, 2) }, hint: "Count the halves from 0 to 1." }),
+  q({ prompt: "5 whole pies. No cuts! What is 5/1?", model: { k: "wholes", count: 5, d: 1, on: 5 }, opts: [Wn(1), Fr(1, 5), Wn(5)], ans: 2, key: { kind: "value", f: Fr(5, 1) }, hint: "Each pie is 1 whole. Count them." })
+];
+
+/* ---------- Boss battle generator ---------- */
+function fracOpts(r, correct, cands) {
+  const out = [correct];
+  for (const c of shuffle(r, cands)) { if (out.length >= 3) break; if (c.n > 0 && c.d > 0 && !out.some(o => sameVal(o, c) || sameForm(o, c))) out.push(c); }
+  return out;
+}
+function finish(r, o) { const order = shuffle(r, range(o.opts.length)); o.opts = order.map(i => o.opts[i]); o.ans = order.indexOf(0); return q(o); }
+const BOSS_TYPES = ["name", "unit", "line", "equal", "equiv", "cmpD", "cmpN", "whole", "set", "equiv"];
+function bossQuestion(type, r) {
+  const d = pick(r, DENOMS);
+  if (type === "name" || type === "set") {
+    const n = 1 + Math.floor(r() * (d - 1)), f = Fr(n, d);
+    const model = type === "set" ? { k: "set", icon: pick(r, ["mask", "star", "cape"]), d, on: shuffle(r, range(d)).slice(0, n).sort((a, b) => a - b) } : { k: pick(r, ["circle", "bar"]), d, on: range(n) };
+    return finish(r, { type, prompt: type === "set" ? "What fraction are colored?" : "What fraction is shaded?", model, opts: fracOpts(r, f, [Fr(d - n, d), Fr(d, n), Fr(n, d - n), Fr(n + 1, d), Fr(Math.max(1, n - 1), d)]), key: { kind: "name", f }, hint: "Top: shaded pieces. Bottom: all the equal pieces." });
+  }
+  if (type === "unit") {
+    const others = shuffle(r, DENOMS.flatMap(dd => range(dd - 1).map(i => Fr(i + 2, dd)).filter(x => x.n < dd)));
+    return finish(r, { type, prompt: "Which one is a unit fraction?", model: null, opts: [Fr(1, d), others[0], others.find(o => o.d !== others[0].d) || others[1]], key: { kind: "unit" }, hint: "A unit fraction has 1 on top. It is just one piece." });
+  }
+  if (type === "line") {
+    const k = 1 + Math.floor(r() * (d - 1)), f = Fr(k, d);
+    return finish(r, { type, prompt: "Where did the hero land?", model: { k: "line", range: 1, d, dot: k }, opts: fracOpts(r, f, [Fr(k + 1, d), Fr(k - 1, d), Fr(d, k), Fr(k, d + 1)].filter(x => x.n > 0 && x.n <= d)), key: { kind: "name", f }, hint: `The line is cut into ${d} equal parts. Count the jumps from 0.` });
+  }
+  if (type === "equal") {
+    const n = pick(r, [2, 3, 4]);
+    const good = { 2: [{ k: "v", c: [.5], ...R43 }, { k: "circ", a: [0, 180] }, { k: "diag" }], 3: [{ k: "v", c: [1 / 3, 2 / 3], ...R43 }, { k: "circ", a: [0, 120, 240] }], 4: [{ k: "grid", r: 2, c: 2, ...R43 }, { k: "diag4" }, { k: "circ", a: [0, 90, 180, 270] }] }[n];
+    const bad = { 2: [{ k: "v", c: [.3], ...R43 }, { k: "circ", a: [0, 130] }, { k: "tri", bx: 25 }], 3: [{ k: "v", c: [.2, .6], ...R43 }, { k: "circ", a: [0, 90, 230] }, { k: "h", c: [.25, .5], ...R43 }], 4: [{ k: "cross", x: .3, y: .5, ...R43 }, { k: "circ", a: [0, 60, 180, 250] }, { k: "v", c: [.1, .4, .7], ...R43 }] }[n];
+    const b = shuffle(r, bad);
+    return finish(r, { type, prompt: "Which shape has EQUAL parts?", model: null, opts: [{ shape: pick(r, good) }, { shape: b[0] }, { shape: b[1] }], key: { kind: "equal" }, hint: "Equal parts are all the same size." });
+  }
+  if (type === "equiv") {
+    const pairs = [[Fr(1, 2), Fr(2, 4)], [Fr(1, 2), Fr(4, 8)], [Fr(2, 4), Fr(4, 8)], [Fr(1, 3), Fr(2, 6)], [Fr(2, 3), Fr(4, 6)], [Fr(1, 4), Fr(2, 8)], [Fr(3, 4), Fr(6, 8)], [Fr(2, 2), Fr(3, 3)]];
+    const [a, b] = shuffle(r, pick(r, pairs));
+    const cands = DENOMS.flatMap(dd => range(dd).map(i => Fr(i + 1, dd)));
+    return finish(r, { type, prompt: `Which fraction is the same size as ${a.n}/${a.d}?`, model: { k: "bar", d: a.d, on: range(a.n) }, opts: fracOpts(r, b, cands.filter(c => !sameVal(c, b) && c.d === b.d || c.n === b.n && !sameVal(c, b))), key: { kind: "value", f: a }, hint: "Same size means the shaded parts line up." });
+  }
+  if (type === "cmpD") { const [x, y] = shuffle(r, range(d - 1).map(i => i + 1).concat([d])).slice(0, 2); const o = cmpQ(Fr(x, d), Fr(y, d), SAME_D); return Object.assign(o, { type }); }
+  if (type === "cmpN") { const [d1, d2] = shuffle(r, DENOMS).slice(0, 2), n = 1 + Math.floor(r() * Math.min(d1, d2)); const o = cmpQ(Fr(n, d1), Fr(n, d2), SAME_N); return Object.assign(o, { type }); }
+  if (type === "whole") {
+    if (r() < .5) { const f = Fr(d, d); return finish(r, { type, prompt: `What is ${d}/${d}?`, model: { k: "bar", d, on: range(d) }, opts: [Wn(1), Wn(d), Fr(1, d)], key: { kind: "value", f }, hint: "All the pieces make one whole." }); }
+    const w = 2 + Math.floor(r() * 4), f = Fr(w, 1);
+    return finish(r, { type, prompt: `What is ${w}/1?`, model: { k: "wholes", count: w, d: 1, on: w }, opts: [Wn(w), Wn(1), Fr(1, w)], key: { kind: "value", f }, hint: "Each one is a whole. Count them." });
+  }
+  throw new Error("bad type " + type);
+}
+function bossSet(seed) { const r = rng(seed); return BOSS_TYPES.map(t => bossQuestion(t, r)); }
+
+/* ---------- model value (what a picture shows) ---------- */
+function modelFraction(m) {
+  if (!m) return null;
+  if (m.k === "circle" || m.k === "bar" || m.k === "set") return Fr(m.on.length, m.d);
+  if (m.k === "grid") return Fr(m.on.length, m.r * m.c);
+  if (m.k === "wholes") return Fr(m.on, m.d);
+  if (m.k === "line") return Fr(m.dot, m.d);
+  return null;
+}
+
+const MISSIONS = [
+  { id: 1, title: "Hero Training", sub: "Equal parts", hero: "cap" },
+  { id: 2, title: "Pizza Power", sub: "Make fractions", hero: "pint" },
+  { id: 3, title: "Name It!", sub: "Name the fraction", hero: "cap" },
+  { id: 4, title: "Number Line Leap", sub: "Fractions on a line", hero: "pint" },
+  { id: 5, title: "Same-Size Lab", sub: "Equal fractions", hero: "cap" },
+  { id: 6, title: "Fraction Showdown", sub: "Compare fractions", hero: "pint" },
+  { id: 7, title: "Whole Hero", sub: "Wholes as fractions", hero: "cap" },
+  { id: 8, title: "Boss Battle", sub: "Beat Count Crumble", hero: "boss" }
+];
+
+if (typeof module !== "undefined") module.exports = { DENOMS, Fr, Wn, Sy, optVal, sameVal, sameForm, cmpSym, fracWords, SYMWORD, rng, shuffle, range, shapeOf, pieceArea, isEqualParts, M1_ROUNDS, M2_CHALLENGES, m2Check, M3, M4, LINE, tickX, nearestTick, WALL, M5_STEPS, M5_ROUNDS, M6, M7, BOSS_TYPES, bossQuestion, bossSet, modelFraction, MISSIONS, CIRC_R };
+
+/* =========================================================
+   Core UI: helpers, storage, sound, speech, art, models
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = "http://www.w3.org/2000/svg";
+function S(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) { if (k === "text") e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); } if (parent) parent.appendChild(e); return e; }
+function H(tag, attrs = {}, html) { const e = document.createElement(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (html !== undefined) e.innerHTML = html; return e; }
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("fracHeroes." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("fracHeroes." + k, JSON.stringify(v)); } catch (e) { } }
+};
+const INK = "#16161d", SHADE = "#ff5a4f", PAPER = "#ffffff";
+
+/* ---------- fractions in text ---------- */
+const frHTML = (n, d) => `<span class="fr" data-n="${n}" data-d="${d}" role="img" aria-label="${fracWords(n, d)}"><span class="n">${n}</span><span class="d">${d}</span></span>`;
+const optHTML = o => o.s ? `<span class="sym">${o.s}</span><span class="cap">${{ "<": "less than", ">": "greater than", "=": "equal to" }[o.s]}</span>` : o.w !== undefined ? `<span class="w">${o.w}</span>` : frHTML(o.n, o.d);
+const rich = s => s.replace(/(\d+)\/(\d+)/g, (_, n, d) => frHTML(+n, +d));
+function speechOf(el) {
+  const c = el.cloneNode(true);
+  $$(".say", c).forEach(b => b.remove());
+  $$(".fr", c).forEach(f => f.replaceWith(" " + fracWords(+f.dataset.n, +f.dataset.d) + " "));
+  $$(".sym", c).forEach(f => f.replaceWith(" " + (SYMWORD[f.textContent] || "") + " "));
+  $$(".cap", c).forEach(f => f.remove());
+  return c.textContent.replace(/(^|\s)([<>=])(?=\s|$)/g, (m, a, g) => a + SYMWORD[g]).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, " ").replace(/\s+/g, " ").replace(/ ([.,!?:])/g, "$1").trim();
+}
+
+/* ---------- sound (synthesized, no files) ---------- */
+const Sound = {
+  on: LS.get("sound", true), ctx: null,
+  init() { if (this.ctx || !this.on) return; try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { this.ctx = null; } },
+  tone(f, t0, dur, type = "sine", vol = .18, f2) {
+    const c = this.ctx; if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .05);
+  },
+  play(name) {
+    if (!this.on) return; this.init(); const c = this.ctx; if (!c) return;
+    try {
+      if (c.state === "suspended") c.resume();
+      ({ tap: () => this.tone(660, 0, .08, "triangle", .12),
+        good: () => [523, 659, 784].forEach((f, i) => this.tone(f, i * .09, .22, "triangle", .2)),
+        oops: () => { this.tone(330, 0, .18, "sine", .12); this.tone(294, .16, .25, "sine", .1); },
+        zap: () => { this.tone(1200, 0, .35, "sawtooth", .1, 120); this.tone(300, .05, .3, "square", .06, 900); },
+        jump: () => this.tone(400, 0, .14, "triangle", .12, 800),
+        badge: () => [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .12, .35, "triangle", .2)),
+        win: () => [392, 523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .14, .3, "square", .09)) })[name]();
+    } catch (e) { }
+  },
+  toggle() { this.on = !this.on; LS.set("sound", this.on); if (this.on) this.play("tap"); syncSoundBtn(); }
+};
+function syncSoundBtn() { const b = $("#soundBtn"); b.firstChild.textContent = Sound.on ? "🔊" : "🔇"; $("#soundLbl").textContent = Sound.on ? "Sound" : "Muted"; b.setAttribute("aria-pressed", String(Sound.on)); b.setAttribute("aria-label", Sound.on ? "Sound on. Tap to mute." : "Sound off. Tap to turn on."); }
+
+/* ---------- read aloud ---------- */
+const Speech = {
+  ok: typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined",
+  btn: null,
+  say(text, btn) {
+    if (!this.ok) { toast("Read-aloud is not available on this device."); return; }
+    try {
+      speechSynthesis.cancel(); if (this.btn) this.btn.classList.remove("speaking");
+      const u = new SpeechSynthesisUtterance(text); u.rate = .88; u.pitch = 1.1; u.lang = "en-US";
+      this.btn = btn || null; if (btn) btn.classList.add("speaking");
+      u.onend = u.onerror = () => btn && btn.classList.remove("speaking");
+      speechSynthesis.speak(u);
+      setTimeout(() => btn && btn.classList.remove("speaking"), Math.min(15000, 600 + text.length * 80));
+    } catch (e) { toast("Read-aloud is not available right now."); }
+  },
+  stop() { try { if (this.ok) speechSynthesis.cancel(); } catch (e) { } if (this.btn) this.btn.classList.remove("speaking"); }
+};
+function sayButton(target) {
+  const b = H("button", { class: "say", "aria-label": "Read this out loud", title: "Read out loud" }, "🔈");
+  b.onclick = e => { e.stopPropagation(); Speech.say(speechOf(target), b); };
+  return b;
+}
+/* a hero face + speech bubble with a read-aloud button */
+function talk(host, who, html) {
+  host.innerHTML = ""; host.classList.add("talk");
+  const face = H("div", { class: "face", "aria-hidden": "true" }, figure(who, true)); host.appendChild(face);
+  const bub = H("div", { class: "bubble", "aria-live": "polite" }); host.appendChild(bub);
+  setBubble(bub, html); return bub;
+}
+function setBubble(bub, html) { bub.innerHTML = `<div class="btxt">${rich(html)}</div>`; bub.prepend(sayButton($(".btxt", bub))); }
+
+/* ---------- toast, burst, confetti ---------- */
+let toastT; function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
+const WORDS = ["POW!", "ZAP!", "BAM!", "WOW!", "YES!", "BOOM!", "KAPOW!"];
+function burst(word, color) {
+  const b = $("#burst"); word = word || WORDS[Math.floor(Math.random() * WORDS.length)];
+  b.innerHTML = burstSVG(word, color || ["#ffd23f", "#ff8a1f", "#2fd0ff", "#7dff6b"][Math.floor(Math.random() * 4)]);
+  b.classList.remove("go"); void b.offsetWidth; b.classList.add("go");
+}
+function burstSVG(word, color) {
+  const pts = []; for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, r = i % 2 ? 62 : 100 + (i % 4 === 0 ? 12 : 0); pts.push(`${(150 + r * Math.cos(a) * 1.35).toFixed(1)},${(110 + r * Math.sin(a)).toFixed(1)}`); }
+  return `<svg viewBox="0 0 300 220"><polygon points="${pts.join(" ")}" fill="${color}" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/><text x="150" y="128" text-anchor="middle" font-family="Arial Black,system-ui" font-weight="900" font-size="${word.length > 5 ? 50 : 60}" fill="#ef3e36" stroke="${INK}" stroke-width="3" paint-order="stroke" transform="rotate(-8 150 110)">${word}</text></svg>`;
+}
+const Confetti = (() => {
+  let parts = [], raf = 0; const cv = () => $("#confetti");
+  function frame() { const c = cv(), x = c.getContext("2d"); x.clearRect(0, 0, c.width, c.height); parts = parts.filter(p => p.y < c.height + 20); parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .12; p.a += p.va; x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * .66); x.restore(); }); if (parts.length) raf = requestAnimationFrame(frame); else raf = 0; }
+  return { go(n = 140) { const c = cv(); c.width = innerWidth; c.height = innerHeight; for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * .35, vx: (Math.random() - .5) * 14, vy: -Math.random() * 11 - 3, a: Math.random() * 6, va: (Math.random() - .5) * .3, s: 8 + Math.random() * 8, c: ["#ef3e36", "#ffd23f", "#2e86de", "#1fb36b", "#ff5fa2", "#8e44ad"][i % 6] }); if (!raf) raf = requestAnimationFrame(frame); } };
+})();
+
+/* ---------- characters (original designs) ---------- */
+const CAST = {
+  cap: { name: "Captain Fraction", suit: "#2e86de", cape: "#ef3e36", skin: "#8d5524", hair: "#1b1b1b", mask: "#ef3e36", belt: "#ffd23f", emblem: "quarter" },
+  pint: { name: "Half-Pint", suit: "#1fb36b", cape: "#ffd23f", skin: "#f1c27d", hair: "#c0392b", mask: "#16161d", belt: "#ff8a1f", emblem: "half", small: true },
+  boss: { name: "Count Crumble", suit: "#8e44ad", cape: "#2b2b3a", skin: "#b9e3a8", hair: "#e8e8e8", mask: null, belt: "#555", emblem: "crack", villain: true }
+};
+function figure(who, headOnly) {
+  const c = CAST[who], st = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+  const emb = { quarter: `<circle cx="60" cy="88" r="13" fill="#fff" ${st}/><path d="M60 88 L60 75 A13 13 0 0 1 73 88 Z" fill="${c.cape}" ${st}/><path d="M47 88 H73 M60 75 V101" stroke="${INK}" stroke-width="2"/>`,
+    half: `<circle cx="60" cy="88" r="13" fill="#fff" ${st}/><text x="60" y="95" text-anchor="middle" font-family="Arial Black,system-ui" font-size="17" font-weight="900" fill="${INK}">½</text>`,
+    crack: `<path d="M50 78 L58 88 L52 94 L62 102 M66 78 L62 88 L70 94" fill="none" stroke="#ffd23f" stroke-width="3.5" stroke-linecap="round"/>` }[c.emblem];
+  const capeD = c.villain ? "M34 64 L14 166 L28 154 L40 168 L52 154 L64 168 L76 154 L90 168 L104 154 L86 64 Z" : "M34 64 Q8 120 16 166 Q60 150 104 166 Q112 120 86 64 Z";
+  const face = c.villain
+    ? `<path d="M38 26 L44 8 L52 20 L60 4 L68 20 L76 8 L82 26" fill="${c.hair}" ${st}/><circle cx="60" cy="40" r="22" fill="${c.skin}" ${st}/>
+       <path d="M44 31 L56 35 M76 31 L64 35" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><circle cx="51" cy="40" r="3.5" fill="${INK}"/><circle cx="69" cy="40" r="7" fill="#e6f7ff" ${st}/><circle cx="69" cy="40" r="3.2" fill="${INK}"/>
+       <path d="M75 46 Q80 54 76 62" fill="none" stroke="${INK}" stroke-width="2"/><path d="M48 52 Q54 47 60 51 Q66 47 72 52" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/><path d="M52 57 Q60 61 68 57" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`
+    : `<circle cx="60" cy="40" r="22" fill="${c.skin}" ${st}/><path d="M38 38 Q38 14 60 15 Q84 14 82 38 Q74 24 60 26 Q48 24 38 38 Z" fill="${c.hair}" ${st}/>
+       <path d="M37 36 Q60 28 83 36 L82 47 Q71 50 60 44 Q49 50 38 47 Z" fill="${c.mask}" ${st}/><ellipse cx="50" cy="40.5" rx="5.5" ry="4" fill="#fff"/><ellipse cx="70" cy="40.5" rx="5.5" ry="4" fill="#fff"/>
+       <circle cx="51" cy="41" r="2.2" fill="${INK}"/><circle cx="71" cy="41" r="2.2" fill="${INK}"/><path d="M50 52 Q60 60 70 52" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+  if (headOnly) return `<svg viewBox="30 0 60 70" width="100%" height="100%">${face}</svg>`.replace('viewBox="30 0 60 70"', c.villain ? 'viewBox="32 0 56 66"' : 'viewBox="34 10 52 58"');
+  const armUp = who === "pint" ? `<path d="M40 70 L22 34" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><path d="M40 70 L22 34" stroke="${INK}" stroke-width="3" fill="none" opacity="0"/><circle cx="21" cy="31" r="7.5" fill="${c.skin}" ${st}/>`
+    : `<path d="M40 72 L22 108" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><circle cx="21" cy="110" r="7.5" fill="${c.skin}" ${st}/>`;
+  const armR = c.villain ? `<path d="M80 72 L104 84" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><rect x="98" y="72" width="22" height="14" rx="4" fill="#ff8a1f" ${st}/><path d="M120 79 l8 -6 M120 79 l9 2 M120 79 l6 8" stroke="#ff8a1f" stroke-width="3"/>`
+    : `<path d="M80 70 L98 34" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><circle cx="99" cy="31" r="7.5" fill="${c.skin}" ${st}/>`;
+  return `<svg viewBox="0 0 130 172" class="fig" role="img" aria-label="${c.name}"><path d="${capeD}" fill="${c.cape}" ${st}/>
+    <rect x="44" y="118" width="14" height="40" rx="5" fill="${c.suit}" ${st}/><rect x="62" y="118" width="14" height="40" rx="5" fill="${c.suit}" ${st}/>
+    <path d="M42 150 h18 v14 h-20 z M60 150 h18 v14 h-20 z" fill="${c.villain ? "#333" : c.cape}" ${st}/>
+    ${armUp}${armR}<rect x="36" y="62" width="48" height="62" rx="15" fill="${c.suit}" ${st}/><rect x="36" y="106" width="48" height="8" fill="${c.belt}" ${st}/>${emb}${face}</svg>`;
+}
+const BADGE_COL = ["#2e86de", "#ef3e36", "#ff8a1f", "#1fb36b", "#8e44ad", "#ff5fa2", "#00a8a8", "#ffd23f"];
+function badgeSVG(i, earned, cls = "badge") {
+  const col = earned ? BADGE_COL[i - 1] : "#cfcfd6", w = "#fff", st = `stroke="${INK}" stroke-width="4"`;
+  const icon = {
+    1: `<circle cx="50" cy="52" r="20" fill="${w}" ${st}/><path d="M50 32 V72" ${st}/>`,
+    2: `<path d="M50 30 L70 70 Q50 78 30 70 Z" fill="#ffd23f" ${st}/><circle cx="48" cy="52" r="4" fill="#ef3e36"/><circle cx="55" cy="63" r="4" fill="#ef3e36"/>`,
+    3: `<text x="50" y="68" text-anchor="middle" font-family="Arial Black,system-ui" font-size="44" font-weight="900" fill="${w}" stroke="${INK}" stroke-width="3" paint-order="stroke">?</text>`,
+    4: `<path d="M24 62 H76" ${st}/><path d="M28 56 v12 M50 56 v12 M72 56 v12" ${st}/><path d="M30 50 Q50 18 70 50" fill="none" stroke="${w}" stroke-width="5"/><path d="M64 44 l7 7 l2 -9" fill="none" stroke="${w}" stroke-width="5"/>`,
+    5: `<rect x="26" y="34" width="48" height="12" fill="${w}" ${st}/><rect x="26" y="52" width="24" height="12" fill="${w}" ${st}/><rect x="50" y="52" width="24" height="12" fill="${w}" ${st}/>`,
+    6: `<text x="50" y="70" text-anchor="middle" font-family="Arial Black,system-ui" font-size="46" font-weight="900" fill="${w}" stroke="${INK}" stroke-width="3" paint-order="stroke">&lt;&gt;</text>`,
+    7: `<text x="50" y="70" text-anchor="middle" font-family="Arial Black,system-ui" font-size="46" font-weight="900" fill="${w}" stroke="${INK}" stroke-width="3" paint-order="stroke">1</text>`,
+    8: `<path d="M56 24 L34 56 H50 L42 80 L68 44 H52 Z" fill="${w}" ${st}/>`
+  }[i];
+  return `<svg class="${cls}" viewBox="0 0 100 100" role="img" aria-label="Mission ${i} badge${earned ? "" : " (not earned yet)"}"><path d="M50 4 L92 18 V48 C92 74 72 90 50 97 C28 90 8 74 8 48 V18 Z" fill="${col}" ${st}/><path d="M50 13 L83 24 V48 C83 68 68 81 50 87 C32 81 17 68 17 48 V24 Z" fill="none" stroke="${earned ? "rgba(255,255,255,.6)" : "#fff"}" stroke-width="3"/>${icon}${earned ? "" : `<circle cx="78" cy="80" r="11" fill="#fff" ${st}/><text x="78" y="86" text-anchor="middle" font-size="14" font-weight="900" font-family="system-ui">🔒</text>`}</svg>`.replace(earned ? "" : "🔒", earned ? "" : "?");
+}
+
+/* ---------- fraction models (SVG) ---------- */
+const COLORS = { shade: SHADE, empty: PAPER, blue: "#2e86de", yellow: "#ffd23f", green: "#1fb36b" };
+function sectorPath(cx, cy, r, a0, a1) {
+  if (a1 - a0 >= 359.999) return `M ${cx - r} ${cy} a ${r} ${r} 0 1 0 ${2 * r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0`;
+  const p = a => [cx + r * Math.cos((a - 90) * Math.PI / 180), cy + r * Math.sin((a - 90) * Math.PI / 180)];
+  const [x0, y0] = p(a0), [x1, y1] = p(a1);
+  return `M ${cx} ${cy} L ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`;
+}
+/* circle (pizza) with d equal slices; returns svg element */
+function circleModel(d, on, o = {}) {
+  const svg = S("svg", { viewBox: "0 0 220 220", class: "model", role: "img" }), set = new Set(on);
+  const R = 96, cx = 110, cy = 110;
+  if (o.pizza) S("circle", { cx, cy, r: R + 8, fill: "#e8a54b", stroke: INK, "stroke-width": 4 }, svg);
+  for (let i = 0; i < d; i++) {
+    const a0 = i * 360 / d, a1 = (i + 1) * 360 / d, onP = set.has(i);
+    const g = S("g", { class: "piece" + (onP ? " on" : ""), "data-i": i }, svg);
+    S("path", { d: sectorPath(cx, cy, R, a0, a1), fill: onP ? (o.color || SHADE) : (o.pizza ? "#fff4d6" : PAPER), stroke: INK, "stroke-width": 4, "stroke-linejoin": "round" }, g);
+    if (onP && o.pizza) { const am = (a0 + a1) / 2 - 90, rr = d === 1 ? 0 : R * .58; [[0, 0], [14, -10], [-12, 12]].slice(0, d >= 6 ? 1 : 3).forEach(([dx, dy], k) => { if (d === 1 && k) return; S("circle", { cx: cx + rr * Math.cos(am * Math.PI / 180) + (d <= 2 ? dx : 0), cy: cy + rr * Math.sin(am * Math.PI / 180) + (d <= 2 ? dy : 0), r: 7, fill: "#b3261e", stroke: INK, "stroke-width": 2, "pointer-events": "none" }, g); }); }
+  }
+  svg.setAttribute("aria-label", `circle cut into ${d} equal parts, ${set.size} shaded`);
+  return svg;
+}
+function barModel(d, on, o = {}) {
+  const W = o.w || 400, Hh = o.h || 90, set = new Set(on);
+  const svg = S("svg", { viewBox: `-4 -4 ${W + 8} ${Hh + 8}`, class: "model", role: "img", "aria-label": `bar cut into ${d} equal parts, ${set.size} shaded` });
+  for (let i = 0; i < d; i++) { const g = S("g", { class: "piece" + (set.has(i) ? " on" : ""), "data-i": i }, svg); S("rect", { x: i * W / d, y: 0, width: W / d, height: Hh, fill: set.has(i) ? (o.color || SHADE) : PAPER, stroke: INK, "stroke-width": 4 }, g); }
+  return svg;
+}
+function gridModel(r, c, on) {
+  const set = new Set(on), W = 360, Hh = 240, svg = S("svg", { viewBox: `-4 -4 ${W + 8} ${Hh + 8}`, class: "model", role: "img", "aria-label": `rectangle cut into ${r * c} equal parts, ${set.size} shaded` });
+  for (let i = 0; i < r * c; i++) { const x = (i % c) * W / c, y = Math.floor(i / c) * Hh / r; const g = S("g", { class: "piece" + (set.has(i) ? " on" : ""), "data-i": i }, svg); S("rect", { x, y, width: W / c, height: Hh / r, fill: set.has(i) ? SHADE : PAPER, stroke: INK, "stroke-width": 4 }, g); }
+  return svg;
+}
+function iconPath(icon, x, y, s, col) {
+  const st = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+  if (icon === "mask") return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M2 14 Q20 2 36 12 Q52 2 70 14 Q70 34 50 34 Q40 34 36 26 Q32 34 22 34 Q2 34 2 14 Z" fill="${col}" ${st}/><ellipse cx="21" cy="20" rx="7" ry="5" fill="#fff" ${st}/><ellipse cx="51" cy="20" rx="7" ry="5" fill="#fff" ${st}/></g>`;
+  if (icon === "cape") return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M18 2 H54 L66 44 Q36 36 6 44 Z" fill="${col}" ${st}/><path d="M18 2 Q36 12 54 2" fill="none" ${st}/></g>`;
+  return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M36 2 L45 26 L70 26 L50 41 L58 66 L36 51 L14 66 L22 41 L2 26 L27 26 Z" fill="${col}" ${st}/></g>`;
+}
+function setModel(icon, d, on) {
+  const set = new Set(on), cols = d <= 4 ? d : Math.ceil(d / 2), rows = Math.ceil(d / cols), cw = 90, ch = icon === "mask" ? 60 : 80;
+  const colOn = { mask: "#ef3e36", cape: "#2e86de", star: "#ffd23f" }[icon];
+  let inner = ""; for (let i = 0; i < d; i++) inner += `<g class="piece${set.has(i) ? " on" : ""}">${iconPath(icon, (i % cols) * cw + 8, Math.floor(i / rows >= 1 ? 1 : 0) * 0 + Math.floor(i / cols) * ch + 6, 1, set.has(i) ? colOn : "#e9e9ee")}</g>`;
+  const svg = S("svg", { viewBox: `0 0 ${cols * cw + 6} ${rows * ch + 6}`, class: "model", role: "img", "aria-label": `${d} ${icon}s, ${set.size} colored` });
+  svg.innerHTML = inner; return svg;
+}
+function wholesModel(count, d, on) {
+  const svg = S("svg", { class: "model", role: "img" });
+  if (d === 1) { const per = Math.min(count, 5), cw = 92; svg.setAttribute("viewBox", `0 0 ${per * cw + 4} 96`); for (let i = 0; i < count; i++) { const g = S("g", { class: "piece" + (i < on ? " on" : "") }, svg); S("circle", { cx: i * cw + 48, cy: 48, r: 40, fill: i < on ? "#ffb347" : PAPER, stroke: INK, "stroke-width": 4 }, g); S("circle", { cx: i * cw + 48, cy: 48, r: 30, fill: "none", stroke: "#e07b00", "stroke-width": 3, "stroke-dasharray": "4 6" }, g); } svg.setAttribute("aria-label", `${count} whole pies, no cuts`); return svg; }
+  const W = 400, h = 60; svg.setAttribute("viewBox", `-4 -4 ${W + 8} ${count * (h + 16) - 8}`);
+  let k = 0; for (let b = 0; b < count; b++) for (let i = 0; i < d; i++, k++) { const g = S("g", { class: "piece" + (k < on ? " on" : "") }, svg); S("rect", { x: i * W / d, y: b * (h + 16), width: W / d, height: h, fill: k < on ? SHADE : PAPER, stroke: INK, "stroke-width": 4 }, g); }
+  svg.setAttribute("aria-label", `${count} bars cut into ${d} parts, ${on} shaded`); return svg;
+}
+function cmpModel(a, b) {
+  const W = 420, h = 54, x0 = 70, svg = S("svg", { viewBox: `0 0 ${x0 + W + 6} ${2 * h + 34}`, class: "model", role: "img", "aria-label": `${fracWords(a.n, a.d)} and ${fracWords(b.n, b.d)} shown as bars` });
+  [a, b].forEach((f, r) => { const y = 4 + r * (h + 24); S("text", { x: 30, y: y + h / 2 + 10, "text-anchor": "middle", "font-size": 30, "font-weight": 900, "font-family": "Arial Black,system-ui", fill: INK, text: `${f.n}/${f.d}` }, svg);
+    for (let i = 0; i < f.d; i++) S("rect", { class: "piece" + (i < f.n ? " on" : ""), x: x0 + i * W / f.d, y, width: W / f.d, height: h, fill: i < f.n ? (r ? "#2e86de" : SHADE) : PAPER, stroke: INK, "stroke-width": 4 }, svg); });
+  return svg;
+}
+function barsModel(list) {
+  const W = 360, h = 44, svg = S("svg", { viewBox: `0 0 ${W + 80} ${list.length * (h + 14)}`, class: "model", role: "img" });
+  list.forEach((f, r) => { const y = 4 + r * (h + 14); S("text", { x: 34, y: y + h / 2 + 9, "text-anchor": "middle", "font-size": 26, "font-weight": 900, "font-family": "Arial Black,system-ui", text: `${f.n}/${f.d}` }, svg); for (let i = 0; i < f.d; i++) S("rect", { class: "piece" + (i < f.n ? " on" : ""), x: 76 + i * W / f.d, y, width: W / f.d, height: h, fill: i < f.n ? SHADE : PAPER, stroke: INK, "stroke-width": 4 }, svg); });
+  return svg;
+}
+/* number line: returns {svg, hero}; o.big = phone-size labels and hero */
+function lineModel(rng_, d, o = {}) {
+  const B = o.big ? 1.6 : 1, top = o.big ? -70 : 0, hgt = o.big ? 312 : 200, ff = "Arial Black,system-ui";
+  const svg = S("svg", { viewBox: `0 ${top} ${LINE.w} ${hgt}`, class: "model nline", role: "img", "aria-label": `number line from 0 to ${rng_}, cut into ${d * rng_} equal parts` });
+  svg.geo = { top, hgt, B };
+  S("line", { x1: LINE.x0 - 22, y1: LINE.y, x2: LINE.x1 + 22, y2: LINE.y, stroke: INK, "stroke-width": 6 * B, "stroke-linecap": "round" }, svg);
+  S("path", { d: `M ${LINE.x1 + 34} ${LINE.y} l -16 -${11 * B} v ${22 * B} z M ${LINE.x0 - 34} ${LINE.y} l 16 -${11 * B} v ${22 * B} z`, fill: INK }, svg);
+  for (let k = 0; k <= d * rng_; k++) {
+    const x = tickX(k, d, rng_), whole = k % d === 0, tl = (whole ? 22 : 15) * B;
+    S("line", { x1: x, y1: LINE.y - tl, x2: x, y2: LINE.y + tl, stroke: INK, "stroke-width": (whole ? 6 : 4) * B, class: "tick", "data-k": k }, svg);
+    if (whole) S("text", { x, y: LINE.y + 54 * B, "text-anchor": "middle", "font-size": 34 * B, "font-weight": 900, "font-family": ff, text: String(k / d) }, svg);
+    else if (o.labels) { const g = S("g", { class: "flabel", "data-k": k }, svg); const f = 20 * B; S("text", { x, y: LINE.y + 46 * B, "text-anchor": "middle", "font-size": f, "font-weight": 900, "font-family": ff, fill: "#2e86de", text: String(k) }, g); S("line", { x1: x - 10 * B, y1: LINE.y + 52 * B, x2: x + 10 * B, y2: LINE.y + 52 * B, stroke: "#2e86de", "stroke-width": 2.5 * B }, g); S("text", { x, y: LINE.y + 72 * B, "text-anchor": "middle", "font-size": f, "font-weight": 900, "font-family": ff, fill: "#2e86de", text: String(d) }, g); }
+  }
+  let hero = null;
+  if (o.dot !== undefined || o.hero) {
+    hero = S("g", { class: "lhero" }, svg);
+    hero.innerHTML = `<g transform="scale(${B})"><circle cx="0" cy="0" r="30" fill="transparent"/><path d="M-12 -2 Q-26 22 -20 34 L20 34 Q26 22 12 -2 Z" fill="#ef3e36" stroke="${INK}" stroke-width="3"/><rect x="-11" y="-6" width="22" height="34" rx="8" fill="#2e86de" stroke="${INK}" stroke-width="3"/><circle cx="0" cy="-18" r="13" fill="#8d5524" stroke="${INK}" stroke-width="3"/><path d="M-13 -20 Q0 -25 13 -20 L12 -13 Q0 -10 -12 -13 Z" fill="#ef3e36" stroke="${INK}" stroke-width="2"/><circle cx="-5" cy="-17" r="2" fill="#fff"/><circle cx="5" cy="-17" r="2" fill="#fff"/></g>`;
+    hero.baseY = LINE.y - 44 * B;
+    const place = (x, y = hero.baseY) => hero.setAttribute("transform", `translate(${x} ${y})`);
+    place(tickX(o.dot || 0, d, rng_)); hero.place = place;
+  }
+  return { svg, hero };
+}
+function shapeModel(sp, o = {}) {
+  const sh = shapeOf(sp), pad = 6, svg = S("svg", { viewBox: `${-pad} ${-pad} ${sh.w + 2 * pad} ${sh.h + 2 * pad}`, class: "model", role: "img", "aria-label": `shape cut into ${sh.pieces.length} parts` });
+  const fills = o.fills || ["#ffe066", "#7fd1ff", "#ffa8a8", "#b8f2b0", "#e2c2ff", "#ffd1a1", "#a8fff0", "#ffc9e6"];
+  sh.pieces.forEach((pc, i) => { const f = o.plain ? "#fff" : fills[i % fills.length]; if (pc.t === "sec") S("path", { d: sectorPath(50, 50, CIRC_R, pc.a0, pc.a1), fill: f, stroke: INK, "stroke-width": 3, "stroke-linejoin": "round" }, svg); else S("polygon", { points: pc.p.map(p => p.join(",")).join(" "), fill: f, stroke: INK, "stroke-width": 3, "stroke-linejoin": "round" }, svg); });
+  return svg;
+}
+function renderModel(m) {
+  if (!m) return null;
+  switch (m.k) {
+    case "circle": return circleModel(m.d, m.on, { pizza: m.pizza });
+    case "bar": return barModel(m.d, m.on);
+    case "grid": return gridModel(m.r, m.c, m.on);
+    case "set": return setModel(m.icon, m.d, m.on);
+    case "wholes": return wholesModel(m.count, m.d, m.on);
+    case "cmp": return cmpModel(m.a, m.b);
+    case "bars": return barsModel(m.list);
+    case "line": return lineModel(m.range, m.d, { dot: m.dot }).svg;
+  }
+}
+
+/* ---------- progress, badges ---------- */
+const Progress = {
+  badges: new Set(LS.get("badges", [])),
+  has(i) { return this.badges.has(i); },
+  earn(i) { const was = this.badges.has(i); this.badges.add(i); LS.set("badges", [...this.badges]); syncBadges(); return !was; },
+  reset() { this.badges.clear(); LS.set("badges", []); syncBadges(); }
+};
+function syncBadges() { $("#badgeCount").textContent = Progress.badges.size; }
+function stars(host, n) { host.innerHTML = ""; host.classList.add("stars"); for (let i = 0; i < n; i++) host.appendChild(H("i", { "aria-hidden": "true" }, "⭐")); host.setAttribute("aria-label", `0 of ${n} done`); return k => { $$("i", host).forEach((s, j) => s.classList.toggle("on", j < k)); host.setAttribute("aria-label", `${k} of ${n} done`); }; }
+
+/* mission frame: header + talk + stars + stage */
+function missionFrame(id, intro, nStars) {
+  const M = MISSIONS[id - 1], sec = $("#s-m" + id);
+  sec.innerHTML = `<div class="panel ${id === 8 ? "" : "yellow"}"><div class="mhead"><span class="tag">MISSION ${id}</span><h2 style="margin:0">${M.title}</h2></div><div class="talkhost"></div><div class="starhost"></div></div><div class="panel"><div class="stage"></div></div><div class="row center"><button class="btn" data-go="hq">🏠 Back to HQ</button></div>`;
+  const bub = talk($(".talkhost", sec), M.hero === "boss" ? "pint" : M.hero, intro);
+  const setStars = nStars ? stars($(".starhost", sec), nStars) : () => { };
+  return { sec, stage: $(".stage", sec), bub, setStars, say: html => setBubble(bub, html) };
+}
+const CHEERS = ["Super!", "You did it!", "Great job, hero!", "Awesome!", "Way to go!", "Hero power!", "Nice work!", "You got it!"];
+const cheer = () => CHEERS[Math.floor(Math.random() * CHEERS.length)];
+function awardBadge(id) {
+  const fresh = Progress.earn(id), M = MISSIONS[id - 1];
+  Sound.play("badge"); Confetti.go(); burst(id === 8 ? "VICTORY!" : "BADGE!", "#ffd23f");
+  const m = H("div", { class: "modal", role: "dialog", "aria-label": "Badge earned" });
+  const next = id < 8 ? `<button class="btn go big" data-next="${id + 1}">Next mission ▶</button>` : `<button class="btn go big" data-go="cert">📜 Get my certificate</button>`;
+  m.innerHTML = `<div class="panel yellow">${badgeSVG(id, true)}<h2>${fresh ? "New badge!" : "Badge power!"}</h2><p style="font-size:1.3rem;font-weight:800">You finished <b>${M.title}</b>!</p><div class="row center">${next}<button class="btn big" data-go="hq">🏠 HQ</button></div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; m.remove(); if (b.dataset.next) go("m" + b.dataset.next); else go(b.dataset.go); });
+  setTimeout(() => { const b = $("button", m); if (b) b.focus(); }, 50);
+}
+
+/* ---------- generic choice-question runner ---------- */
+function runQuiz(F, qs, o = {}) {
+  let i = 0, done = 0;
+  function show() {
+    const Q = qs[i]; F.stage.innerHTML = "";
+    const box = H("div", { class: "qbox" }); F.stage.appendChild(box);
+    F.say(o.promptPrefix ? o.promptPrefix(i) + " " + Q.prompt : Q.prompt);
+    if (Q.key.kind === "cmp") box.appendChild(H("div", { class: "vs", "aria-label": `${fracWords(Q.key.a.n, Q.key.a.d)} and ${fracWords(Q.key.b.n, Q.key.b.d)}` }, `${frHTML(Q.key.a.n, Q.key.a.d)}<div class="slot">?</div>${frHTML(Q.key.b.n, Q.key.b.d)}`));
+    const mdl = renderModel(Q.model); if (mdl) { const w = H("div", { class: "qmodel" }); w.appendChild(mdl); box.appendChild(w); }
+    const opts = H("div", { class: "opts", role: "group", "aria-label": "Answer choices" }); box.appendChild(opts);
+    const fb = H("div", { class: "feedback", role: "status" }); box.appendChild(fb);
+    const nextRow = H("div", { class: "row center hidden" }); box.appendChild(nextRow);
+    Q.opts.forEach((op, k) => {
+      const b = H("button", { class: "opt" + (op.shape ? " shape" : ""), "data-k": k, "aria-label": op.shape ? `shape ${k + 1}` : op.s ? SYMWORD[op.s] : op.w !== undefined ? String(op.w) : fracWords(op.n, op.d) });
+      if (op.shape) b.appendChild(shapeModel(op.shape)); else b.innerHTML = optHTML(op);
+      b.onclick = () => pickOpt(k, b);
+      opts.appendChild(b);
+    });
+    function pickOpt(k, b) {
+      if (b.disabled) return;
+      if (k === Q.ans) {
+        $$(".opt", opts).forEach(x => x.disabled = true); b.classList.add("right");
+        Sound.play(o.boss ? "zap" : "good"); burst();
+        done++; F.setStars(done);
+        let msg = cheer();
+        if (Q.key.kind === "cmp") { const s = $(".slot", box); s.textContent = Q.opts[k].s; s.classList.add("filled"); msg += ` ${Q.key.a.n}/${Q.key.a.d} ${SYMWORD[Q.opts[k].s]} ${Q.key.b.n}/${Q.key.b.d}.`; }
+        if (Q.after) msg += " " + Q.after;
+        fb.className = "feedback ok"; fb.innerHTML = rich(msg);
+        if (o.onCorrect) o.onCorrect(i);
+        nextRow.classList.remove("hidden"); nextRow.innerHTML = "";
+        const nb = H("button", { class: "btn go big" }, i + 1 < qs.length ? "Next ▶" : (o.finishLabel || "Finish! ⭐")); nextRow.appendChild(nb);
+        nb.onclick = () => { if (i + 1 < qs.length) { i++; show(); } else o.onDone && o.onDone(); };
+        setTimeout(() => nb.focus({ preventScroll: true }), 30);
+      } else {
+        b.classList.add("wrong"); b.disabled = true; Sound.play("oops");
+        fb.className = "feedback hint"; fb.innerHTML = rich("💡 " + (Q.hint || "Try again!") + " Try again!");
+        fb.prepend(sayButton(fb));
+        if (o.onWrong) o.onWrong(i);
+      }
+    }
+  }
+  show();
+  return { get index() { return i; } };
+}
+
+/* =========================================================
+   The eight missions
+   ========================================================= */
+function fbSet(el, cls, html, speak) { el.className = "feedback " + cls; el.innerHTML = rich(html); if (speak !== false) el.prepend(sayButton(el)); }
+
+/* ---------- Mission 1: equal parts ---------- */
+function mission1() {
+  const F = missionFrame(1, "Count Crumble broke things into pieces! Equal parts are all the same size. Tap each shape with EQUAL parts to save it.", 3);
+  let round = 0;
+  function show() {
+    const shapes = M1_ROUNDS[round], need = shapes.filter(s => s.eq).length; let saved = 0;
+    F.stage.innerHTML = "";
+    const ex = H("div", { class: "row center", style: "gap:22px" });
+    ex.innerHTML = `<div style="text-align:center"><div style="width:130px">${shapeModel({ k: "v", c: [.5], w: 120, h: 80 }, { plain: true }).outerHTML}</div><b style="color:var(--ok)">✓ equal parts</b></div><div style="text-align:center"><div style="width:130px">${shapeModel({ k: "v", c: [.3], w: 120, h: 80 }, { plain: true }).outerHTML}</div><b style="color:var(--red)">✗ not equal</b></div>`;
+    F.stage.appendChild(ex);
+    F.stage.appendChild(H("div", { class: "target" }, `Round ${round + 1} of 3: Find ${need} shapes with equal parts.`));
+    const grid = H("div", { class: "shapegrid" }); F.stage.appendChild(grid);
+    const fb = H("div", { class: "feedback", role: "status" }); F.stage.appendChild(fb);
+    const nextRow = H("div", { class: "row center" }); F.stage.appendChild(nextRow);
+    shapes.forEach((sp, k) => {
+      const nP = shapeOf(sp).pieces.length;
+      const b = H("button", { class: "shapebtn", "data-k": k, "data-eq": sp.eq ? "1" : "0", "aria-label": `Shape ${k + 1}, cut into ${nP} parts` });
+      b.appendChild(shapeModel(sp)); grid.appendChild(b);
+      b.onclick = () => {
+        if (b.classList.contains("saved")) return;
+        if (sp.eq) {
+          b.classList.add("saved"); saved++; Sound.play("good");
+          if (saved === need) {
+            burst(); F.setStars(round + 1);
+            fbSet(fb, "ok", round < 2 ? `${cheer()} You saved them all!` : "You saved every shape! Hero power!");
+            const nb = H("button", { class: "btn go big" }, round < 2 ? "Next round ▶" : "Finish! ⭐"); nextRow.appendChild(nb);
+            nb.onclick = () => { if (round < 2) { round++; show(); } else awardBadge(1); };
+          } else fbSet(fb, "ok", `Saved! ${nP} equal parts. Find ${need - saved} more.`);
+        } else {
+          b.classList.remove("nope"); void b.offsetWidth; b.classList.add("nope"); Sound.play("oops");
+          fbSet(fb, "hint", "💡 Look closely. Some parts are big and some are small. Those are not equal. Try another one!");
+        }
+      };
+    });
+  }
+  show();
+}
+
+/* ---------- Mission 2: pizza power splitter ---------- */
+function mission2() {
+  const F = missionFrame(2, "The bottom number tells how many equal pieces. The top number tells how many pieces we shade. Let's make fractions!", M2_CHALLENGES.length);
+  let mode = "pizza", d = 2, on = new Set(), ci = 0, free = false;
+  F.stage.innerHTML = `
+    <div class="seg" role="group" aria-label="Pick a shape"><button data-mode="pizza" class="on">🍕 Pizza</button><button data-mode="bar">🟥 Power bar</button></div>
+    <div style="text-align:center"><div class="target" style="font-size:1.2rem">How many equal pieces?</div><div class="dpick" role="group" aria-label="How many equal pieces">${DENOMS.map(x => `<button data-d="${x}" aria-label="${x} equal pieces">${x}</button>`).join("")}</div></div>
+    <div class="split"><div class="mwrap" style="display:flex;justify-content:center"></div>
+      <div><div class="biglabel"></div><div class="legend"></div></div></div>
+    <div class="panel yellow chal" style="width:100%;margin:0"></div>`;
+  const mwrap = $(".mwrap", F.stage), label = $(".biglabel", F.stage), legend = $(".legend", F.stage), chal = $(".chal", F.stage);
+  $$(".seg button", F.stage).forEach(b => b.onclick = () => { mode = b.dataset.mode; $$(".seg button", F.stage).forEach(x => x.classList.toggle("on", x === b)); Sound.play("tap"); draw(); });
+  $$(".dpick button", F.stage).forEach(b => b.onclick = () => { d = +b.dataset.d; on.clear(); Sound.play("tap"); draw(); });
+  function draw() {
+    $$(".dpick button", F.stage).forEach(b => b.classList.toggle("on", +b.dataset.d === d));
+    const svg = mode === "pizza" ? circleModel(d, [...on], { pizza: true }) : barModel(d, [...on], { h: 150 });
+    svg.style.maxWidth = mode === "pizza" ? "330px" : "100%";
+    $$(".piece", svg).forEach(p => { p.setAttribute("role", "button"); p.setAttribute("aria-label", `piece ${+p.dataset.i + 1}`); p.addEventListener("click", () => { const i = +p.dataset.i; if (on.has(i)) on.delete(i); else on.add(i); Sound.play("tap"); draw(); }); });
+    mwrap.innerHTML = ""; mwrap.appendChild(svg);
+    label.innerHTML = frHTML(on.size, d);
+    legend.innerHTML = `<div class="top">⬆ Top: ${on.size} ${on.size === 1 ? "piece" : "pieces"} shaded</div><div class="bot">⬇ Bottom: ${d} equal pieces in all</div>${on.size === 1 ? `<div style="margin-top:6px">⭐ One piece is a <b>unit fraction</b>: ${frHTML(1, d)}</div>` : ""}`;
+  }
+  function showChal() {
+    if (ci >= M2_CHALLENGES.length) { free = true; chal.innerHTML = `<div class="target">Free play! Make any fraction you like.</div>`; return; }
+    const T = M2_CHALLENGES[ci];
+    chal.innerHTML = `<div class="target">Challenge ${ci + 1}: Make ${frHTML(T.n, T.d)}</div><div class="feedback" role="status"></div><div class="row center"><button class="btn go big chk">✔ Check</button></div>`;
+    const fb = $(".feedback", chal);
+    $(".chk", chal).onclick = () => {
+      const r = m2Check(T, d, on.size);
+      if (!r.ok) { Sound.play("oops"); fbSet(fb, "hint", "💡 " + r.hint); return; }
+      Sound.play("good"); burst(); ci++; F.setStars(ci);
+      fbSet(fb, "ok", `${cheer()} That is ${T.n}/${T.d}: ${T.n} of ${T.d} equal pieces.`);
+      const row = $(".row", chal); row.innerHTML = "";
+      const nb = H("button", { class: "btn go big" }, ci < M2_CHALLENGES.length ? "Next ▶" : "Finish! ⭐"); row.appendChild(nb);
+      nb.onclick = () => { on.clear(); if (ci < M2_CHALLENGES.length) { showChal(); draw(); } else { showChal(); draw(); awardBadge(2); } };
+    };
+  }
+  draw(); showChal();
+}
+
+/* ---------- Mission 3: name it ---------- */
+function mission3() {
+  const F = missionFrame(3, "Look at the picture. Pick the fraction that matches!", M3.length);
+  runQuiz(F, M3, { onDone: () => awardBadge(3) });
+}
+
+/* ---------- Mission 4: number line leap ---------- */
+function mission4() {
+  const F = missionFrame(4, "Help Captain Fraction leap! Tap a spot on the line, or drag the hero.", M4.length);
+  let i = 0, done = 0;
+  function show() {
+    const T = M4[i], rg = T.range; let cur = 0, busy = false, solved = false;
+    F.say(`Land on ${T.k}/${T.d}. Each little jump is 1/${T.d}.`);
+    F.stage.innerHTML = `<div class="target">Jump ${i + 1} of ${M4.length}: Land on ${frHTML(T.k, T.d)}</div><div class="linewrap"></div><div class="answerline" aria-live="polite"></div><div class="feedback" role="status"></div><div class="row center nextrow"></div>`;
+    const big = F.stage.clientWidth < 600, { svg, hero } = lineModel(rg, T.d, { hero: true, labels: false, big }); $(".linewrap", F.stage).appendChild(svg); const G = svg.geo, B = G.B;
+    const counter = S("text", { x: LINE.w / 2, y: G.top + 34 * B, "text-anchor": "middle", "font-size": 28 * B, "font-weight": 900, "font-family": "Arial Black,system-ui", fill: "#ef3e36", text: "" }, svg);
+    const fb = $(".feedback", F.stage), ans = $(".answerline", F.stage), nextRow = $(".nextrow", F.stage);
+    const step = (LINE.x1 - LINE.x0) / rg / T.d;
+    for (let k = 0; k <= T.d * rg; k++) { const zx = Math.max(0, tickX(k, T.d, rg) - step / 2), zw = Math.min(LINE.w, tickX(k, T.d, rg) + step / 2) - zx; const z = S("rect", { class: "tickzone", x: zx, y: G.top + 20, width: zw, height: G.hgt - 20, "data-k": k, role: "button", "aria-label": `spot ${k}` }, svg); z.addEventListener("click", () => jumpTo(k)); }
+    svg.appendChild(hero);
+    function hopAnim(from, to, done) {
+      const dir = to > from ? 1 : -1; let k = from;
+      (function hop() {
+        if (k === to) { done(); return; }
+        const a = tickX(k, T.d, rg), b = tickX(k + dir, T.d, rg), t0 = performance.now(); Sound.play("jump");
+        (function fr(t) { const p = Math.min(1, (t - t0) / 260); hero.place(a + (b - a) * p, hero.baseY - Math.sin(p * Math.PI) * 40 * B); if (p < 1) requestAnimationFrame(fr); else { k += dir; counter.textContent = k === 0 ? "0" : `${k}/${T.d}`; hop(); } })(t0);
+      })();
+    }
+    function jumpTo(k) {
+      if (busy || solved) return; busy = true;
+      hopAnim(cur, k, () => { cur = k; busy = false; check(k); });
+    }
+    function check(k) {
+      if (k === T.k) {
+        solved = true; done++; F.setStars(done); Sound.play("good"); burst();
+        const lab = S("g", {}, svg); const x = tickX(k, T.d, rg);
+        lab.setAttribute("transform", `translate(${x} ${LINE.y}) scale(${B})`);
+        S("rect", { x: -30, y: 26, width: 60, height: 62, rx: 10, fill: "#ffd23f", stroke: INK, "stroke-width": 3 }, lab);
+        S("text", { x: 0, y: 52, "text-anchor": "middle", "font-size": 24, "font-weight": 900, "font-family": "Arial Black,system-ui", text: String(T.k) }, lab);
+        S("line", { x1: -16, y1: 58, x2: 16, y2: 58, stroke: INK, "stroke-width": 3 }, lab);
+        S("text", { x: 0, y: 82, "text-anchor": "middle", "font-size": 24, "font-weight": 900, "font-family": "Arial Black,system-ui", text: String(T.d) }, lab);
+        ans.innerHTML = `${T.k} jump${T.k === 1 ? "" : "s"} of ${frHTML(1, T.d)} = ${frHTML(T.k, T.d)}`;
+        fbSet(fb, "ok", `${cheer()} You landed on ${T.k}/${T.d}!${T.k > T.d ? " That is more than 1 whole!" : ""}`);
+        const nb = H("button", { class: "btn go big" }, i + 1 < M4.length ? "Next jump ▶" : "Finish! ⭐"); nextRow.appendChild(nb);
+        nb.onclick = () => { if (i + 1 < M4.length) { i++; show(); } else awardBadge(4); };
+      } else {
+        Sound.play("oops");
+        if (!$(".flabel", svg)) { const { svg: s2 } = lineModel(rg, T.d, { labels: true, big }); $$(".flabel", s2).forEach(g => svg.insertBefore(g, hero)); }
+        fbSet(fb, "hint", `💡 You are on ${k === 0 ? "0" : k + "/" + T.d}. Count jumps from 0. You need ${T.k} jump${T.k === 1 ? "" : "s"} of 1/${T.d}.`);
+      }
+    }
+    // drag the hero
+    let drag = false;
+    const toSvgX = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()).x; };
+    hero.style.cursor = "grab"; hero.style.touchAction = "none";
+    hero.addEventListener("pointerdown", e => { if (busy || solved) return; drag = true; hero.setPointerCapture(e.pointerId); e.preventDefault(); });
+    hero.addEventListener("pointermove", e => { if (!drag) return; const x = Math.max(LINE.x0, Math.min(LINE.x1, toSvgX(e))); hero.place(x); const kk = nearestTick(x, T.d, rg); counter.textContent = kk === 0 ? "0" : `${kk}/${T.d}`; });
+    const end = e => { if (!drag) return; drag = false; const k = nearestTick(Math.max(LINE.x0, Math.min(LINE.x1, toSvgX(e))), T.d, rg); hero.place(tickX(k, T.d, rg)); cur = k; Sound.play("jump"); check(k); };
+    hero.addEventListener("pointerup", end); hero.addEventListener("pointercancel", end);
+  }
+  show();
+}
+
+/* ---------- Mission 5: same-size lab ---------- */
+function mission5() {
+  const F = missionFrame(5, "Fractions can look different but be the SAME size. Let's test them in the lab!", M5_STEPS.length + M5_ROUNDS.length);
+  let stepI = 0, starsN = 0;
+  const shade = {}; WALL.forEach(d => shade[d] = 0);
+  function wall() {
+    F.stage.innerHTML = `<div class="target stepT"></div><div class="wall" style="width:100%"></div><div class="feedback" role="status"></div><div class="row center nextrow"></div>`;
+    const fb = $(".feedback", F.stage), nextRow = $(".nextrow", F.stage);
+    const narrow = F.stage.clientWidth < 600, X0 = narrow ? 64 : 96, W = narrow ? 340 : 600, RH = narrow ? 62 : 52, GAP = 10, LF = narrow ? 22 : 26, PF = narrow ? 15 : 18, svg = S("svg", { viewBox: `0 0 ${X0 + W + 8} ${WALL.length * (RH + GAP) + 8}`, role: "img", "aria-label": "fraction wall" });
+    $(".wall", F.stage).appendChild(svg);
+    const ROWC = { 1: "#ffd23f", 2: "#ef3e36", 3: "#2e86de", 4: "#1fb36b", 6: "#8e44ad", 8: "#ff8a1f" };
+    function draw() {
+      svg.innerHTML = ""; const st = M5_STEPS[stepI];
+      WALL.forEach((d, r) => {
+        const y = 4 + r * (RH + GAP), g = S("g", { class: "wrow", "data-d": d }, svg);
+        if (st && st.row === d) S("rect", { x: X0 - 6, y: y - 5, width: W + 12, height: RH + 10, rx: 10, fill: "none", stroke: "#ffd23f", "stroke-width": 7 }, g);
+        S("text", { x: X0 / 2 - 4, y: y + RH / 2 + 9, "text-anchor": "middle", "font-size": LF, "font-weight": 900, "font-family": "Arial Black,system-ui", text: d === 1 ? "1" : `${shade[d]}/${d}` }, g);
+        for (let i = 0; i < d; i++) {
+          const pc = S("g", { class: "piece", "data-i": i, role: "button", "aria-label": `${d === 1 ? "whole" : "1/" + d} piece ${i + 1}` }, g);
+          S("rect", { x: X0 + i * W / d, y, width: W / d, height: RH, fill: i < shade[d] ? ROWC[d] : "#fff", stroke: INK, "stroke-width": 3.5 }, pc);
+          S("text", { x: X0 + (i + .5) * W / d, y: y + RH / 2 + 6, "text-anchor": "middle", "font-size": PF, "font-weight": 900, "font-family": "Arial Black,system-ui", fill: i < shade[d] ? "#fff" : "#555", "pointer-events": "none", text: d === 1 ? "1" : `1/${d}` }, pc);
+          pc.addEventListener("click", () => { shade[d] = shade[d] === i + 1 ? i : i + 1; Sound.play("tap"); draw(); check(d); });
+        }
+      });
+      if (st && st.ref) { const x = X0 + W * shade[st.ref] / st.ref; S("line", { x1: x, y1: 0, x2: x, y2: WALL.length * (RH + GAP) + 4, stroke: "#ef3e36", "stroke-width": 4, "stroke-dasharray": "10 7", "pointer-events": "none" }, svg); }
+      $(".stepT", F.stage).innerHTML = st ? `Lab test ${stepI + 1} of ${M5_STEPS.length}: ${rich(st.say)}` : "";
+    }
+    function check(d) {
+      const st = M5_STEPS[stepI]; if (!st || d !== st.row) return;
+      if (shade[d] === st.want) {
+        starsN++; F.setStars(starsN); Sound.play("good"); burst("SAME!");
+        const msg = st.ref ? `${shade[st.ref]}/${st.ref} = ${st.want}/${d}. Same size! They are equal fractions.` : `${cheer()} That is ${st.want}/${d}.`;
+        fbSet(fb, "ok", msg); stepI++; nextRow.innerHTML = "";
+        const nb = H("button", { class: "btn go big" }, stepI < M5_STEPS.length ? "Next test ▶" : "Matching game ▶"); nextRow.appendChild(nb);
+        nb.onclick = () => { nextRow.innerHTML = ""; fb.className = "feedback"; fb.innerHTML = ""; if (stepI < M5_STEPS.length) { F.say(M5_STEPS[stepI].say); draw(); } else match(0); };
+        draw();
+      } else if (st.ref) {
+        const mine = shade[d] / d, want = st.want / d;
+        fbSet(fb, "hint", mine > want ? "💡 Too much! Make it line up with the red line." : "💡 A little more! Line it up with the red line.");
+      } else fbSet(fb, "hint", `💡 Shade ${st.want} piece${st.want > 1 ? "s" : ""} in the glowing row.`);
+    }
+    F.say(M5_STEPS[0].say); draw();
+  }
+  function match(round) {
+    const cards = shuffle(rng(round * 31 + 5), M5_ROUNDS[round]); let sel = null, left = cards.length;
+    F.say("Matching game! Tap two fractions that are the same size.");
+    F.stage.innerHTML = `<div class="target">Match ${round + 1} of ${M5_ROUNDS.length}: Find the same-size pairs!</div><div class="cards"></div><div class="feedback" role="status"></div><div class="row center nextrow"></div>`;
+    const host = $(".cards", F.stage), fb = $(".feedback", F.stage), nextRow = $(".nextrow", F.stage);
+    cards.forEach((f, k) => {
+      const c = H("button", { class: "fcard", "data-k": k, "data-v": f.n / f.d, "aria-label": fracWords(f.n, f.d) }, frHTML(f.n, f.d));
+      c.appendChild(barModel(f.d, range(f.n), { w: 240, h: 40 })); host.appendChild(c);
+      c.onclick = () => {
+        if (c.classList.contains("matched")) return;
+        if (!sel) { sel = { c, f }; c.classList.add("sel"); Sound.play("tap"); return; }
+        if (sel.c === c) { c.classList.remove("sel"); sel = null; return; }
+        if (sameVal(sel.f, f)) {
+          const a = sel.c; a.classList.remove("sel"); [a, c].forEach(x => x.classList.add("matched")); sel = null; left -= 2;
+          Sound.play("good"); burst("MATCH!"); fbSet(fb, "ok", `${a.getAttribute("aria-label")} = ${fracWords(f.n, f.d)}. ${cheer()}`, false);
+          if (!left) { starsN++; F.setStars(starsN); const nb = H("button", { class: "btn go big" }, round + 1 < M5_ROUNDS.length ? "Next match ▶" : "Finish! ⭐"); nextRow.appendChild(nb); nb.onclick = () => round + 1 < M5_ROUNDS.length ? match(round + 1) : awardBadge(5); }
+        } else {
+          const a = sel.c; a.classList.remove("sel"); sel = null; Sound.play("oops");
+          [a, c].forEach(x => { x.classList.remove("nope"); void x.offsetWidth; x.classList.add("nope"); });
+          fbSet(fb, "hint", "💡 Not the same size. Look at the red bars. Do they line up?");
+        }
+      };
+    });
+  }
+  wall();
+}
+
+/* ---------- Mission 6: showdown ---------- */
+function mission6() {
+  const F = missionFrame(6, "Which fraction is bigger? Pick the sign: less than, greater than, or equal.", M6.length);
+  const tip = H("div", { class: "panel sky tipcard" });
+  tip.innerHTML = `<div><b style="font-size:1.2rem">More pieces = smaller pieces!</b><div class="tipbars"></div></div><div class="tiptext"></div>`;
+  F.sec.insertBefore(tip, F.stage.parentNode);
+  const tb = $(".tipbars", tip); tb.appendChild(barsModel([Fr(1, 2), Fr(1, 4), Fr(1, 8)]));
+  const tt = H("div", { class: "bubble", style: "font-size:1.15rem" }); $(".tiptext", tip).appendChild(tt);
+  setBubble(tt, "The sign is like a hungry mouth. The open side faces the BIGGER fraction. 3/4 > 1/4. We read it: 3/4 is greater than 1/4.");
+  runQuiz(F, M6, { onDone: () => awardBadge(6) });
+}
+
+/* ---------- Mission 7: whole hero ---------- */
+function mission7() {
+  const F = missionFrame(7, "When ALL the pieces are shaded, you have 1 whole! A whole number can be a fraction too.", M7.length);
+  runQuiz(F, M7, { onDone: () => awardBadge(7) });
+}
+
+/* ---------- Mission 8: boss battle ---------- */
+const TAUNTS = ["I break things into pieces! Ha!", "You can't fix my crumbs!", "Hmm, you are good at this.", "Ouch! My crumble ray!", "Stop zapping me!", "My power is going down!", "How do you know so much?", "Oh no! Almost out of power!", "Wait! Not fair!", "Okay, okay! You win!"];
+function mission8() {
+  const F = missionFrame(8, "Count Crumble is here! Get each answer right to zap his crumble power!", 10);
+  const bar = H("div", { class: "panel bossbar" });
+  bar.innerHTML = `<div class="vwrap">${figure("boss")}</div><div><b style="font-family:var(--head);font-size:1.2rem">Count Crumble's power</b><div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="10"><i></i><b>10 / 10</b></div><div class="taunt bubble" style="margin-top:12px;font-size:1.1rem"></div></div>`;
+  F.sec.insertBefore(bar, F.stage.parentNode);
+  const v = $("svg", bar); v.classList.add("villain");
+  const tauntEl = $(".taunt", bar); setBubble(tauntEl, "Mwa-ha-ha! I broke Fraction City into pieces!");
+  const qs = bossSet(Math.floor(Math.random() * 1e9));
+  runQuiz(F, qs, {
+    boss: true, finishLabel: "Final zap! ⚡",
+    promptPrefix: i => `Question ${i + 1} of 10:`,
+    onCorrect: i => { const left = 9 - i; $(".meter i", bar).style.width = left * 10 + "%"; $(".meter b", bar).textContent = `${left} / 10`; $(".meter", bar).setAttribute("aria-valuenow", left); v.classList.remove("hit"); void v.getBoundingClientRect(); v.classList.add("hit"); setBubble(tauntEl, TAUNTS[Math.min(i, TAUNTS.length - 1)]); },
+    onWrong: () => setBubble(tauntEl, "Hee hee! Look again!"),
+    onDone: () => {
+      Sound.play("win"); Confetti.go(220);
+      F.stage.innerHTML = `<div class="qbox"><h2 style="color:var(--green)">YOU WIN!</h2><div style="width:180px">${figure("boss")}</div><div class="bubble" style="max-width:560px">Count Crumble says: "Okay! I will fix Fraction City. Fractions are pretty cool!"</div><div class="row center"><button class="btn go big" id="claim">Get my badge ⭐</button></div></div>`;
+      setBubble(tauntEl, "You zapped all my power! I give up!");
+      $("#claim").onclick = () => awardBadge(8);
+    }
+  });
+}
+const MISSION_FN = [null, mission1, mission2, mission3, mission4, mission5, mission6, mission7, mission8];
+
+/* =========================================================
+   HQ, certificate, router, start-up
+   ========================================================= */
+function buildHQ() {
+  const n = Progress.badges.size, next = MISSIONS.find(m => !Progress.has(m.id));
+  talk($("#hqTalk"), "cap", n === 0
+    ? "Count Crumble broke Fraction City into pieces! Help us fix it. Pick a mission!"
+    : n === 8 ? "You beat Count Crumble! You are a true Fraction Hero! Print your certificate."
+      : `Great work! You have ${n} ${n === 1 ? "badge" : "badges"}. Try Mission ${next.id} next!`);
+  $("#hqArt").innerHTML = figure("cap") + `<div style="transform:scale(.8);transform-origin:bottom">${figure("pint")}</div>` + `<div style="transform:scale(.72);transform-origin:bottom">${figure("boss")}</div>`;
+  $("#hqCount").textContent = `${n} of 8 badges`; $("#hqBar").style.width = n / 8 * 100 + "%";
+  const map = $("#map"); map.innerHTML = "";
+  MISSIONS.forEach(m => {
+    const done = Progress.has(m.id), isNext = next && next.id === m.id;
+    const c = H("button", { class: `mcard${done ? " done" : ""}${isNext ? " next" : ""}${m.id === 8 ? " boss" : ""}`, "data-go": "m" + m.id, "aria-label": `Mission ${m.id}: ${m.title}. ${done ? "Badge earned." : "Not done yet."}` });
+    c.innerHTML = `<span class="num">${m.id}</span>${isNext ? `<span class="ribbon">NEXT!</span>` : ""}${badgeSVG(m.id, done)}<span class="t">${m.title}</span><span class="s">${m.sub}</span><span class="s">${done ? "✅ Done! Play again" : "▶ Play"}</span>`;
+    map.appendChild(c);
+  });
+}
+function buildCert() {
+  const n = Progress.badges.size;
+  talk($("#certTalk"), "pint", n === 8 ? "You did it, hero! Type your name. Then tap Print!" : `You have ${n} of 8 badges. Type your name. You can print now, or earn more badges first!`);
+  const inp = $("#certName"), card = $("#certCard");
+  const date = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  function draw() {
+    const name = inp.value.trim();
+    card.innerHTML = `<div class="row center" style="gap:4px;align-items:flex-end"><div class="cfig" style="width:96px">${figure("cap")}</div>
+      <div><div class="tag" style="transform:rotate(-3deg)">OFFICIAL</div><div class="ctitle">FRACTION HERO</div><div style="font-family:var(--head);font-size:1.3rem">CERTIFICATE</div></div><div class="cfig small" style="width:84px">${figure("pint")}</div></div>
+      <p class="cline" style="margin:8px 0 2px;font-size:1.15rem;font-weight:800">This award goes to</p>
+      <div class="cname"><span style="font-size:${name.length > 14 ? Math.max(.5, 14 / name.length).toFixed(3) : 1}em">${name ? name.replace(/[<>&"]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]) : "&nbsp;"}</span></div>
+      <p class="cline" style="margin:10px 0 4px;font-size:1.15rem;font-weight:800">${Progress.has(8) ? "for beating Count Crumble and saving Fraction City with fractions!" : "for training hard with fractions in Fraction City!"}</p>
+      <div class="cbadges">${MISSIONS.map(m => badgeSVG(m.id, Progress.has(m.id), "cb")).join("")}</div>
+      <div style="font-weight:800">${n} of 8 mission badges · ${date}</div>
+      <div class="sig"><div>Captain Fraction</div><div>Half-Pint</div></div>`;
+  }
+  inp.oninput = draw; draw();
+}
+const SCREENS = ["hq", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "cert"];
+function go(name) { if (location.hash.slice(1) !== name) location.hash = name; else render(name); }
+function render(name) {
+  if (!SCREENS.includes(name)) name = "hq";
+  Speech.stop(); $$(".modal").forEach(m => m.remove());
+  $$(".screen").forEach(s => s.classList.toggle("on", s.id === "s-" + name));
+  if (name === "hq") buildHQ(); else if (name === "cert") buildCert(); else MISSION_FN[+name.slice(1)]();
+  window.scrollTo(0, 0);
+  const h = $("#s-" + name + " h1, #s-" + name + " h2"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b && !b.closest(".modal")) { Sound.play("tap"); go(b.dataset.go); } });
+$("#hqBtn").onclick = () => { Sound.play("tap"); go("hq"); };
+$("#badgeBtn").onclick = () => { Sound.play("tap"); go("hq"); setTimeout(() => $("#map").scrollIntoView({ behavior: "smooth", block: "start" }), 60); };
+$("#soundBtn").onclick = () => Sound.toggle();
+$("#certBtn").onclick = () => { Sound.play("tap"); go("cert"); };
+$("#printBtn").onclick = () => { Sound.play("tap"); window.print(); };
+$("#resetBtn").onclick = () => { if (confirm("Reset all badges?")) { Progress.reset(); buildHQ(); toast("Progress reset."); } };
+addEventListener("hashchange", () => render(location.hash.slice(1) || "hq"));
+syncSoundBtn(); syncBadges();
+if (!Speech.ok) document.documentElement.classList.add("nospeech");
+render(location.hash.slice(1) || "hq");
+
+</script>
+</body>
+</html>
