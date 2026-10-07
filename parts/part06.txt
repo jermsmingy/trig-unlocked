@@ -1,0 +1,231 @@
+    ["Let u = sin x: @@E:nbsp@@ 2u^2 - u - 1 = 0", "It's a <b>quadratic in disguise</b>.", "What if sin x were just a letter?"],
+    ["(2u + 1)(u - 1) = 0", "<b>Factor.</b> Check: (2u + 1)(u − 1) = 2u² − 2u + u − 1 ✓", "Factor like any quadratic."],
+    ["sin x = -\\f{1}{2} @@E:nbsp@@ or @@E:nbsp@@ sin x = 1", "<b>Zero product property</b>, then put sin x back.", "Set each factor to zero."],
+    ["sin x = 1 @@E:nbsp@@⟹@@E:nbsp@@ x = \\f{π}{2}", "The very top of the unit circle.", "Where is the y-coordinate 1?"],
+    ["sin x = -\\f{1}{2} @@E:nbsp@@⟹@@E:nbsp@@ x = \\f{7π}{6}, \\f{11π}{6}", "Reference angle π/6. Sine is negative in <b>QIII and QIV</b>: π + π/6 and 2π − π/6.", "Reference angle? Which quadrants have negative sine?"],
+    ["x = \\f{π}{2}, \\f{7π}{6}, \\f{11π}{6} ✓", "Check x = 7π/6: 2(1/4) − (−1/2) − 1 = 0 ✓", "Collect every solution in [0, 2π)."]] },
+  e7: { title: "Solve the equation", goal: "sin 2x = cos x @@E:nbsp@@ on [0, 2π)", steps: [
+    ["2 sin x cos x = cos x", "<b>Double-angle</b> so everything uses the same angle x.", "Rewrite sin 2x."],
+    ["2 sin x cos x - cos x = 0", "Move everything to one side. ⚠ Don't divide by cos x, or you'd lose the solutions where cos x = 0!", "Tempting to divide… don't. What instead?"],
+    ["cos x (2 sin x - 1) = 0", "<b>Factor</b> out cos x.", "What's common to both terms?"],
+    ["cos x = 0 @@E:nbsp@@⟹@@E:nbsp@@ x = \\f{π}{2}, \\f{3π}{2}", "Where the x-coordinate on the unit circle is 0.", "Top and bottom of the circle."],
+    ["sin x = \\f{1}{2} @@E:nbsp@@⟹@@E:nbsp@@ x = \\f{π}{6}, \\f{5π}{6}", "Sine is positive in <b>QI and QII</b>.", "Reference angle π/6, which quadrants?"],
+    ["x = \\f{π}{6}, \\f{π}{2}, \\f{5π}{6}, \\f{3π}{2} ✓", "Four solutions. Check x = 5π/6: sin(5π/3) = −√3/2 and cos(5π/6) = −√3/2 ✓", "List them all in order."]] }
+};
+function buildExample(host, key, num) {
+  const E = EXAMPLES[key];
+  host.classList.add("ex");
+  host.innerHTML = `<h3>${num ? `<span class="pill">Example ${num}</span>` : ""}${E.title}<span class="pill done-badge">✓ done</span></h3>
+    <div class="goal"><span class="m">${E.goal}</span></div>
+    <ol class="steps">${E.steps.map(([e, why]) => `<li><div><div class="expr m">${e}</div><div class="why">${why}</div></div></li>`).join("")}</ol>
+    <div class="tip hintbox"></div>
+    <div class="btnrow"><button class="btn primary small nx">Next step ▸</button><button class="btn small hn">💡 Hint</button><button class="btn small all">Show all</button><button class="btn small rs">↺ Reset</button>${E.check ? `<button class="btn small ck">🔬 Graph both sides</button>` : ""}</div>`;
+  renderMath(host);
+  const lis = $$(".steps li", host), hint = $(".hintbox", host); let k = 0;
+  function sync() {
+    lis.forEach((li, i) => li.classList.toggle("shown", i < k));
+    $(".nx", host).disabled = k >= lis.length; $(".hn", host).disabled = k >= lis.length;
+    $(".nx", host).textContent = k === 0 ? "Start ▸" : k >= lis.length ? "Done ✓" : "Next step ▸";
+    hint.classList.remove("on");
+    host.classList.toggle("complete", k >= lis.length);
+  }
+  $(".nx", host).onclick = () => { k++; sync(); if (k === lis.length) toast("Nice work! 🎉"); };
+  $(".hn", host).onclick = () => { hint.innerHTML = "💡 " + E.steps[k][2]; hint.classList.add("on"); };
+  $(".all", host).onclick = () => { k = lis.length; sync(); };
+  $(".rs", host).onclick = () => { k = 0; sync(); };
+  if (E.check) $(".ck", host).onclick = () => Checker.show(E.check[0], E.check[1]);
+  sync();
+}
+$$(".ex.mini").forEach(el => buildExample(el, el.dataset.ex));
+["e1", "e2", "e3", "e4", "e5", "e6", "e7"].forEach((k, i) => { const d = document.createElement("div"); $("#exList").appendChild(d); buildExample(d, k, i + 1); });
+
+/* ---------- practice problems ---------- */
+const R2 = Math.SQRT2, R3 = Math.sqrt(3);
+const PROBLEMS = [
+  { type: "in", q: "Find the exact value: <span class='m'>sin \\f{π}{6}</span>", ans: 0.5, show: "\\f{1}{2}", ex: "<span class='m'>\\f{π}{6}</span> = 30°. The unit-circle point is <span class='m'>(\\f{\\r{3}}{2}, \\f{1}{2})</span>, and sin is the <b>y</b>-coordinate." },
+  { type: "in", q: "Find the exact value: <span class='m'>cos \\f{3π}{4}</span>", ans: -R2 / 2, show: "-\\f{\\r{2}}{2}", ex: "<span class='m'>\\f{3π}{4}</span> = 135°, in Quadrant II with reference angle <span class='m'>\\f{π}{4}</span>. cos <span class='m'>\\f{π}{4} = \\f{\\r{2}}{2}</span>, and cosine is <b>negative</b> in QII." },
+  { type: "in", q: "Find the exact value: <span class='m'>tan \\f{5π}{3}</span>", ans: -R3, show: "-\\r{3}", ex: "<span class='m'>\\f{5π}{3}</span> = 300°, in Quadrant IV, reference angle <span class='m'>\\f{π}{3}</span>. tan <span class='m'>\\f{π}{3} = \\r{3}</span>, and tangent is <b>negative</b> in QIV (only cos is positive there)." },
+  { type: "in", q: "Find the exact value: <span class='m'>sec \\f{π}{3}</span>", ans: 2, show: "2", ex: "cos <span class='m'>\\f{π}{3} = \\f{1}{2}</span>, so sec <span class='m'>\\f{π}{3} = \\f{1}{1/2} = 2</span>." },
+  { type: "in", q: "Find the exact value: <span class='m'>csc \\f{7π}{6}</span>", ans: -2, show: "-2", ex: "<span class='m'>\\f{7π}{6}</span> = 210°, in Quadrant III, so sin = <span class='m'>-\\f{1}{2}</span>. csc is its reciprocal: <span class='m'>-2</span>." },
+  { type: "mc", q: "What is <span class='m'>tan \\f{π}{2}</span>?", opts: ["0", "1", "undefined", "-1"], ans: 2, ex: "At <span class='m'>\\f{π}{2}</span> the point is (0, 1). tan = <span class='m'>\\f{y}{x} = \\f{1}{0}</span>, and you can't divide by zero, so it's <b>undefined</b> (that's the asymptote on the tan graph)." },
+  { type: "mc", q: "If <span class='m'>sin θ @@E:lt@@ 0</span> and <span class='m'>tan θ @@E:gt@@ 0</span>, which quadrant is θ in?", opts: ["I", "II", "III", "IV"], ans: 2, ex: "sin @@E:lt@@ 0 means QIII or QIV. tan @@E:gt@@ 0 means QI or QIII. Both together: <b>Quadrant III</b> (\"<b>T</b>ake\": only tan is positive)." },
+  { type: "in", q: "If <span class='m'>cos θ = -\\f{3}{5}</span> and θ is in Quadrant II, find <span class='m'>sin θ</span>.", ans: 0.8, show: "\\f{4}{5}", ex: "<span class='m'>sin^2θ = 1 - cos^2θ = 1 - \\f{9}{25} = \\f{16}{25}</span>, so <span class='m'>sin θ = ±\\f{4}{5}</span>. Sine is <b>positive</b> in QII, so <span class='m'>\\f{4}{5}</span>." },
+  { type: "mc", q: "What is the reference angle of 240°?", opts: ["30°", "60°", "120°", "40°"], ans: 1, ex: "240° is in Quadrant III, so the reference angle is 240° − 180° = <b>60°</b>." },
+  { type: "mc", q: "Simplify: <span class='m'>sin x · cot x</span>", opts: ["cos x", "\\f{sin^2x}{cos x}", "1", "tan x"], ans: 0, ex: "<span class='m'>sin x · \\f{cos x}{sin x} = cos x</span>. The sin x cancels." },
+  { type: "mc", q: "Simplify: <span class='m'>\\f{sec^2x - 1}{tan x}</span>", opts: ["tan x", "1", "cot x", "sec x"], ans: 0, ex: "From <span class='m'>1 + tan^2x = sec^2x</span>, we get <span class='m'>sec^2x - 1 = tan^2x</span>. Then <span class='m'>\\f{tan^2x}{tan x} = tan x</span>." },
+  { type: "mc", q: "Which expression is equal to <span class='m'>cos 2x</span>?", opts: ["2 cos x", "1 - 2sin^2x", "1 - 2cos^2x", "2 sin x cos x"], ans: 1, ex: "The three forms of the cosine double-angle formula are <span class='m'>cos^2x - sin^2x = 2cos^2x - 1 = 1 - 2sin^2x</span>. (Watch out: <span class='m'>2 sin x cos x</span> is <b>sin</b> 2x, and <span class='m'>1 - 2cos^2x</span> is the <i>negative</i> of cos 2x.)" },
+  { type: "mc", q: "Exact value of <span class='m'>sin 15°</span>:", opts: ["\\f{\\r{6} - \\r{2}}{4}", "\\f{\\r{6} + \\r{2}}{4}", "\\f{\\r{3} - 1}{2}", "\\f{1}{4}"], ans: 0, ex: "<span class='m'>sin(45° - 30°) = sin 45° cos 30° - cos 45° sin 30° = \\f{\\r{6}}{4} - \\f{\\r{2}}{4} = \\f{\\r{6} - \\r{2}}{4}</span> ≈ 0.2588." },
+  { type: "list", q: "Solve <span class='m'>2cos x - 1 = 0</span> on <span class='m'>[0, 2π)</span>. Separate answers with commas.", ans: [PI / 3, 5 * PI / 3], show: "\\f{π}{3}, \\f{5π}{3}", ex: "<span class='m'>cos x = \\f{1}{2}</span>. Reference angle <span class='m'>\\f{π}{3}</span>; cosine is positive in QI and QIV: <span class='m'>x = \\f{π}{3}</span> and <span class='m'>2π - \\f{π}{3} = \\f{5π}{3}</span>." },
+  { type: "list", q: "Solve <span class='m'>tan^2x = 3</span> on <span class='m'>[0, 2π)</span>. Separate answers with commas.", ans: [PI / 3, 2 * PI / 3, 4 * PI / 3, 5 * PI / 3], show: "\\f{π}{3}, \\f{2π}{3}, \\f{4π}{3}, \\f{5π}{3}", ex: "<span class='m'>tan x = ±\\r{3}</span> (don't forget the negative root!). Reference angle <span class='m'>\\f{π}{3}</span>, and tan is ± in every quadrant, so there's one solution per quadrant: <span class='m'>\\f{π}{3}, \\f{2π}{3}, \\f{4π}{3}, \\f{5π}{3}</span>." }
+];
+(function practice() {
+  const list = $("#qList"), N = PROBLEMS.length, state = PROBLEMS.map(() => ({ first: null, solved: false }));
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  function score() {
+    const right = state.filter(s => s.first === true).length, answered = state.filter(s => s.first !== null).length;
+    $("#scoreTxt").textContent = `Score: ${right} / ${N}`; $("#scoreSub").textContent = `${answered} answered`;
+    $("#scoreMeter").style.width = right / N * 100 + "%";
+    if (answered === N && !score.celebrated) {
+      score.celebrated = true;
+      if (right === N) { Confetti.burst(220); toast("PERFECT SCORE! 🏆 You're a trig master!"); }
+      else if (right >= 12) { Confetti.burst(); toast(`${right}/${N}! Excellent work! 🌟`); }
+      else toast(`${right}/${N}. Review the explanations and hit Reset to try again 💪`);
+    }
+  }
+  function record(i, ok, card) {
+    const s = state[i];
+    if (s.first === null) s.first = ok;
+    if (ok) s.solved = true;
+    card.classList.toggle("right", ok); card.classList.toggle("wrong", !ok && !s.solved);
+    score();
+  }
+  function fb(card, cls, html) { const f = $(".fb", card); f.className = "fb on " + cls; f.innerHTML = html; renderMath(f); }
+  function build() {
+    list.innerHTML = ""; score.celebrated = false;
+    PROBLEMS.forEach((P, i) => {
+      const card = document.createElement("div"); card.className = "q";
+      let body = "";
+      if (P.type === "mc") {
+        const order = shuffle(P.opts.map((_, k) => k));
+        body = `<div class="opts">${order.map(k => `<button class="btn opt" data-k="${k}"><span class="m">${P.opts[k]}</span></button>`).join("")}</div>`;
+      } else {
+        body = `<div class="ansrow"><input type="text" class="mathin" placeholder="${P.type === "list" ? "e.g. pi/6, 5pi/6" : "e.g. sqrt(3)/2"}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your answer">
+          <div class="keypad"><button class="btn small" data-ins="√(">√</button><button class="btn small" data-ins="π">π</button><button class="btn small" data-ins="/">/</button><button class="btn small" data-ins="-">−</button></div>
+          <button class="btn primary chk">Check</button></div><div class="preview"></div>`;
+      }
+      card.innerHTML = `<div class="qhead"><span class="qn">${i + 1}.</span><span class="prompt">${P.q}</span></div>${body}<div class="fb"></div>`;
+      list.appendChild(card); renderMath(card);
+      if (P.type === "mc") {
+        $$(".opt", card).forEach(b => b.onclick = () => {
+          const k = +b.dataset.k, ok = k === P.ans;
+          b.classList.add(ok ? "sel-right" : "sel-wrong");
+          if (ok) { $$(".opt", card).forEach(x => x.disabled = true); fb(card, "ok", "✅ <b>Correct!</b> " + P.ex); }
+          else fb(card, "no", "❌ Not quite, try again! <details class='small'><summary>Show explanation</summary>" + P.ex + "</details>");
+          record(i, ok, card);
+        });
+      } else {
+        const inp = $("input", card), prev = $(".preview", card);
+        inp.addEventListener("input", () => {
+          const v = inp.value.trim(); if (!v) { prev.innerHTML = ""; return; }
+          try { prev.innerHTML = "you typed: " + v.split(/[,;]/).map(s => `<span class="m">${tex(makeFn(s, { noVar: true }).tex)}</span>`).join(", "); }
+          catch (e) { prev.innerHTML = /^\s*(und|dne|none|no sol)/i.test(v) ? "you typed: undefined" : `<span class="small">${escapeHTML(e.message)}</span>`; }
+        });
+        $$("[data-ins]", card).forEach(b => b.onclick = () => {
+          const s = inp.selectionStart ?? inp.value.length, e = inp.selectionEnd ?? s, ins = b.dataset.ins;
+          inp.value = inp.value.slice(0, s) + ins + inp.value.slice(e); inp.focus(); inp.setSelectionRange(s + ins.length, s + ins.length); inp.dispatchEvent(new Event("input"));
+        });
+        const check = () => {
+          const v = inp.value.trim(); if (!v) return;
+          if (state[i].solved) return;
+          const res = gradeInput(P, v);
+          if (res.nudge) { fb(card, "info", res.nudge); return; }
+          record(i, res.ok, card);
+          if (res.ok) { inp.disabled = true; $(".chk", card).disabled = true; fb(card, "ok", `✅ <b>Correct!</b> <span class="m">${P.show}</span>. ${P.ex}`); }
+          else fb(card, "no", `❌ ${res.msg || "Not quite."} Try again! <details class="small"><summary>Show explanation @@E:amp@@ answer</summary>${P.ex}<br>Answer: <span class="m">${P.show}</span></details>`);
+        };
+        $(".chk", card).onclick = check; inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+      }
+    });
+    score();
+  }
+  $("#practiceReset").onclick = () => { state.forEach(s => { s.first = null; s.solved = false; }); build(); };
+  build();
+})();
+/* grading for typed answers (exported for testing) */
+function gradeInput(P, v) {
+  const close = (a, b) => Math.abs(a - b) < 1e-6;
+  if (P.type === "in") {
+    if (/^\s*(und|dne|undefined|none)/i.test(v)) return { ok: false, msg: "It's actually defined here." };
+    let n; try { n = makeFn(v, { noVar: true }).f(0); } catch (e) { return { nudge: "⚠ " + escapeHTML(e.message) }; }
+    if (!isFinite(n)) return { ok: false, msg: "That expression is undefined." };
+    if (/\d\.\d|^\.\d|[^\d]\.\d/.test(v)) return close(n, P.ans) || Math.abs(n - P.ans) < 0.0006 ? { nudge: "🔢 That's the right <i>decimal</i>! Now write it as an <b>exact</b> value (use √ and fractions)." } : { ok: false };
+    if (close(n, P.ans)) return { ok: true };
+    if (close(n, -P.ans)) return { ok: false, msg: "Right size, wrong <b>sign</b>. Check the quadrant!" };
+    if (close(n, 1 / P.ans)) return { ok: false, msg: "That's the <b>reciprocal</b> of the answer." };
+    return { ok: false };
+  }
+  if (P.type === "list") {
+    let vals;
+    try { vals = v.split(/[,;]|\band\b/).map(s => s.trim()).filter(Boolean).map(s => makeFn(s, { noVar: true }).f(0)); }
+    catch (e) { return { nudge: "⚠ " + escapeHTML(e.message) }; }
+    const asDeg = vals.every(x => P.ans.some(a => close(x * PI / 180, a))) && vals.some(x => x > 7);
+    if (asDeg) return { nudge: "Those look like <b>degrees</b>. The interval [0, 2π) means radians, e.g. <code>pi/3</code>." };
+    if (/\d\.\d/.test(v)) return { nudge: "🔢 Use exact values with π, like <code>2pi/3</code>, not decimals." };
+    const outside = vals.filter(x => x < -1e-9 || x >= TAU - 1e-9);
+    if (outside.length) return { ok: false, msg: "Some answers are outside [0, 2π)." };
+    const found = P.ans.filter(a => vals.some(x => close(x, a))).length;
+    const extra = vals.filter(x => !P.ans.some(a => close(x, a))).length;
+    if (found === P.ans.length && !extra) return { ok: true };
+    if (!extra && found > 0) return { ok: false, msg: `You found ${found} of ${P.ans.length} solutions. There are more!` };
+    return { ok: false, msg: extra ? `${extra} of your answers ${extra > 1 ? "don't" : "doesn't"} work.` : "" };
+  }
+}
+
+/* ---------- unit circle speed drill ---------- */
+(function drill() {
+  const VAL = { "0": 0, "1": 1, "-1": -1, "\\f{1}{2}": .5, "-\\f{1}{2}": -.5, "\\f{\\r{2}}{2}": R2 / 2, "-\\f{\\r{2}}{2}": -R2 / 2, "\\f{\\r{3}}{2}": R3 / 2, "-\\f{\\r{3}}{2}": -R3 / 2, "\\f{\\r{3}}{3}": R3 / 3, "-\\f{\\r{3}}{3}": -R3 / 3, "\\r{3}": R3, "-\\r{3}": -R3, "undefined": NaN };
+  const POOL = Object.keys(VAL);
+  let score = 0, streak = 0, timeLeft = 60, timer = 0, running = false, cur = null, best = LS.get("drillBest", 0), answered = 0;
+  $("#dBest").textContent = best;
+  function newQ() {
+    const d = SPECIAL[Math.floor(Math.random() * 16)], f = ["sin", "cos", "tan"][Math.floor(Math.random() * 3)], ex = exactTrig(d);
+    const ans = f === "tan" ? (ex.tan === null ? "undefined" : ex.tan) : ex[f];
+    const useDeg = Math.random() < .3;
+    const opts = new Set([ans]);
+    const neg = ans.startsWith("-") ? ans.slice(1) : ans === "0" || ans === "undefined" ? null : "-" + ans;
+    if (neg && VAL[neg] !== undefined) opts.add(neg);
+    const other = f === "sin" ? ex.cos : f === "cos" ? ex.sin : (ex.tan === null ? "0" : null);
+    if (other && VAL[other] !== undefined) opts.add(other);
+    while (opts.size < 4) opts.add(POOL[Math.floor(Math.random() * POOL.length)]);
+    cur = { ans, list: [...opts].sort(() => Math.random() - .5) };
+    $("#dQ").innerHTML = `<span class="m">${tex(useDeg ? `${f} ${d}°` : `${f}(${degToRadTex(d)})`)}</span>`;
+    $("#dOpts").innerHTML = cur.list.map(o => `<button class="btn opt" data-v="${escapeHTML(o)}"><span class="m">${tex(o)}</span></button>`).join("");
+    $$("#dOpts .opt").forEach(b => b.onclick = () => pick(b));
+  }
+  function pick(b) {
+    if (!running) return;
+    answered++;
+    const ok = b.dataset.v === cur.ans, card = $("#drill");
+    if (ok) { score++; streak++; } else { streak = 0; }
+    card.classList.remove("flash-ok", "flash-no"); void card.offsetWidth; card.classList.add(ok ? "flash-ok" : "flash-no");
+    $("#dMsg").innerHTML = ok ? (streak >= 5 && streak % 5 === 0 ? `🔥 ${streak} in a row!` : "✓") : `✗ It was <span class="m">${tex(cur.ans)}</span>`;
+    $("#dScore").textContent = score; $("#dStreak").textContent = streak;
+    newQ();
+  }
+  function tick() {
+    timeLeft -= .2; $("#dTime").textContent = Math.max(0, Math.ceil(timeLeft)); $("#dTimer").style.width = Math.max(0, timeLeft / 60 * 100) + "%";
+    if (timeLeft <= 0) end();
+  }
+  function end() {
+    running = false; clearInterval(timer); $("#dOpts").innerHTML = ""; $("#dStart").textContent = "Play again";
+    const acc = answered ? Math.round(score / answered * 100) : 0;
+    $("#dQ").innerHTML = `⏱ ${score} correct!`;
+    if (score > best) { best = score; LS.set("drillBest", best); $("#dBest").textContent = best; $("#dMsg").innerHTML = `🏆 <b>New best score!</b> Accuracy ${acc}%.`; if (score > 0) Confetti.burst(); }
+    else $("#dMsg").innerHTML = `Accuracy ${acc}%. Best: ${best}. Can you beat it?`;
+  }
+  $("#dStart").onclick = () => { if (running) return; score = 0; streak = 0; answered = 0; timeLeft = 60; running = true; $("#dScore").textContent = 0; $("#dStreak").textContent = 0; $("#dMsg").textContent = ""; $("#dStart").textContent = "Go go go!"; newQ(); timer = setInterval(tick, 200); };
+  window.__drill = { newQ, get cur() { return cur; } };
+})();
+
+/* ---------- cheat sheet ---------- */
+(function cheat() {
+  const svg = $("#cheatSvg");
+  S("line", { x1: -1.7, y1: 0, x2: 1.7, y2: 0, style: "stroke:var(--axis);stroke-width:.008" }, svg);
+  S("line", { x1: 0, y1: -1.7, x2: 0, y2: 1.7, style: "stroke:var(--axis);stroke-width:.008" }, svg);
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--text);stroke-width:.014" }, svg);
+  SPECIAL.forEach(d => {
+    const a = d * PI / 180;
+    S("line", { x1: 0, y1: 0, x2: Math.cos(a), y2: -Math.sin(a), style: "stroke:var(--line);stroke-width:.006" }, svg);
+    S("circle", { cx: Math.cos(a), cy: -Math.sin(a), r: .02, style: "fill:var(--accent2)" }, svg);
+    if (d % 90) S("text", { x: .78 * Math.cos(a), y: -.78 * Math.sin(a) + .02, "text-anchor": "middle", "font-size": .07, style: "fill:var(--muted)", text: d + "°" }, svg);
+  });
+  [["A", .3, -.24], ["S", -.3, -.24], ["T", -.3, .36], ["C", .3, .36]].forEach(([t, x, y]) => S("text", { x, y, "text-anchor": "middle", "font-size": .16, style: "fill:var(--accent);opacity:.35;font-weight:800", text: t }, svg));
+  drawSpecialLabels(S("g", {}, svg), { r: 1.07, fs: .084, deg: false });
+  $("#printBtn").onclick = () => window.print();
+})();
+
+redrawAll();
+
+</script>
+</body>
+</html>
