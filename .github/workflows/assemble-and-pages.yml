@@ -28,12 +28,14 @@ jobs:
           if [ ! -f parts/SHA256SUMS ]; then echo "No parts manifest; nothing to assemble."; exit 0; fi
           cd parts
           if ! sha256sum -c SHA256SUMS; then echo "Parts incomplete or mismatched; skipping."; exit 0; fi
+          perl -pi -e 's/\@\@E:([a-z#0-9]+)\@\@/chr(38).$1.";"/ge' part*.txt
+          perl -pi -e 's/<b>Drag \x26 slide<\/b>/"<b>Drag ".chr(38)."amp; slide<\/b>"/e' part01.txt
           cat part*.txt > ../index.html
           cd ..
           echo "a39976aebd19a94c8785d6d5d3c197e56a8bb8d6e0728779c2984c401549c3b8  index.html" | sha256sum -c -
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git rm -r -q parts
+          git rm -r -q -f parts
           git add index.html
           git commit -m "Add interactive trig lesson"
           git push
