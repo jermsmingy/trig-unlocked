@@ -1,0 +1,226 @@
+
+/* ---------- toast, burst, confetti ---------- */
+let toastT; function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
+const WORDS = ["POW!", "ZAP!", "BAM!", "WOW!", "YES!", "BOOM!", "KAPOW!"];
+function burst(word, color) {
+  const b = $("#burst"); word = word || WORDS[Math.floor(Math.random() * WORDS.length)];
+  b.innerHTML = burstSVG(word, color || ["#ffd23f", "#ff8a1f", "#2fd0ff", "#7dff6b"][Math.floor(Math.random() * 4)]);
+  b.classList.remove("go"); void b.offsetWidth; b.classList.add("go");
+}
+function burstSVG(word, color) {
+  const pts = []; for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, r = i % 2 ? 62 : 100 + (i % 4 === 0 ? 12 : 0); pts.push(`${(150 + r * Math.cos(a) * 1.35).toFixed(1)},${(110 + r * Math.sin(a)).toFixed(1)}`); }
+  return `<svg viewBox="0 0 300 220"><polygon points="${pts.join(" ")}" fill="${color}" stroke="${INK}" stroke-width="6" stroke-linejoin="round"/><text x="150" y="128" text-anchor="middle" font-family="Arial Black,system-ui" font-weight="900" font-size="${word.length > 5 ? 50 : 60}" fill="#ef3e36" stroke="${INK}" stroke-width="3" paint-order="stroke" transform="rotate(-8 150 110)">${word}</text></svg>`;
+}
+const Confetti = (() => {
+  let parts = [], raf = 0; const cv = () => $("#confetti");
+  function frame() { const c = cv(), x = c.getContext("2d"); x.clearRect(0, 0, c.width, c.height); parts = parts.filter(p => p.y < c.height + 20); parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .12; p.a += p.va; x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * .66); x.restore(); }); if (parts.length) raf = requestAnimationFrame(frame); else raf = 0; }
+  return { go(n = 140) { const c = cv(); c.width = innerWidth; c.height = innerHeight; for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * .35, vx: (Math.random() - .5) * 14, vy: -Math.random() * 11 - 3, a: Math.random() * 6, va: (Math.random() - .5) * .3, s: 8 + Math.random() * 8, c: ["#ef3e36", "#ffd23f", "#2e86de", "#1fb36b", "#ff5fa2", "#8e44ad"][i % 6] }); if (!raf) raf = requestAnimationFrame(frame); } };
+})();
+
+/* ---------- characters (original designs) ---------- */
+const CAST = {
+  cap: { name: "Captain Fraction", suit: "#2e86de", cape: "#ef3e36", skin: "#8d5524", hair: "#1b1b1b", mask: "#ef3e36", belt: "#ffd23f", emblem: "quarter" },
+  pint: { name: "Half-Pint", suit: "#1fb36b", cape: "#ffd23f", skin: "#f1c27d", hair: "#c0392b", mask: "#16161d", belt: "#ff8a1f", emblem: "half", small: true },
+  boss: { name: "Count Crumble", suit: "#8e44ad", cape: "#2b2b3a", skin: "#b9e3a8", hair: "#e8e8e8", mask: null, belt: "#555", emblem: "crack", villain: true }
+};
+function figure(who, headOnly) {
+  const c = CAST[who], st = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+  const emb = { quarter: `<circle cx="60" cy="88" r="13" fill="#fff" ${st}/><path d="M60 88 L60 75 A13 13 0 0 1 73 88 Z" fill="${c.cape}" ${st}/><path d="M47 88 H73 M60 75 V101" stroke="${INK}" stroke-width="2"/>`,
+    half: `<circle cx="60" cy="88" r="13" fill="#fff" ${st}/><text x="60" y="95" text-anchor="middle" font-family="Arial Black,system-ui" font-size="17" font-weight="900" fill="${INK}">½</text>`,
+    crack: `<path d="M50 78 L58 88 L52 94 L62 102 M66 78 L62 88 L70 94" fill="none" stroke="#ffd23f" stroke-width="3.5" stroke-linecap="round"/>` }[c.emblem];
+  const capeD = c.villain ? "M34 64 L14 166 L28 154 L40 168 L52 154 L64 168 L76 154 L90 168 L104 154 L86 64 Z" : "M34 64 Q8 120 16 166 Q60 150 104 166 Q112 120 86 64 Z";
+  const face = c.villain
+    ? `<path d="M38 26 L44 8 L52 20 L60 4 L68 20 L76 8 L82 26" fill="${c.hair}" ${st}/><circle cx="60" cy="40" r="22" fill="${c.skin}" ${st}/>
+       <path d="M44 31 L56 35 M76 31 L64 35" stroke="${INK}" stroke-width="4" stroke-linecap="round"/><circle cx="51" cy="40" r="3.5" fill="${INK}"/><circle cx="69" cy="40" r="7" fill="#e6f7ff" ${st}/><circle cx="69" cy="40" r="3.2" fill="${INK}"/>
+       <path d="M75 46 Q80 54 76 62" fill="none" stroke="${INK}" stroke-width="2"/><path d="M48 52 Q54 47 60 51 Q66 47 72 52" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/><path d="M52 57 Q60 61 68 57" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`
+    : `<circle cx="60" cy="40" r="22" fill="${c.skin}" ${st}/><path d="M38 38 Q38 14 60 15 Q84 14 82 38 Q74 24 60 26 Q48 24 38 38 Z" fill="${c.hair}" ${st}/>
+       <path d="M37 36 Q60 28 83 36 L82 47 Q71 50 60 44 Q49 50 38 47 Z" fill="${c.mask}" ${st}/><ellipse cx="50" cy="40.5" rx="5.5" ry="4" fill="#fff"/><ellipse cx="70" cy="40.5" rx="5.5" ry="4" fill="#fff"/>
+       <circle cx="51" cy="41" r="2.2" fill="${INK}"/><circle cx="71" cy="41" r="2.2" fill="${INK}"/><path d="M50 52 Q60 60 70 52" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+  if (headOnly) return `<svg viewBox="30 0 60 70" width="100%" height="100%">${face}</svg>`.replace('viewBox="30 0 60 70"', c.villain ? 'viewBox="32 0 56 66"' : 'viewBox="34 10 52 58"');
+  const armUp = who === "pint" ? `<path d="M40 70 L22 34" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><path d="M40 70 L22 34" stroke="${INK}" stroke-width="3" fill="none" opacity="0"/><circle cx="21" cy="31" r="7.5" fill="${c.skin}" ${st}/>`
+    : `<path d="M40 72 L22 108" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><circle cx="21" cy="110" r="7.5" fill="${c.skin}" ${st}/>`;
+  const armR = c.villain ? `<path d="M80 72 L104 84" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><rect x="98" y="72" width="22" height="14" rx="4" fill="#ff8a1f" ${st}/><path d="M120 79 l8 -6 M120 79 l9 2 M120 79 l6 8" stroke="#ff8a1f" stroke-width="3"/>`
+    : `<path d="M80 70 L98 34" stroke="${c.suit}" stroke-width="13" stroke-linecap="round"/><circle cx="99" cy="31" r="7.5" fill="${c.skin}" ${st}/>`;
+  return `<svg viewBox="0 0 130 172" class="fig" role="img" aria-label="${c.name}"><path d="${capeD}" fill="${c.cape}" ${st}/>
+    <rect x="44" y="118" width="14" height="40" rx="5" fill="${c.suit}" ${st}/><rect x="62" y="118" width="14" height="40" rx="5" fill="${c.suit}" ${st}/>
+    <path d="M42 150 h18 v14 h-20 z M60 150 h18 v14 h-20 z" fill="${c.villain ? "#333" : c.cape}" ${st}/>
+    ${armUp}${armR}<rect x="36" y="62" width="48" height="62" rx="15" fill="${c.suit}" ${st}/><rect x="36" y="106" width="48" height="8" fill="${c.belt}" ${st}/>${emb}${face}</svg>`;
+}
+const BADGE_COL = ["#2e86de", "#ef3e36", "#ff8a1f", "#1fb36b", "#8e44ad", "#ff5fa2", "#00a8a8", "#ffd23f"];
+function badgeSVG(i, earned, cls = "badge") {
+  const col = earned ? BADGE_COL[i - 1] : "#cfcfd6", w = "#fff", st = `stroke="${INK}" stroke-width="4"`;
+  const icon = {
+    1: `<circle cx="50" cy="52" r="20" fill="${w}" ${st}/><path d="M50 32 V72" ${st}/>`,
+    2: `<path d="M50 30 L70 70 Q50 78 30 70 Z" fill="#ffd23f" ${st}/><circle cx="48" cy="52" r="4" fill="#ef3e36"/><circle cx="55" cy="63" r="4" fill="#ef3e36"/>`,
+    3: `<text x="50" y="68" text-anchor="middle" font-family="Arial Black,system-ui" font-size="44" font-weight="900" fill="${w}" stroke="${INK}" stroke-width="3" paint-order="stroke">?</text>`,
+    4: `<path d="M24 62 H76" ${st}/><path d="M28 56 v12 M50 56 v12 M72 56 v12" ${st}/><path d="M30 50 Q50 18 70 50" fill="none" stroke="${w}" stroke-width="5"/><path d="M64 44 l7 7 l2 -9" fill="none" stroke="${w}" stroke-width="5"/>`,
+    5: `<rect x="26" y="34" width="48" height="12" fill="${w}" ${st}/><rect x="26" y="52" width="24" height="12" fill="${w}" ${st}/><rect x="50" y="52" width="24" height="12" fill="${w}" ${st}/>`,
+    6: `<text x="50" y="70" text-anchor="middle" font-family="Arial Black,system-ui" font-size="46" font-weight="900" fill="${w}" stroke="${INK}" stroke-width="3" paint-order="stroke">@@E:lt@@@@E:gt@@</text>`,
+    7: `<text x="50" y="70" text-anchor="middle" font-family="Arial Black,system-ui" font-size="46" font-weight="900" fill="${w}" stroke="${INK}" stroke-width="3" paint-order="stroke">1</text>`,
+    8: `<path d="M56 24 L34 56 H50 L42 80 L68 44 H52 Z" fill="${w}" ${st}/>`
+  }[i];
+  return `<svg class="${cls}" viewBox="0 0 100 100" role="img" aria-label="Mission ${i} badge${earned ? "" : " (not earned yet)"}"><path d="M50 4 L92 18 V48 C92 74 72 90 50 97 C28 90 8 74 8 48 V18 Z" fill="${col}" ${st}/><path d="M50 13 L83 24 V48 C83 68 68 81 50 87 C32 81 17 68 17 48 V24 Z" fill="none" stroke="${earned ? "rgba(255,255,255,.6)" : "#fff"}" stroke-width="3"/>${icon}${earned ? "" : `<circle cx="78" cy="80" r="11" fill="#fff" ${st}/><text x="78" y="86" text-anchor="middle" font-size="14" font-weight="900" font-family="system-ui">🔒</text>`}</svg>`.replace(earned ? "" : "🔒", earned ? "" : "?");
+}
+
+/* ---------- fraction models (SVG) ---------- */
+const COLORS = { shade: SHADE, empty: PAPER, blue: "#2e86de", yellow: "#ffd23f", green: "#1fb36b" };
+function sectorPath(cx, cy, r, a0, a1) {
+  if (a1 - a0 >= 359.999) return `M ${cx - r} ${cy} a ${r} ${r} 0 1 0 ${2 * r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0`;
+  const p = a => [cx + r * Math.cos((a - 90) * Math.PI / 180), cy + r * Math.sin((a - 90) * Math.PI / 180)];
+  const [x0, y0] = p(a0), [x1, y1] = p(a1);
+  return `M ${cx} ${cy} L ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`;
+}
+/* circle (pizza) with d equal slices; returns svg element */
+function circleModel(d, on, o = {}) {
+  const svg = S("svg", { viewBox: "0 0 220 220", class: "model", role: "img" }), set = new Set(on);
+  const R = 96, cx = 110, cy = 110;
+  if (o.pizza) S("circle", { cx, cy, r: R + 8, fill: "#e8a54b", stroke: INK, "stroke-width": 4 }, svg);
+  for (let i = 0; i < d; i++) {
+    const a0 = i * 360 / d, a1 = (i + 1) * 360 / d, onP = set.has(i);
+    const g = S("g", { class: "piece" + (onP ? " on" : ""), "data-i": i }, svg);
+    S("path", { d: sectorPath(cx, cy, R, a0, a1), fill: onP ? (o.color || SHADE) : (o.pizza ? "#fff4d6" : PAPER), stroke: INK, "stroke-width": 4, "stroke-linejoin": "round" }, g);
+    if (onP && o.pizza) { const am = (a0 + a1) / 2 - 90, rr = d === 1 ? 0 : R * .58; [[0, 0], [14, -10], [-12, 12]].slice(0, d >= 6 ? 1 : 3).forEach(([dx, dy], k) => { if (d === 1 && k) return; S("circle", { cx: cx + rr * Math.cos(am * Math.PI / 180) + (d <= 2 ? dx : 0), cy: cy + rr * Math.sin(am * Math.PI / 180) + (d <= 2 ? dy : 0), r: 7, fill: "#b3261e", stroke: INK, "stroke-width": 2, "pointer-events": "none" }, g); }); }
+  }
+  svg.setAttribute("aria-label", `circle cut into ${d} equal parts, ${set.size} shaded`);
+  return svg;
+}
+function barModel(d, on, o = {}) {
+  const W = o.w || 400, Hh = o.h || 90, set = new Set(on);
+  const svg = S("svg", { viewBox: `-4 -4 ${W + 8} ${Hh + 8}`, class: "model", role: "img", "aria-label": `bar cut into ${d} equal parts, ${set.size} shaded` });
+  for (let i = 0; i < d; i++) { const g = S("g", { class: "piece" + (set.has(i) ? " on" : ""), "data-i": i }, svg); S("rect", { x: i * W / d, y: 0, width: W / d, height: Hh, fill: set.has(i) ? (o.color || SHADE) : PAPER, stroke: INK, "stroke-width": 4 }, g); }
+  return svg;
+}
+function gridModel(r, c, on) {
+  const set = new Set(on), W = 360, Hh = 240, svg = S("svg", { viewBox: `-4 -4 ${W + 8} ${Hh + 8}`, class: "model", role: "img", "aria-label": `rectangle cut into ${r * c} equal parts, ${set.size} shaded` });
+  for (let i = 0; i < r * c; i++) { const x = (i % c) * W / c, y = Math.floor(i / c) * Hh / r; const g = S("g", { class: "piece" + (set.has(i) ? " on" : ""), "data-i": i }, svg); S("rect", { x, y, width: W / c, height: Hh / r, fill: set.has(i) ? SHADE : PAPER, stroke: INK, "stroke-width": 4 }, g); }
+  return svg;
+}
+function iconPath(icon, x, y, s, col) {
+  const st = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+  if (icon === "mask") return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M2 14 Q20 2 36 12 Q52 2 70 14 Q70 34 50 34 Q40 34 36 26 Q32 34 22 34 Q2 34 2 14 Z" fill="${col}" ${st}/><ellipse cx="21" cy="20" rx="7" ry="5" fill="#fff" ${st}/><ellipse cx="51" cy="20" rx="7" ry="5" fill="#fff" ${st}/></g>`;
+  if (icon === "cape") return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M18 2 H54 L66 44 Q36 36 6 44 Z" fill="${col}" ${st}/><path d="M18 2 Q36 12 54 2" fill="none" ${st}/></g>`;
+  return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M36 2 L45 26 L70 26 L50 41 L58 66 L36 51 L14 66 L22 41 L2 26 L27 26 Z" fill="${col}" ${st}/></g>`;
+}
+function setModel(icon, d, on) {
+  const set = new Set(on), cols = d <= 4 ? d : Math.ceil(d / 2), rows = Math.ceil(d / cols), cw = 90, ch = icon === "mask" ? 60 : 80;
+  const colOn = { mask: "#ef3e36", cape: "#2e86de", star: "#ffd23f" }[icon];
+  let inner = ""; for (let i = 0; i < d; i++) inner += `<g class="piece${set.has(i) ? " on" : ""}">${iconPath(icon, (i % cols) * cw + 8, Math.floor(i / rows >= 1 ? 1 : 0) * 0 + Math.floor(i / cols) * ch + 6, 1, set.has(i) ? colOn : "#e9e9ee")}</g>`;
+  const svg = S("svg", { viewBox: `0 0 ${cols * cw + 6} ${rows * ch + 6}`, class: "model", role: "img", "aria-label": `${d} ${icon}s, ${set.size} colored` });
+  svg.innerHTML = inner; return svg;
+}
+function wholesModel(count, d, on) {
+  const svg = S("svg", { class: "model", role: "img" });
+  if (d === 1) { const per = Math.min(count, 5), cw = 92; svg.setAttribute("viewBox", `0 0 ${per * cw + 4} 96`); for (let i = 0; i < count; i++) { const g = S("g", { class: "piece" + (i < on ? " on" : "") }, svg); S("circle", { cx: i * cw + 48, cy: 48, r: 40, fill: i < on ? "#ffb347" : PAPER, stroke: INK, "stroke-width": 4 }, g); S("circle", { cx: i * cw + 48, cy: 48, r: 30, fill: "none", stroke: "#e07b00", "stroke-width": 3, "stroke-dasharray": "4 6" }, g); } svg.setAttribute("aria-label", `${count} whole pies, no cuts`); return svg; }
+  const W = 400, h = 60; svg.setAttribute("viewBox", `-4 -4 ${W + 8} ${count * (h + 16) - 8}`);
+  let k = 0; for (let b = 0; b < count; b++) for (let i = 0; i < d; i++, k++) { const g = S("g", { class: "piece" + (k < on ? " on" : "") }, svg); S("rect", { x: i * W / d, y: b * (h + 16), width: W / d, height: h, fill: k < on ? SHADE : PAPER, stroke: INK, "stroke-width": 4 }, g); }
+  svg.setAttribute("aria-label", `${count} bars cut into ${d} parts, ${on} shaded`); return svg;
+}
+function cmpModel(a, b) {
+  const W = 420, h = 54, x0 = 70, svg = S("svg", { viewBox: `0 0 ${x0 + W + 6} ${2 * h + 34}`, class: "model", role: "img", "aria-label": `${fracWords(a.n, a.d)} and ${fracWords(b.n, b.d)} shown as bars` });
+  [a, b].forEach((f, r) => { const y = 4 + r * (h + 24); S("text", { x: 30, y: y + h / 2 + 10, "text-anchor": "middle", "font-size": 30, "font-weight": 900, "font-family": "Arial Black,system-ui", fill: INK, text: `${f.n}/${f.d}` }, svg);
+    for (let i = 0; i < f.d; i++) S("rect", { class: "piece" + (i < f.n ? " on" : ""), x: x0 + i * W / f.d, y, width: W / f.d, height: h, fill: i < f.n ? (r ? "#2e86de" : SHADE) : PAPER, stroke: INK, "stroke-width": 4 }, svg); });
+  return svg;
+}
+function barsModel(list) {
+  const W = 360, h = 44, svg = S("svg", { viewBox: `0 0 ${W + 80} ${list.length * (h + 14)}`, class: "model", role: "img" });
+  list.forEach((f, r) => { const y = 4 + r * (h + 14); S("text", { x: 34, y: y + h / 2 + 9, "text-anchor": "middle", "font-size": 26, "font-weight": 900, "font-family": "Arial Black,system-ui", text: `${f.n}/${f.d}` }, svg); for (let i = 0; i < f.d; i++) S("rect", { class: "piece" + (i < f.n ? " on" : ""), x: 76 + i * W / f.d, y, width: W / f.d, height: h, fill: i < f.n ? SHADE : PAPER, stroke: INK, "stroke-width": 4 }, svg); });
+  return svg;
+}
+/* number line: returns {svg, hero}; o.big = phone-size labels and hero */
+function lineModel(rng_, d, o = {}) {
+  const B = o.big ? 1.6 : 1, top = o.big ? -70 : 0, hgt = o.big ? 312 : 200, ff = "Arial Black,system-ui";
+  const svg = S("svg", { viewBox: `0 ${top} ${LINE.w} ${hgt}`, class: "model nline", role: "img", "aria-label": `number line from 0 to ${rng_}, cut into ${d * rng_} equal parts` });
+  svg.geo = { top, hgt, B };
+  S("line", { x1: LINE.x0 - 22, y1: LINE.y, x2: LINE.x1 + 22, y2: LINE.y, stroke: INK, "stroke-width": 6 * B, "stroke-linecap": "round" }, svg);
+  S("path", { d: `M ${LINE.x1 + 34} ${LINE.y} l -16 -${11 * B} v ${22 * B} z M ${LINE.x0 - 34} ${LINE.y} l 16 -${11 * B} v ${22 * B} z`, fill: INK }, svg);
+  for (let k = 0; k <= d * rng_; k++) {
+    const x = tickX(k, d, rng_), whole = k % d === 0, tl = (whole ? 22 : 15) * B;
+    S("line", { x1: x, y1: LINE.y - tl, x2: x, y2: LINE.y + tl, stroke: INK, "stroke-width": (whole ? 6 : 4) * B, class: "tick", "data-k": k }, svg);
+    if (whole) S("text", { x, y: LINE.y + 54 * B, "text-anchor": "middle", "font-size": 34 * B, "font-weight": 900, "font-family": ff, text: String(k / d) }, svg);
+    else if (o.labels) { const g = S("g", { class: "flabel", "data-k": k }, svg); const f = 20 * B; S("text", { x, y: LINE.y + 46 * B, "text-anchor": "middle", "font-size": f, "font-weight": 900, "font-family": ff, fill: "#2e86de", text: String(k) }, g); S("line", { x1: x - 10 * B, y1: LINE.y + 52 * B, x2: x + 10 * B, y2: LINE.y + 52 * B, stroke: "#2e86de", "stroke-width": 2.5 * B }, g); S("text", { x, y: LINE.y + 72 * B, "text-anchor": "middle", "font-size": f, "font-weight": 900, "font-family": ff, fill: "#2e86de", text: String(d) }, g); }
+  }
+  let hero = null;
+  if (o.dot !== undefined || o.hero) {
+    hero = S("g", { class: "lhero" }, svg);
+    hero.innerHTML = `<g transform="scale(${B})"><circle cx="0" cy="0" r="30" fill="transparent"/><path d="M-12 -2 Q-26 22 -20 34 L20 34 Q26 22 12 -2 Z" fill="#ef3e36" stroke="${INK}" stroke-width="3"/><rect x="-11" y="-6" width="22" height="34" rx="8" fill="#2e86de" stroke="${INK}" stroke-width="3"/><circle cx="0" cy="-18" r="13" fill="#8d5524" stroke="${INK}" stroke-width="3"/><path d="M-13 -20 Q0 -25 13 -20 L12 -13 Q0 -10 -12 -13 Z" fill="#ef3e36" stroke="${INK}" stroke-width="2"/><circle cx="-5" cy="-17" r="2" fill="#fff"/><circle cx="5" cy="-17" r="2" fill="#fff"/></g>`;
+    hero.baseY = LINE.y - 44 * B;
+    const place = (x, y = hero.baseY) => hero.setAttribute("transform", `translate(${x} ${y})`);
+    place(tickX(o.dot || 0, d, rng_)); hero.place = place;
+  }
+  return { svg, hero };
+}
+function shapeModel(sp, o = {}) {
+  const sh = shapeOf(sp), pad = 6, svg = S("svg", { viewBox: `${-pad} ${-pad} ${sh.w + 2 * pad} ${sh.h + 2 * pad}`, class: "model", role: "img", "aria-label": `shape cut into ${sh.pieces.length} parts` });
+  const fills = o.fills || ["#ffe066", "#7fd1ff", "#ffa8a8", "#b8f2b0", "#e2c2ff", "#ffd1a1", "#a8fff0", "#ffc9e6"];
+  sh.pieces.forEach((pc, i) => { const f = o.plain ? "#fff" : fills[i % fills.length]; if (pc.t === "sec") S("path", { d: sectorPath(50, 50, CIRC_R, pc.a0, pc.a1), fill: f, stroke: INK, "stroke-width": 3, "stroke-linejoin": "round" }, svg); else S("polygon", { points: pc.p.map(p => p.join(",")).join(" "), fill: f, stroke: INK, "stroke-width": 3, "stroke-linejoin": "round" }, svg); });
+  return svg;
+}
+function renderModel(m) {
+  if (!m) return null;
+  switch (m.k) {
+    case "circle": return circleModel(m.d, m.on, { pizza: m.pizza });
+    case "bar": return barModel(m.d, m.on);
+    case "grid": return gridModel(m.r, m.c, m.on);
+    case "set": return setModel(m.icon, m.d, m.on);
+    case "wholes": return wholesModel(m.count, m.d, m.on);
+    case "cmp": return cmpModel(m.a, m.b);
+    case "bars": return barsModel(m.list);
+    case "line": return lineModel(m.range, m.d, { dot: m.dot }).svg;
+  }
+}
+
+/* ---------- progress, badges ---------- */
+const Progress = {
+  badges: new Set(LS.get("badges", [])),
+  has(i) { return this.badges.has(i); },
+  earn(i) { const was = this.badges.has(i); this.badges.add(i); LS.set("badges", [...this.badges]); syncBadges(); return !was; },
+  reset() { this.badges.clear(); LS.set("badges", []); syncBadges(); }
+};
+function syncBadges() { $("#badgeCount").textContent = Progress.badges.size; }
+function stars(host, n) { host.innerHTML = ""; host.classList.add("stars"); for (let i = 0; i < n; i++) host.appendChild(H("i", { "aria-hidden": "true" }, "⭐")); host.setAttribute("aria-label", `0 of ${n} done`); return k => { $$("i", host).forEach((s, j) => s.classList.toggle("on", j < k)); host.setAttribute("aria-label", `${k} of ${n} done`); }; }
+
+/* mission frame: header + talk + stars + stage */
+function missionFrame(id, intro, nStars) {
+  const M = MISSIONS[id - 1], sec = $("#s-m" + id);
+  sec.innerHTML = `<div class="panel ${id === 8 ? "" : "yellow"}"><div class="mhead"><span class="tag">MISSION ${id}</span><h2 style="margin:0">${M.title}</h2></div><div class="talkhost"></div><div class="starhost"></div></div><div class="panel"><div class="stage"></div></div><div class="row center"><button class="btn" data-go="hq">🏠 Back to HQ</button></div>`;
+  const bub = talk($(".talkhost", sec), M.hero === "boss" ? "pint" : M.hero, intro);
+  const setStars = nStars ? stars($(".starhost", sec), nStars) : () => { };
+  return { sec, stage: $(".stage", sec), bub, setStars, say: html => setBubble(bub, html) };
+}
+const CHEERS = ["Super!", "You did it!", "Great job, hero!", "Awesome!", "Way to go!", "Hero power!", "Nice work!", "You got it!"];
+const cheer = () => CHEERS[Math.floor(Math.random() * CHEERS.length)];
+function awardBadge(id) {
+  const fresh = Progress.earn(id), M = MISSIONS[id - 1];
+  Sound.play("badge"); Confetti.go(); burst(id === 8 ? "VICTORY!" : "BADGE!", "#ffd23f");
+  const m = H("div", { class: "modal", role: "dialog", "aria-label": "Badge earned" });
+  const next = id < 8 ? `<button class="btn go big" data-next="${id + 1}">Next mission ▶</button>` : `<button class="btn go big" data-go="cert">📜 Get my certificate</button>`;
+  m.innerHTML = `<div class="panel yellow">${badgeSVG(id, true)}<h2>${fresh ? "New badge!" : "Badge power!"}</h2><p style="font-size:1.3rem;font-weight:800">You finished <b>${M.title}</b>!</p><div class="row center">${next}<button class="btn big" data-go="hq">🏠 HQ</button></div></div>`;
+  document.body.appendChild(m);
+  m.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; m.remove(); if (b.dataset.next) go("m" + b.dataset.next); else go(b.dataset.go); });
+  setTimeout(() => { const b = $("button", m); if (b) b.focus(); }, 50);
+}
+
+/* ---------- generic choice-question runner ---------- */
+function runQuiz(F, qs, o = {}) {
+  let i = 0, done = 0;
+  function show() {
+    const Q = qs[i]; F.stage.innerHTML = "";
+    const box = H("div", { class: "qbox" }); F.stage.appendChild(box);
+    F.say(o.promptPrefix ? o.promptPrefix(i) + " " + Q.prompt : Q.prompt);
+    if (Q.key.kind === "cmp") box.appendChild(H("div", { class: "vs", "aria-label": `${fracWords(Q.key.a.n, Q.key.a.d)} and ${fracWords(Q.key.b.n, Q.key.b.d)}` }, `${frHTML(Q.key.a.n, Q.key.a.d)}<div class="slot">?</div>${frHTML(Q.key.b.n, Q.key.b.d)}`));
+    const mdl = renderModel(Q.model); if (mdl) { const w = H("div", { class: "qmodel" }); w.appendChild(mdl); box.appendChild(w); }
+    const opts = H("div", { class: "opts", role: "group", "aria-label": "Answer choices" }); box.appendChild(opts);
+    const fb = H("div", { class: "feedback", role: "status" }); box.appendChild(fb);
+    const nextRow = H("div", { class: "row center hidden" }); box.appendChild(nextRow);
+    Q.opts.forEach((op, k) => {
+      const b = H("button", { class: "opt" + (op.shape ? " shape" : ""), "data-k": k, "aria-label": op.shape ? `shape ${k + 1}` : op.s ? SYMWORD[op.s] : op.w !== undefined ? String(op.w) : fracWords(op.n, op.d) });
+      if (op.shape) b.appendChild(shapeModel(op.shape)); else b.innerHTML = optHTML(op);
+      b.onclick = () => pickOpt(k, b);
+      opts.appendChild(b);
+    });
+    function pickOpt(k, b) {
+      if (b.disabled) return;
+      if (k === Q.ans) {
+        $$(".opt", opts).forEach(x => x.disabled = true); b.classList.add("right");
+        Sound.play(o.boss ? "zap" : "good"); burst();
+        done++; F.setStars(done);

@@ -1,0 +1,299 @@
+  </section>
+</main>
+<div class="burst" id="burst" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+"use strict";
+/* =========================================================
+   Fraction Heroes: math data, answer keys, and generators.
+   Pure functions only (also loaded by the Node tests).
+   ========================================================= */
+const DENOMS = [2, 3, 4, 6, 8];
+const NUMW = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen"];
+const FNAME = { 1: ["whole", "wholes"], 2: ["half", "halves"], 3: ["third", "thirds"], 4: ["fourth", "fourths"], 5: ["fifth", "fifths"], 6: ["sixth", "sixths"], 7: ["seventh", "sevenths"], 8: ["eighth", "eighths"], 9: ["ninth", "ninths"] };
+const Fr = (n, d) => ({ n, d });
+const Wn = w => ({ w });
+const Sy = s => ({ s });
+const optVal = o => o.w !== undefined ? o.w : o.n / o.d;
+const sameVal = (a, b) => Math.abs(optVal(a) - optVal(b)) < 1e-12;
+const sameForm = (a, b) => a.w === undefined && b.w === undefined && a.n === b.n && a.d === b.d;
+function cmpSym(a, b) { const x = a.n * b.d - b.n * a.d; return x > 0 ? ">" : x < 0 ? "<" : "="; }
+function fracWords(n, d) {
+  if (d === 1) return `${NUMW[n]} over one`;
+  const nm = FNAME[d] || [d + "th", d + "ths"];
+  return `${NUMW[n] || n} ${n === 1 ? nm[0] : nm[1]}`;
+}
+const SYMWORD = { "<": "is less than", ">": "is greater than", "=": "is equal to" };
+
+/* ---------- seeded random (tests use fixed seeds) ---------- */
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const pick = (r, a) => a[Math.floor(r() * a.length)];
+function shuffle(r, a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const range = n => [...Array(n).keys()];
+
+/* ---------- shapes cut into parts (Mission 1 + boss) ----------
+   Every shape is a list of pieces: polygons or circle sectors.
+   Equal/unequal is DECLARED here and VERIFIED by area in the tests. */
+function shapeOf(sp) {
+  const W = sp.w || 100, H = sp.h || 100, poly = p => ({ t: "poly", p });
+  const strips = (cuts, vert) => { const s = [0, ...cuts, 1]; return s.slice(1).map((t, i) => vert ? poly([[s[i] * W, 0], [t * W, 0], [t * W, H], [s[i] * W, H]]) : poly([[0, s[i] * H], [W, s[i] * H], [W, t * H], [0, t * H]])); };
+  switch (sp.k) {
+    case "v": return { w: W, h: H, pieces: strips(sp.c, true) };
+    case "h": return { w: W, h: H, pieces: strips(sp.c, false) };
+    case "grid": { const out = []; for (let r = 0; r < sp.r; r++) for (let c = 0; c < sp.c; c++) out.push(poly([[c * W / sp.c, r * H / sp.r], [(c + 1) * W / sp.c, r * H / sp.r], [(c + 1) * W / sp.c, (r + 1) * H / sp.r], [c * W / sp.c, (r + 1) * H / sp.r]])); return { w: W, h: H, pieces: out }; }
+    case "cross": { const x = sp.x * W, y = sp.y * H; return { w: W, h: H, pieces: [poly([[0, 0], [x, 0], [x, y], [0, y]]), poly([[x, 0], [W, 0], [W, y], [x, y]]), poly([[0, y], [x, y], [x, H], [0, H]]), poly([[x, y], [W, y], [W, H], [x, H]])] }; }
+    case "circ": { const a = sp.a; return { w: 100, h: 100, circle: true, pieces: a.map((s, i) => ({ t: "sec", a0: s, a1: i + 1 < a.length ? a[i + 1] : a[0] + 360 })) }; }
+    case "diag": return { w: 100, h: 100, pieces: [poly([[0, 0], [100, 0], [100, 100]]), poly([[0, 0], [100, 100], [0, 100]])] };
+    case "diag4": return { w: 100, h: 100, pieces: [poly([[0, 0], [100, 0], [50, 50]]), poly([[100, 0], [100, 100], [50, 50]]), poly([[100, 100], [0, 100], [50, 50]]), poly([[0, 100], [0, 0], [50, 50]])] };
+    case "tri": { const bx = sp.bx; return { w: 100, h: 92, pieces: [poly([[50, 0], [0, 92], [bx, 92]]), poly([[50, 0], [bx, 92], [100, 92]])] }; }
+  }
+  throw new Error("unknown shape " + sp.k);
+}
+const CIRC_R = 46;
+function pieceArea(pc) {
+  if (pc.t === "sec") return Math.PI * CIRC_R * CIRC_R * (pc.a1 - pc.a0) / 360;
+  let s = 0; pc.p.forEach(([x, y], i) => { const [x2, y2] = pc.p[(i + 1) % pc.p.length]; s += x * y2 - x2 * y; }); return Math.abs(s) / 2;
+}
+function isEqualParts(sp) { const A = shapeOf(sp).pieces.map(pieceArea); return A.every(a => Math.abs(a - A[0]) < 1e-9 * A[0]); }
+const R43 = { w: 120, h: 80 };
+const M1_ROUNDS = [
+  [{ k: "v", c: [.5], ...R43, eq: true }, { k: "v", c: [.36], ...R43, eq: false }, { k: "circ", a: [0, 180], eq: true },
+   { k: "circ", a: [0, 140], eq: false }, { k: "diag", eq: true }, { k: "cross", x: .5, y: .3, ...R43, eq: false }],
+  [{ k: "circ", a: [0, 100, 220], eq: false }, { k: "v", c: [1 / 3, 2 / 3], ...R43, eq: true }, { k: "tri", bx: 30, eq: false },
+   { k: "circ", a: [0, 120, 240], eq: true }, { k: "v", c: [.2, .55], ...R43, eq: false }, { k: "grid", r: 2, c: 2, ...R43, eq: true }],
+  [{ k: "circ", a: [0, 45, 90, 135, 180, 225, 270, 315], eq: true }, { k: "v", c: [.12, .3, .55, .8], ...R43, eq: false }, { k: "grid", r: 2, c: 3, ...R43, eq: true },
+   { k: "diag4", eq: true }, { k: "circ", a: [0, 40, 110, 180, 230, 320], eq: false }, { k: "tri", bx: 50, eq: true }]
+];
+
+/* ---------- Mission 2: shade a fraction ---------- */
+const M2_CHALLENGES = [Fr(1, 2), Fr(1, 4), Fr(1, 3), Fr(1, 8), Fr(3, 4), Fr(4, 6)];
+function m2Check(target, d, shaded) {
+  if (d !== target.d) return { ok: false, hint: `The bottom number is ${target.d}. Cut it into ${target.d} equal pieces.` };
+  if (shaded !== target.n) return { ok: false, hint: shaded < target.n ? `The top number is ${target.n}. Shade ${target.n - shaded} more.` : `The top number is ${target.n}. Tap ${shaded - target.n} to unshade.` };
+  return { ok: true };
+}
+
+/* ---------- question helpers ----------
+   Every question carries a KEY the tests can check on their own:
+   name  -> model must show f, opts[ans] is exactly f
+   value -> opts[ans] has the same value as f (and no other option does)
+   cmp   -> opts[ans] is the right sign for a ? b
+   unit  -> opts[ans] is the only fraction with top number 1
+   equal -> opts[ans] is the only shape with equal parts            */
+const onFirst = k => range(k);
+function q(o) { return Object.assign({ hint: "", after: "" }, o); }
+
+/* ---------- Mission 3: name the fraction ---------- */
+const M3 = [
+  q({ prompt: "What fraction is shaded?", model: { k: "circle", d: 4, on: [0] }, opts: [Fr(1, 4), Fr(1, 3), Fr(3, 4)], ans: 0, key: { kind: "name", f: Fr(1, 4) }, hint: "Count all the pieces. That is the bottom number." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "bar", d: 3, on: [0, 1] }, opts: [Fr(1, 3), Fr(2, 3), Fr(3, 2)], ans: 1, key: { kind: "name", f: Fr(2, 3) }, hint: "Count the shaded pieces. That is the top number." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "circle", d: 8, on: [0, 1, 2] }, opts: [Fr(3, 5), Fr(5, 8), Fr(3, 8)], ans: 2, key: { kind: "name", f: Fr(3, 8) }, hint: "The bottom number counts ALL the pieces." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "grid", r: 2, c: 3, on: [0, 1, 2, 3, 4] }, opts: [Fr(5, 6), Fr(1, 6), Fr(6, 5)], ans: 0, key: { kind: "name", f: Fr(5, 6) }, hint: "Count the shaded squares. Then count all the squares." }),
+  q({ prompt: "What fraction of the masks are red?", model: { k: "set", icon: "mask", d: 4, on: [0, 2, 3] }, opts: [Fr(1, 4), Fr(4, 3), Fr(3, 4)], ans: 2, key: { kind: "name", f: Fr(3, 4) }, hint: "Count the red masks. Then count all the masks." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "bar", d: 2, on: [1] }, opts: [Fr(1, 2), Fr(2, 1), Fr(2, 2)], ans: 0, key: { kind: "name", f: Fr(1, 2) }, hint: "One piece is shaded. How many pieces in all?" }),
+  q({ prompt: "What fraction of the capes are blue?", model: { k: "set", icon: "cape", d: 6, on: [1, 4] }, opts: [Fr(2, 6), Fr(4, 6), Fr(2, 4)], ans: 0, key: { kind: "name", f: Fr(2, 6) }, hint: "Count the blue capes. Then count all the capes." }),
+  q({ prompt: "What fraction is shaded?", model: { k: "bar", d: 8, on: onFirst(7) }, opts: [Fr(1, 8), Fr(7, 8), Fr(8, 7)], ans: 1, key: { kind: "name", f: Fr(7, 8) }, hint: "Only one piece is NOT shaded. Count the shaded ones." })
+];
+
+/* ---------- Mission 4: number line leaps ---------- */
+const M4 = [
+  { range: 1, d: 2, k: 1 }, { range: 1, d: 4, k: 3 }, { range: 1, d: 3, k: 2 }, { range: 1, d: 8, k: 5 },
+  { range: 1, d: 6, k: 1 }, { range: 2, d: 4, k: 6 }, { range: 2, d: 2, k: 3 }, { range: 2, d: 3, k: 4 }
+];
+const LINE = { x0: 50, x1: 590, w: 640, y: 110 };
+function tickX(k, d, rng_) { return LINE.x0 + (LINE.x1 - LINE.x0) * (k / d) / rng_; }
+function nearestTick(x, d, rng_) { const step = (LINE.x1 - LINE.x0) / rng_ / d; return Math.max(0, Math.min(d * rng_, Math.round((x - LINE.x0) / step))); }
+
+/* ---------- Mission 5: same-size lab ---------- */
+const WALL = [1, 2, 3, 4, 6, 8];
+const M5_STEPS = [
+  { row: 2, want: 1, ref: null, say: "Tap to shade one half." },
+  { row: 4, want: 2, ref: 2, say: "Shade fourths to match one half." },
+  { row: 8, want: 4, ref: 2, say: "Now shade eighths to match one half." },
+  { row: 3, want: 1, ref: null, say: "Shade one third." },
+  { row: 6, want: 2, ref: 3, say: "Shade sixths to match one third." }
+];
+const M5_ROUNDS = [
+  [Fr(1, 2), Fr(2, 4), Fr(1, 3), Fr(2, 6), Fr(3, 4), Fr(6, 8)],
+  [Fr(2, 3), Fr(4, 6), Fr(1, 4), Fr(2, 8), Fr(4, 8), Fr(1, 2), Fr(3, 3), Fr(6, 6)]
+];
+
+/* ---------- Mission 6: showdown ---------- */
+const cmpQ = (a, b, hint) => q({ prompt: "Which sign makes it true?", model: { k: "cmp", a, b }, opts: [Sy("<"), Sy("="), Sy(">")], ans: ["<", "=", ">"].indexOf(cmpSym(a, b)), key: { kind: "cmp", a, b }, hint });
+const SAME_D = "Same size pieces. Who has more pieces?";
+const SAME_N = "Same number of pieces. Fewer cuts make bigger pieces!";
+const M6 = [
+  cmpQ(Fr(3, 4), Fr(1, 4), SAME_D), cmpQ(Fr(2, 6), Fr(5, 6), SAME_D), cmpQ(Fr(1, 2), Fr(1, 8), SAME_N),
+  cmpQ(Fr(1, 6), Fr(1, 3), SAME_N), cmpQ(Fr(3, 8), Fr(7, 8), SAME_D), cmpQ(Fr(3, 4), Fr(3, 8), SAME_N),
+  cmpQ(Fr(2, 3), Fr(1, 3), SAME_D), cmpQ(Fr(2, 8), Fr(2, 3), SAME_N), cmpQ(Fr(3, 3), Fr(6, 6), "Look! Both bars are full. Both are one whole.")
+];
+
+/* ---------- Mission 7: whole numbers as fractions ---------- */
+const M7 = [
+  q({ prompt: "All the pieces are shaded. What is 4/4?", model: { k: "bar", d: 4, on: onFirst(4) }, opts: [Wn(1), Wn(4), Wn(0)], ans: 0, key: { kind: "value", f: Fr(4, 4) }, hint: "4 fourths fill the whole bar. That is 1 whole!" }),
+  q({ prompt: "Which fraction is 1 whole pizza?", model: { k: "circle", d: 8, on: onFirst(8) }, opts: [Fr(1, 8), Fr(4, 8), Fr(8, 8)], ans: 2, key: { kind: "value", f: Fr(1, 1) }, hint: "Count all 8 slices. They make the whole pizza." }),
+  q({ prompt: "3 whole pizzas. No cuts! What is 3/1?", model: { k: "wholes", count: 3, d: 1, on: 3 }, opts: [Fr(1, 3), Wn(1), Wn(3)], ans: 2, key: { kind: "value", f: Fr(3, 1) }, hint: "Each pizza is 1 whole piece. Count the pizzas." }),
+  q({ prompt: "What is 6/6?", model: { k: "bar", d: 6, on: onFirst(6) }, opts: [Wn(1), Wn(6), Wn(12)], ans: 0, key: { kind: "value", f: Fr(6, 6) }, hint: "The whole bar is full. That is 1." }),
+  q({ prompt: "Which fraction is equal to 1?", model: { k: "bars", list: [Fr(3, 3), Fr(3, 4), Fr(1, 3)] }, opts: [Fr(3, 3), Fr(3, 4), Fr(1, 3)], ans: 0, key: { kind: "value", f: Fr(1, 1) }, hint: "Find the bar that is all full." }),
+  q({ prompt: "Two full bars of fourths. What is 8/4?", model: { k: "wholes", count: 2, d: 4, on: 8 }, opts: [Wn(8), Wn(2), Wn(4)], ans: 1, key: { kind: "value", f: Fr(8, 4) }, hint: "Each full bar is 1 whole. How many bars?" }),
+  q({ prompt: "The hero is on 1. Which fraction is that?", model: { k: "line", range: 2, d: 2, dot: 2 }, opts: [Fr(1, 2), Fr(2, 2), Fr(2, 1)], ans: 1, key: { kind: "value", f: Fr(2, 2) }, hint: "Count the halves from 0 to 1." }),
+  q({ prompt: "5 whole pies. No cuts! What is 5/1?", model: { k: "wholes", count: 5, d: 1, on: 5 }, opts: [Wn(1), Fr(1, 5), Wn(5)], ans: 2, key: { kind: "value", f: Fr(5, 1) }, hint: "Each pie is 1 whole. Count them." })
+];
+
+/* ---------- Boss battle generator ---------- */
+function fracOpts(r, correct, cands) {
+  const out = [correct];
+  for (const c of shuffle(r, cands)) { if (out.length >= 3) break; if (c.n > 0 && c.d > 0 && !out.some(o => sameVal(o, c) || sameForm(o, c))) out.push(c); }
+  return out;
+}
+function finish(r, o) { const order = shuffle(r, range(o.opts.length)); o.opts = order.map(i => o.opts[i]); o.ans = order.indexOf(0); return q(o); }
+const BOSS_TYPES = ["name", "unit", "line", "equal", "equiv", "cmpD", "cmpN", "whole", "set", "equiv"];
+function bossQuestion(type, r) {
+  const d = pick(r, DENOMS);
+  if (type === "name" || type === "set") {
+    const n = 1 + Math.floor(r() * (d - 1)), f = Fr(n, d);
+    const model = type === "set" ? { k: "set", icon: pick(r, ["mask", "star", "cape"]), d, on: shuffle(r, range(d)).slice(0, n).sort((a, b) => a - b) } : { k: pick(r, ["circle", "bar"]), d, on: range(n) };
+    return finish(r, { type, prompt: type === "set" ? "What fraction are colored?" : "What fraction is shaded?", model, opts: fracOpts(r, f, [Fr(d - n, d), Fr(d, n), Fr(n, d - n), Fr(n + 1, d), Fr(Math.max(1, n - 1), d)]), key: { kind: "name", f }, hint: "Top: shaded pieces. Bottom: all the equal pieces." });
+  }
+  if (type === "unit") {
+    const others = shuffle(r, DENOMS.flatMap(dd => range(dd - 1).map(i => Fr(i + 2, dd)).filter(x => x.n < dd)));
+    return finish(r, { type, prompt: "Which one is a unit fraction?", model: null, opts: [Fr(1, d), others[0], others.find(o => o.d !== others[0].d) || others[1]], key: { kind: "unit" }, hint: "A unit fraction has 1 on top. It is just one piece." });
+  }
+  if (type === "line") {
+    const k = 1 + Math.floor(r() * (d - 1)), f = Fr(k, d);
+    return finish(r, { type, prompt: "Where did the hero land?", model: { k: "line", range: 1, d, dot: k }, opts: fracOpts(r, f, [Fr(k + 1, d), Fr(k - 1, d), Fr(d, k), Fr(k, d + 1)].filter(x => x.n > 0 && x.n <= d)), key: { kind: "name", f }, hint: `The line is cut into ${d} equal parts. Count the jumps from 0.` });
+  }
+  if (type === "equal") {
+    const n = pick(r, [2, 3, 4]);
+    const good = { 2: [{ k: "v", c: [.5], ...R43 }, { k: "circ", a: [0, 180] }, { k: "diag" }], 3: [{ k: "v", c: [1 / 3, 2 / 3], ...R43 }, { k: "circ", a: [0, 120, 240] }], 4: [{ k: "grid", r: 2, c: 2, ...R43 }, { k: "diag4" }, { k: "circ", a: [0, 90, 180, 270] }] }[n];
+    const bad = { 2: [{ k: "v", c: [.3], ...R43 }, { k: "circ", a: [0, 130] }, { k: "tri", bx: 25 }], 3: [{ k: "v", c: [.2, .6], ...R43 }, { k: "circ", a: [0, 90, 230] }, { k: "h", c: [.25, .5], ...R43 }], 4: [{ k: "cross", x: .3, y: .5, ...R43 }, { k: "circ", a: [0, 60, 180, 250] }, { k: "v", c: [.1, .4, .7], ...R43 }] }[n];
+    const b = shuffle(r, bad);
+    return finish(r, { type, prompt: "Which shape has EQUAL parts?", model: null, opts: [{ shape: pick(r, good) }, { shape: b[0] }, { shape: b[1] }], key: { kind: "equal" }, hint: "Equal parts are all the same size." });
+  }
+  if (type === "equiv") {
+    const pairs = [[Fr(1, 2), Fr(2, 4)], [Fr(1, 2), Fr(4, 8)], [Fr(2, 4), Fr(4, 8)], [Fr(1, 3), Fr(2, 6)], [Fr(2, 3), Fr(4, 6)], [Fr(1, 4), Fr(2, 8)], [Fr(3, 4), Fr(6, 8)], [Fr(2, 2), Fr(3, 3)]];
+    const [a, b] = shuffle(r, pick(r, pairs));
+    const cands = DENOMS.flatMap(dd => range(dd).map(i => Fr(i + 1, dd)));
+    return finish(r, { type, prompt: `Which fraction is the same size as ${a.n}/${a.d}?`, model: { k: "bar", d: a.d, on: range(a.n) }, opts: fracOpts(r, b, cands.filter(c => !sameVal(c, b) && c.d === b.d || c.n === b.n && !sameVal(c, b))), key: { kind: "value", f: a }, hint: "Same size means the shaded parts line up." });
+  }
+  if (type === "cmpD") { const [x, y] = shuffle(r, range(d - 1).map(i => i + 1).concat([d])).slice(0, 2); const o = cmpQ(Fr(x, d), Fr(y, d), SAME_D); return Object.assign(o, { type }); }
+  if (type === "cmpN") { const [d1, d2] = shuffle(r, DENOMS).slice(0, 2), n = 1 + Math.floor(r() * Math.min(d1, d2)); const o = cmpQ(Fr(n, d1), Fr(n, d2), SAME_N); return Object.assign(o, { type }); }
+  if (type === "whole") {
+    if (r() < .5) { const f = Fr(d, d); return finish(r, { type, prompt: `What is ${d}/${d}?`, model: { k: "bar", d, on: range(d) }, opts: [Wn(1), Wn(d), Fr(1, d)], key: { kind: "value", f }, hint: "All the pieces make one whole." }); }
+    const w = 2 + Math.floor(r() * 4), f = Fr(w, 1);
+    return finish(r, { type, prompt: `What is ${w}/1?`, model: { k: "wholes", count: w, d: 1, on: w }, opts: [Wn(w), Wn(1), Fr(1, w)], key: { kind: "value", f }, hint: "Each one is a whole. Count them." });
+  }
+  throw new Error("bad type " + type);
+}
+function bossSet(seed) { const r = rng(seed); return BOSS_TYPES.map(t => bossQuestion(t, r)); }
+
+/* ---------- model value (what a picture shows) ---------- */
+function modelFraction(m) {
+  if (!m) return null;
+  if (m.k === "circle" || m.k === "bar" || m.k === "set") return Fr(m.on.length, m.d);
+  if (m.k === "grid") return Fr(m.on.length, m.r * m.c);
+  if (m.k === "wholes") return Fr(m.on, m.d);
+  if (m.k === "line") return Fr(m.dot, m.d);
+  return null;
+}
+
+const MISSIONS = [
+  { id: 1, title: "Hero Training", sub: "Equal parts", hero: "cap" },
+  { id: 2, title: "Pizza Power", sub: "Make fractions", hero: "pint" },
+  { id: 3, title: "Name It!", sub: "Name the fraction", hero: "cap" },
+  { id: 4, title: "Number Line Leap", sub: "Fractions on a line", hero: "pint" },
+  { id: 5, title: "Same-Size Lab", sub: "Equal fractions", hero: "cap" },
+  { id: 6, title: "Fraction Showdown", sub: "Compare fractions", hero: "pint" },
+  { id: 7, title: "Whole Hero", sub: "Wholes as fractions", hero: "cap" },
+  { id: 8, title: "Boss Battle", sub: "Beat Count Crumble", hero: "boss" }
+];
+
+if (typeof module !== "undefined") module.exports = { DENOMS, Fr, Wn, Sy, optVal, sameVal, sameForm, cmpSym, fracWords, SYMWORD, rng, shuffle, range, shapeOf, pieceArea, isEqualParts, M1_ROUNDS, M2_CHALLENGES, m2Check, M3, M4, LINE, tickX, nearestTick, WALL, M5_STEPS, M5_ROUNDS, M6, M7, BOSS_TYPES, bossQuestion, bossSet, modelFraction, MISSIONS, CIRC_R };
+
+/* =========================================================
+   Core UI: helpers, storage, sound, speech, art, models
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = "http://www.w3.org/2000/svg";
+function S(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) { if (k === "text") e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); } if (parent) parent.appendChild(e); return e; }
+function H(tag, attrs = {}, html) { const e = document.createElement(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (html !== undefined) e.innerHTML = html; return e; }
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("fracHeroes." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("fracHeroes." + k, JSON.stringify(v)); } catch (e) { } }
+};
+const INK = "#16161d", SHADE = "#ff5a4f", PAPER = "#ffffff";
+
+/* ---------- fractions in text ---------- */
+const frHTML = (n, d) => `<span class="fr" data-n="${n}" data-d="${d}" role="img" aria-label="${fracWords(n, d)}"><span class="n">${n}</span><span class="d">${d}</span></span>`;
+const optHTML = o => o.s ? `<span class="sym">${o.s}</span><span class="cap">${{ "<": "less than", ">": "greater than", "=": "equal to" }[o.s]}</span>` : o.w !== undefined ? `<span class="w">${o.w}</span>` : frHTML(o.n, o.d);
+const rich = s => s.replace(/(\d+)\/(\d+)/g, (_, n, d) => frHTML(+n, +d));
+function speechOf(el) {
+  const c = el.cloneNode(true);
+  $$(".say", c).forEach(b => b.remove());
+  $$(".fr", c).forEach(f => f.replaceWith(" " + fracWords(+f.dataset.n, +f.dataset.d) + " "));
+  $$(".sym", c).forEach(f => f.replaceWith(" " + (SYMWORD[f.textContent] || "") + " "));
+  $$(".cap", c).forEach(f => f.remove());
+  return c.textContent.replace(/(^|\s)([<>=])(?=\s|$)/g, (m, a, g) => a + SYMWORD[g]).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, " ").replace(/\s+/g, " ").replace(/ ([.,!?:])/g, "$1").trim();
+}
+
+/* ---------- sound (synthesized, no files) ---------- */
+const Sound = {
+  on: LS.get("sound", true), ctx: null,
+  init() { if (this.ctx || !this.on) return; try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); } catch (e) { this.ctx = null; } },
+  tone(f, t0, dur, type = "sine", vol = .18, f2) {
+    const c = this.ctx; if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .05);
+  },
+  play(name) {
+    if (!this.on) return; this.init(); const c = this.ctx; if (!c) return;
+    try {
+      if (c.state === "suspended") c.resume();
+      ({ tap: () => this.tone(660, 0, .08, "triangle", .12),
+        good: () => [523, 659, 784].forEach((f, i) => this.tone(f, i * .09, .22, "triangle", .2)),
+        oops: () => { this.tone(330, 0, .18, "sine", .12); this.tone(294, .16, .25, "sine", .1); },
+        zap: () => { this.tone(1200, 0, .35, "sawtooth", .1, 120); this.tone(300, .05, .3, "square", .06, 900); },
+        jump: () => this.tone(400, 0, .14, "triangle", .12, 800),
+        badge: () => [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .12, .35, "triangle", .2)),
+        win: () => [392, 523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .14, .3, "square", .09)) })[name]();
+    } catch (e) { }
+  },
+  toggle() { this.on = !this.on; LS.set("sound", this.on); if (this.on) this.play("tap"); syncSoundBtn(); }
+};
+function syncSoundBtn() { const b = $("#soundBtn"); b.firstChild.textContent = Sound.on ? "🔊" : "🔇"; $("#soundLbl").textContent = Sound.on ? "Sound" : "Muted"; b.setAttribute("aria-pressed", String(Sound.on)); b.setAttribute("aria-label", Sound.on ? "Sound on. Tap to mute." : "Sound off. Tap to turn on."); }
+
+/* ---------- read aloud ---------- */
+const Speech = {
+  ok: typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined",
+  btn: null,
+  say(text, btn) {
+    if (!this.ok) { toast("Read-aloud is not available on this device."); return; }
+    try {
+      speechSynthesis.cancel(); if (this.btn) this.btn.classList.remove("speaking");
+      const u = new SpeechSynthesisUtterance(text); u.rate = .88; u.pitch = 1.1; u.lang = "en-US";
+      this.btn = btn || null; if (btn) btn.classList.add("speaking");
+      u.onend = u.onerror = () => btn && btn.classList.remove("speaking");
+      speechSynthesis.speak(u);
+      setTimeout(() => btn && btn.classList.remove("speaking"), Math.min(15000, 600 + text.length * 80));
+    } catch (e) { toast("Read-aloud is not available right now."); }
+  },
+  stop() { try { if (this.ok) speechSynthesis.cancel(); } catch (e) { } if (this.btn) this.btn.classList.remove("speaking"); }
+};
+function sayButton(target) {
+  const b = H("button", { class: "say", "aria-label": "Read this out loud", title: "Read out loud" }, "🔈");
+  b.onclick = e => { e.stopPropagation(); Speech.say(speechOf(target), b); };
+  return b;
+}
+/* a hero face + speech bubble with a read-aloud button */
+function talk(host, who, html) {
+  host.innerHTML = ""; host.classList.add("talk");
+  const face = H("div", { class: "face", "aria-hidden": "true" }, figure(who, true)); host.appendChild(face);
+  const bub = H("div", { class: "bubble", "aria-live": "polite" }); host.appendChild(bub);
+  setBubble(bub, html); return bub;
+}
+function setBubble(bub, html) { bub.innerHTML = `<div class="btxt">${rich(html)}</div>`; bub.prepend(sayButton($(".btxt", bub))); }

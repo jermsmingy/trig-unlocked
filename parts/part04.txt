@@ -1,0 +1,308 @@
+        let msg = cheer();
+        if (Q.key.kind === "cmp") { const s = $(".slot", box); s.textContent = Q.opts[k].s; s.classList.add("filled"); msg += ` ${Q.key.a.n}/${Q.key.a.d} ${SYMWORD[Q.opts[k].s]} ${Q.key.b.n}/${Q.key.b.d}.`; }
+        if (Q.after) msg += " " + Q.after;
+        fb.className = "feedback ok"; fb.innerHTML = rich(msg);
+        if (o.onCorrect) o.onCorrect(i);
+        nextRow.classList.remove("hidden"); nextRow.innerHTML = "";
+        const nb = H("button", { class: "btn go big" }, i + 1 < qs.length ? "Next ▶" : (o.finishLabel || "Finish! ⭐")); nextRow.appendChild(nb);
+        nb.onclick = () => { if (i + 1 < qs.length) { i++; show(); } else o.onDone && o.onDone(); };
+        setTimeout(() => nb.focus({ preventScroll: true }), 30);
+      } else {
+        b.classList.add("wrong"); b.disabled = true; Sound.play("oops");
+        fb.className = "feedback hint"; fb.innerHTML = rich("💡 " + (Q.hint || "Try again!") + " Try again!");
+        fb.prepend(sayButton(fb));
+        if (o.onWrong) o.onWrong(i);
+      }
+    }
+  }
+  show();
+  return { get index() { return i; } };
+}
+
+/* =========================================================
+   The eight missions
+   ========================================================= */
+function fbSet(el, cls, html, speak) { el.className = "feedback " + cls; el.innerHTML = rich(html); if (speak !== false) el.prepend(sayButton(el)); }
+
+/* ---------- Mission 1: equal parts ---------- */
+function mission1() {
+  const F = missionFrame(1, "Count Crumble broke things into pieces! Equal parts are all the same size. Tap each shape with EQUAL parts to save it.", 3);
+  let round = 0;
+  function show() {
+    const shapes = M1_ROUNDS[round], need = shapes.filter(s => s.eq).length; let saved = 0;
+    F.stage.innerHTML = "";
+    const ex = H("div", { class: "row center", style: "gap:22px" });
+    ex.innerHTML = `<div style="text-align:center"><div style="width:130px">${shapeModel({ k: "v", c: [.5], w: 120, h: 80 }, { plain: true }).outerHTML}</div><b style="color:var(--ok)">✓ equal parts</b></div><div style="text-align:center"><div style="width:130px">${shapeModel({ k: "v", c: [.3], w: 120, h: 80 }, { plain: true }).outerHTML}</div><b style="color:var(--red)">✗ not equal</b></div>`;
+    F.stage.appendChild(ex);
+    F.stage.appendChild(H("div", { class: "target" }, `Round ${round + 1} of 3: Find ${need} shapes with equal parts.`));
+    const grid = H("div", { class: "shapegrid" }); F.stage.appendChild(grid);
+    const fb = H("div", { class: "feedback", role: "status" }); F.stage.appendChild(fb);
+    const nextRow = H("div", { class: "row center" }); F.stage.appendChild(nextRow);
+    shapes.forEach((sp, k) => {
+      const nP = shapeOf(sp).pieces.length;
+      const b = H("button", { class: "shapebtn", "data-k": k, "data-eq": sp.eq ? "1" : "0", "aria-label": `Shape ${k + 1}, cut into ${nP} parts` });
+      b.appendChild(shapeModel(sp)); grid.appendChild(b);
+      b.onclick = () => {
+        if (b.classList.contains("saved")) return;
+        if (sp.eq) {
+          b.classList.add("saved"); saved++; Sound.play("good");
+          if (saved === need) {
+            burst(); F.setStars(round + 1);
+            fbSet(fb, "ok", round < 2 ? `${cheer()} You saved them all!` : "You saved every shape! Hero power!");
+            const nb = H("button", { class: "btn go big" }, round < 2 ? "Next round ▶" : "Finish! ⭐"); nextRow.appendChild(nb);
+            nb.onclick = () => { if (round < 2) { round++; show(); } else awardBadge(1); };
+          } else fbSet(fb, "ok", `Saved! ${nP} equal parts. Find ${need - saved} more.`);
+        } else {
+          b.classList.remove("nope"); void b.offsetWidth; b.classList.add("nope"); Sound.play("oops");
+          fbSet(fb, "hint", "💡 Look closely. Some parts are big and some are small. Those are not equal. Try another one!");
+        }
+      };
+    });
+  }
+  show();
+}
+
+/* ---------- Mission 2: pizza power splitter ---------- */
+function mission2() {
+  const F = missionFrame(2, "The bottom number tells how many equal pieces. The top number tells how many pieces we shade. Let's make fractions!", M2_CHALLENGES.length);
+  let mode = "pizza", d = 2, on = new Set(), ci = 0, free = false;
+  F.stage.innerHTML = `
+    <div class="seg" role="group" aria-label="Pick a shape"><button data-mode="pizza" class="on">🍕 Pizza</button><button data-mode="bar">🟥 Power bar</button></div>
+    <div style="text-align:center"><div class="target" style="font-size:1.2rem">How many equal pieces?</div><div class="dpick" role="group" aria-label="How many equal pieces">${DENOMS.map(x => `<button data-d="${x}" aria-label="${x} equal pieces">${x}</button>`).join("")}</div></div>
+    <div class="split"><div class="mwrap" style="display:flex;justify-content:center"></div>
+      <div><div class="biglabel"></div><div class="legend"></div></div></div>
+    <div class="panel yellow chal" style="width:100%;margin:0"></div>`;
+  const mwrap = $(".mwrap", F.stage), label = $(".biglabel", F.stage), legend = $(".legend", F.stage), chal = $(".chal", F.stage);
+  $$(".seg button", F.stage).forEach(b => b.onclick = () => { mode = b.dataset.mode; $$(".seg button", F.stage).forEach(x => x.classList.toggle("on", x === b)); Sound.play("tap"); draw(); });
+  $$(".dpick button", F.stage).forEach(b => b.onclick = () => { d = +b.dataset.d; on.clear(); Sound.play("tap"); draw(); });
+  function draw() {
+    $$(".dpick button", F.stage).forEach(b => b.classList.toggle("on", +b.dataset.d === d));
+    const svg = mode === "pizza" ? circleModel(d, [...on], { pizza: true }) : barModel(d, [...on], { h: 150 });
+    svg.style.maxWidth = mode === "pizza" ? "330px" : "100%";
+    $$(".piece", svg).forEach(p => { p.setAttribute("role", "button"); p.setAttribute("aria-label", `piece ${+p.dataset.i + 1}`); p.addEventListener("click", () => { const i = +p.dataset.i; if (on.has(i)) on.delete(i); else on.add(i); Sound.play("tap"); draw(); }); });
+    mwrap.innerHTML = ""; mwrap.appendChild(svg);
+    label.innerHTML = frHTML(on.size, d);
+    legend.innerHTML = `<div class="top">⬆ Top: ${on.size} ${on.size === 1 ? "piece" : "pieces"} shaded</div><div class="bot">⬇ Bottom: ${d} equal pieces in all</div>${on.size === 1 ? `<div style="margin-top:6px">⭐ One piece is a <b>unit fraction</b>: ${frHTML(1, d)}</div>` : ""}`;
+  }
+  function showChal() {
+    if (ci >= M2_CHALLENGES.length) { free = true; chal.innerHTML = `<div class="target">Free play! Make any fraction you like.</div>`; return; }
+    const T = M2_CHALLENGES[ci];
+    chal.innerHTML = `<div class="target">Challenge ${ci + 1}: Make ${frHTML(T.n, T.d)}</div><div class="feedback" role="status"></div><div class="row center"><button class="btn go big chk">✔ Check</button></div>`;
+    const fb = $(".feedback", chal);
+    $(".chk", chal).onclick = () => {
+      const r = m2Check(T, d, on.size);
+      if (!r.ok) { Sound.play("oops"); fbSet(fb, "hint", "💡 " + r.hint); return; }
+      Sound.play("good"); burst(); ci++; F.setStars(ci);
+      fbSet(fb, "ok", `${cheer()} That is ${T.n}/${T.d}: ${T.n} of ${T.d} equal pieces.`);
+      const row = $(".row", chal); row.innerHTML = "";
+      const nb = H("button", { class: "btn go big" }, ci < M2_CHALLENGES.length ? "Next ▶" : "Finish! ⭐"); row.appendChild(nb);
+      nb.onclick = () => { on.clear(); if (ci < M2_CHALLENGES.length) { showChal(); draw(); } else { showChal(); draw(); awardBadge(2); } };
+    };
+  }
+  draw(); showChal();
+}
+
+/* ---------- Mission 3: name it ---------- */
+function mission3() {
+  const F = missionFrame(3, "Look at the picture. Pick the fraction that matches!", M3.length);
+  runQuiz(F, M3, { onDone: () => awardBadge(3) });
+}
+
+/* ---------- Mission 4: number line leap ---------- */
+function mission4() {
+  const F = missionFrame(4, "Help Captain Fraction leap! Tap a spot on the line, or drag the hero.", M4.length);
+  let i = 0, done = 0;
+  function show() {
+    const T = M4[i], rg = T.range; let cur = 0, busy = false, solved = false;
+    F.say(`Land on ${T.k}/${T.d}. Each little jump is 1/${T.d}.`);
+    F.stage.innerHTML = `<div class="target">Jump ${i + 1} of ${M4.length}: Land on ${frHTML(T.k, T.d)}</div><div class="linewrap"></div><div class="answerline" aria-live="polite"></div><div class="feedback" role="status"></div><div class="row center nextrow"></div>`;
+    const big = F.stage.clientWidth < 600, { svg, hero } = lineModel(rg, T.d, { hero: true, labels: false, big }); $(".linewrap", F.stage).appendChild(svg); const G = svg.geo, B = G.B;
+    const counter = S("text", { x: LINE.w / 2, y: G.top + 34 * B, "text-anchor": "middle", "font-size": 28 * B, "font-weight": 900, "font-family": "Arial Black,system-ui", fill: "#ef3e36", text: "" }, svg);
+    const fb = $(".feedback", F.stage), ans = $(".answerline", F.stage), nextRow = $(".nextrow", F.stage);
+    const step = (LINE.x1 - LINE.x0) / rg / T.d;
+    for (let k = 0; k <= T.d * rg; k++) { const zx = Math.max(0, tickX(k, T.d, rg) - step / 2), zw = Math.min(LINE.w, tickX(k, T.d, rg) + step / 2) - zx; const z = S("rect", { class: "tickzone", x: zx, y: G.top + 20, width: zw, height: G.hgt - 20, "data-k": k, role: "button", "aria-label": `spot ${k}` }, svg); z.addEventListener("click", () => jumpTo(k)); }
+    svg.appendChild(hero);
+    function hopAnim(from, to, done) {
+      const dir = to > from ? 1 : -1; let k = from;
+      (function hop() {
+        if (k === to) { done(); return; }
+        const a = tickX(k, T.d, rg), b = tickX(k + dir, T.d, rg), t0 = performance.now(); Sound.play("jump");
+        (function fr(t) { const p = Math.min(1, (t - t0) / 260); hero.place(a + (b - a) * p, hero.baseY - Math.sin(p * Math.PI) * 40 * B); if (p < 1) requestAnimationFrame(fr); else { k += dir; counter.textContent = k === 0 ? "0" : `${k}/${T.d}`; hop(); } })(t0);
+      })();
+    }
+    function jumpTo(k) {
+      if (busy || solved) return; busy = true;
+      hopAnim(cur, k, () => { cur = k; busy = false; check(k); });
+    }
+    function check(k) {
+      if (k === T.k) {
+        solved = true; done++; F.setStars(done); Sound.play("good"); burst();
+        const lab = S("g", {}, svg); const x = tickX(k, T.d, rg);
+        lab.setAttribute("transform", `translate(${x} ${LINE.y}) scale(${B})`);
+        S("rect", { x: -30, y: 26, width: 60, height: 62, rx: 10, fill: "#ffd23f", stroke: INK, "stroke-width": 3 }, lab);
+        S("text", { x: 0, y: 52, "text-anchor": "middle", "font-size": 24, "font-weight": 900, "font-family": "Arial Black,system-ui", text: String(T.k) }, lab);
+        S("line", { x1: -16, y1: 58, x2: 16, y2: 58, stroke: INK, "stroke-width": 3 }, lab);
+        S("text", { x: 0, y: 82, "text-anchor": "middle", "font-size": 24, "font-weight": 900, "font-family": "Arial Black,system-ui", text: String(T.d) }, lab);
+        ans.innerHTML = `${T.k} jump${T.k === 1 ? "" : "s"} of ${frHTML(1, T.d)} = ${frHTML(T.k, T.d)}`;
+        fbSet(fb, "ok", `${cheer()} You landed on ${T.k}/${T.d}!${T.k > T.d ? " That is more than 1 whole!" : ""}`);
+        const nb = H("button", { class: "btn go big" }, i + 1 < M4.length ? "Next jump ▶" : "Finish! ⭐"); nextRow.appendChild(nb);
+        nb.onclick = () => { if (i + 1 < M4.length) { i++; show(); } else awardBadge(4); };
+      } else {
+        Sound.play("oops");
+        if (!$(".flabel", svg)) { const { svg: s2 } = lineModel(rg, T.d, { labels: true, big }); $$(".flabel", s2).forEach(g => svg.insertBefore(g, hero)); }
+        fbSet(fb, "hint", `💡 You are on ${k === 0 ? "0" : k + "/" + T.d}. Count jumps from 0. You need ${T.k} jump${T.k === 1 ? "" : "s"} of 1/${T.d}.`);
+      }
+    }
+    // drag the hero
+    let drag = false;
+    const toSvgX = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()).x; };
+    hero.style.cursor = "grab"; hero.style.touchAction = "none";
+    hero.addEventListener("pointerdown", e => { if (busy || solved) return; drag = true; hero.setPointerCapture(e.pointerId); e.preventDefault(); });
+    hero.addEventListener("pointermove", e => { if (!drag) return; const x = Math.max(LINE.x0, Math.min(LINE.x1, toSvgX(e))); hero.place(x); const kk = nearestTick(x, T.d, rg); counter.textContent = kk === 0 ? "0" : `${kk}/${T.d}`; });
+    const end = e => { if (!drag) return; drag = false; const k = nearestTick(Math.max(LINE.x0, Math.min(LINE.x1, toSvgX(e))), T.d, rg); hero.place(tickX(k, T.d, rg)); cur = k; Sound.play("jump"); check(k); };
+    hero.addEventListener("pointerup", end); hero.addEventListener("pointercancel", end);
+  }
+  show();
+}
+
+/* ---------- Mission 5: same-size lab ---------- */
+function mission5() {
+  const F = missionFrame(5, "Fractions can look different but be the SAME size. Let's test them in the lab!", M5_STEPS.length + M5_ROUNDS.length);
+  let stepI = 0, starsN = 0;
+  const shade = {}; WALL.forEach(d => shade[d] = 0);
+  function wall() {
+    F.stage.innerHTML = `<div class="target stepT"></div><div class="wall" style="width:100%"></div><div class="feedback" role="status"></div><div class="row center nextrow"></div>`;
+    const fb = $(".feedback", F.stage), nextRow = $(".nextrow", F.stage);
+    const narrow = F.stage.clientWidth < 600, X0 = narrow ? 64 : 96, W = narrow ? 340 : 600, RH = narrow ? 62 : 52, GAP = 10, LF = narrow ? 22 : 26, PF = narrow ? 15 : 18, svg = S("svg", { viewBox: `0 0 ${X0 + W + 8} ${WALL.length * (RH + GAP) + 8}`, role: "img", "aria-label": "fraction wall" });
+    $(".wall", F.stage).appendChild(svg);
+    const ROWC = { 1: "#ffd23f", 2: "#ef3e36", 3: "#2e86de", 4: "#1fb36b", 6: "#8e44ad", 8: "#ff8a1f" };
+    function draw() {
+      svg.innerHTML = ""; const st = M5_STEPS[stepI];
+      WALL.forEach((d, r) => {
+        const y = 4 + r * (RH + GAP), g = S("g", { class: "wrow", "data-d": d }, svg);
+        if (st && st.row === d) S("rect", { x: X0 - 6, y: y - 5, width: W + 12, height: RH + 10, rx: 10, fill: "none", stroke: "#ffd23f", "stroke-width": 7 }, g);
+        S("text", { x: X0 / 2 - 4, y: y + RH / 2 + 9, "text-anchor": "middle", "font-size": LF, "font-weight": 900, "font-family": "Arial Black,system-ui", text: d === 1 ? "1" : `${shade[d]}/${d}` }, g);
+        for (let i = 0; i < d; i++) {
+          const pc = S("g", { class: "piece", "data-i": i, role: "button", "aria-label": `${d === 1 ? "whole" : "1/" + d} piece ${i + 1}` }, g);
+          S("rect", { x: X0 + i * W / d, y, width: W / d, height: RH, fill: i < shade[d] ? ROWC[d] : "#fff", stroke: INK, "stroke-width": 3.5 }, pc);
+          S("text", { x: X0 + (i + .5) * W / d, y: y + RH / 2 + 6, "text-anchor": "middle", "font-size": PF, "font-weight": 900, "font-family": "Arial Black,system-ui", fill: i < shade[d] ? "#fff" : "#555", "pointer-events": "none", text: d === 1 ? "1" : `1/${d}` }, pc);
+          pc.addEventListener("click", () => { shade[d] = shade[d] === i + 1 ? i : i + 1; Sound.play("tap"); draw(); check(d); });
+        }
+      });
+      if (st && st.ref) { const x = X0 + W * shade[st.ref] / st.ref; S("line", { x1: x, y1: 0, x2: x, y2: WALL.length * (RH + GAP) + 4, stroke: "#ef3e36", "stroke-width": 4, "stroke-dasharray": "10 7", "pointer-events": "none" }, svg); }
+      $(".stepT", F.stage).innerHTML = st ? `Lab test ${stepI + 1} of ${M5_STEPS.length}: ${rich(st.say)}` : "";
+    }
+    function check(d) {
+      const st = M5_STEPS[stepI]; if (!st || d !== st.row) return;
+      if (shade[d] === st.want) {
+        starsN++; F.setStars(starsN); Sound.play("good"); burst("SAME!");
+        const msg = st.ref ? `${shade[st.ref]}/${st.ref} = ${st.want}/${d}. Same size! They are equal fractions.` : `${cheer()} That is ${st.want}/${d}.`;
+        fbSet(fb, "ok", msg); stepI++; nextRow.innerHTML = "";
+        const nb = H("button", { class: "btn go big" }, stepI < M5_STEPS.length ? "Next test ▶" : "Matching game ▶"); nextRow.appendChild(nb);
+        nb.onclick = () => { nextRow.innerHTML = ""; fb.className = "feedback"; fb.innerHTML = ""; if (stepI < M5_STEPS.length) { F.say(M5_STEPS[stepI].say); draw(); } else match(0); };
+        draw();
+      } else if (st.ref) {
+        const mine = shade[d] / d, want = st.want / d;
+        fbSet(fb, "hint", mine > want ? "💡 Too much! Make it line up with the red line." : "💡 A little more! Line it up with the red line.");
+      } else fbSet(fb, "hint", `💡 Shade ${st.want} piece${st.want > 1 ? "s" : ""} in the glowing row.`);
+    }
+    F.say(M5_STEPS[0].say); draw();
+  }
+  function match(round) {
+    const cards = shuffle(rng(round * 31 + 5), M5_ROUNDS[round]); let sel = null, left = cards.length;
+    F.say("Matching game! Tap two fractions that are the same size.");
+    F.stage.innerHTML = `<div class="target">Match ${round + 1} of ${M5_ROUNDS.length}: Find the same-size pairs!</div><div class="cards"></div><div class="feedback" role="status"></div><div class="row center nextrow"></div>`;
+    const host = $(".cards", F.stage), fb = $(".feedback", F.stage), nextRow = $(".nextrow", F.stage);
+    cards.forEach((f, k) => {
+      const c = H("button", { class: "fcard", "data-k": k, "data-v": f.n / f.d, "aria-label": fracWords(f.n, f.d) }, frHTML(f.n, f.d));
+      c.appendChild(barModel(f.d, range(f.n), { w: 240, h: 40 })); host.appendChild(c);
+      c.onclick = () => {
+        if (c.classList.contains("matched")) return;
+        if (!sel) { sel = { c, f }; c.classList.add("sel"); Sound.play("tap"); return; }
+        if (sel.c === c) { c.classList.remove("sel"); sel = null; return; }
+        if (sameVal(sel.f, f)) {
+          const a = sel.c; a.classList.remove("sel"); [a, c].forEach(x => x.classList.add("matched")); sel = null; left -= 2;
+          Sound.play("good"); burst("MATCH!"); fbSet(fb, "ok", `${a.getAttribute("aria-label")} = ${fracWords(f.n, f.d)}. ${cheer()}`, false);
+          if (!left) { starsN++; F.setStars(starsN); const nb = H("button", { class: "btn go big" }, round + 1 < M5_ROUNDS.length ? "Next match ▶" : "Finish! ⭐"); nextRow.appendChild(nb); nb.onclick = () => round + 1 < M5_ROUNDS.length ? match(round + 1) : awardBadge(5); }
+        } else {
+          const a = sel.c; a.classList.remove("sel"); sel = null; Sound.play("oops");
+          [a, c].forEach(x => { x.classList.remove("nope"); void x.offsetWidth; x.classList.add("nope"); });
+          fbSet(fb, "hint", "💡 Not the same size. Look at the red bars. Do they line up?");
+        }
+      };
+    });
+  }
+  wall();
+}
+
+/* ---------- Mission 6: showdown ---------- */
+function mission6() {
+  const F = missionFrame(6, "Which fraction is bigger? Pick the sign: less than, greater than, or equal.", M6.length);
+  const tip = H("div", { class: "panel sky tipcard" });
+  tip.innerHTML = `<div><b style="font-size:1.2rem">More pieces = smaller pieces!</b><div class="tipbars"></div></div><div class="tiptext"></div>`;
+  F.sec.insertBefore(tip, F.stage.parentNode);
+  const tb = $(".tipbars", tip); tb.appendChild(barsModel([Fr(1, 2), Fr(1, 4), Fr(1, 8)]));
+  const tt = H("div", { class: "bubble", style: "font-size:1.15rem" }); $(".tiptext", tip).appendChild(tt);
+  setBubble(tt, "The sign is like a hungry mouth. The open side faces the BIGGER fraction. 3/4 > 1/4. We read it: 3/4 is greater than 1/4.");
+  runQuiz(F, M6, { onDone: () => awardBadge(6) });
+}
+
+/* ---------- Mission 7: whole hero ---------- */
+function mission7() {
+  const F = missionFrame(7, "When ALL the pieces are shaded, you have 1 whole! A whole number can be a fraction too.", M7.length);
+  runQuiz(F, M7, { onDone: () => awardBadge(7) });
+}
+
+/* ---------- Mission 8: boss battle ---------- */
+const TAUNTS = ["I break things into pieces! Ha!", "You can't fix my crumbs!", "Hmm, you are good at this.", "Ouch! My crumble ray!", "Stop zapping me!", "My power is going down!", "How do you know so much?", "Oh no! Almost out of power!", "Wait! Not fair!", "Okay, okay! You win!"];
+function mission8() {
+  const F = missionFrame(8, "Count Crumble is here! Get each answer right to zap his crumble power!", 10);
+  const bar = H("div", { class: "panel bossbar" });
+  bar.innerHTML = `<div class="vwrap">${figure("boss")}</div><div><b style="font-family:var(--head);font-size:1.2rem">Count Crumble's power</b><div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="10"><i></i><b>10 / 10</b></div><div class="taunt bubble" style="margin-top:12px;font-size:1.1rem"></div></div>`;
+  F.sec.insertBefore(bar, F.stage.parentNode);
+  const v = $("svg", bar); v.classList.add("villain");
+  const tauntEl = $(".taunt", bar); setBubble(tauntEl, "Mwa-ha-ha! I broke Fraction City into pieces!");
+  const qs = bossSet(Math.floor(Math.random() * 1e9));
+  runQuiz(F, qs, {
+    boss: true, finishLabel: "Final zap! ⚡",
+    promptPrefix: i => `Question ${i + 1} of 10:`,
+    onCorrect: i => { const left = 9 - i; $(".meter i", bar).style.width = left * 10 + "%"; $(".meter b", bar).textContent = `${left} / 10`; $(".meter", bar).setAttribute("aria-valuenow", left); v.classList.remove("hit"); void v.getBoundingClientRect(); v.classList.add("hit"); setBubble(tauntEl, TAUNTS[Math.min(i, TAUNTS.length - 1)]); },
+    onWrong: () => setBubble(tauntEl, "Hee hee! Look again!"),
+    onDone: () => {
+      Sound.play("win"); Confetti.go(220);
+      F.stage.innerHTML = `<div class="qbox"><h2 style="color:var(--green)">YOU WIN!</h2><div style="width:180px">${figure("boss")}</div><div class="bubble" style="max-width:560px">Count Crumble says: "Okay! I will fix Fraction City. Fractions are pretty cool!"</div><div class="row center"><button class="btn go big" id="claim">Get my badge ⭐</button></div></div>`;
+      setBubble(tauntEl, "You zapped all my power! I give up!");
+      $("#claim").onclick = () => awardBadge(8);
+    }
+  });
+}
+const MISSION_FN = [null, mission1, mission2, mission3, mission4, mission5, mission6, mission7, mission8];
+
+/* =========================================================
+   HQ, certificate, router, start-up
+   ========================================================= */
+function buildHQ() {
+  const n = Progress.badges.size, next = MISSIONS.find(m => !Progress.has(m.id));
+  talk($("#hqTalk"), "cap", n === 0
+    ? "Count Crumble broke Fraction City into pieces! Help us fix it. Pick a mission!"
+    : n === 8 ? "You beat Count Crumble! You are a true Fraction Hero! Print your certificate."
+      : `Great work! You have ${n} ${n === 1 ? "badge" : "badges"}. Try Mission ${next.id} next!`);
+  $("#hqArt").innerHTML = figure("cap") + `<div style="transform:scale(.8);transform-origin:bottom">${figure("pint")}</div>` + `<div style="transform:scale(.72);transform-origin:bottom">${figure("boss")}</div>`;
+  $("#hqCount").textContent = `${n} of 8 badges`; $("#hqBar").style.width = n / 8 * 100 + "%";
+  const map = $("#map"); map.innerHTML = "";
+  MISSIONS.forEach(m => {
+    const done = Progress.has(m.id), isNext = next && next.id === m.id;
+    const c = H("button", { class: `mcard${done ? " done" : ""}${isNext ? " next" : ""}${m.id === 8 ? " boss" : ""}`, "data-go": "m" + m.id, "aria-label": `Mission ${m.id}: ${m.title}. ${done ? "Badge earned." : "Not done yet."}` });
+    c.innerHTML = `<span class="num">${m.id}</span>${isNext ? `<span class="ribbon">NEXT!</span>` : ""}${badgeSVG(m.id, done)}<span class="t">${m.title}</span><span class="s">${m.sub}</span><span class="s">${done ? "✅ Done! Play again" : "▶ Play"}</span>`;
+    map.appendChild(c);
+  });
+}
+function buildCert() {
+  const n = Progress.badges.size;
+  talk($("#certTalk"), "pint", n === 8 ? "You did it, hero! Type your name. Then tap Print!" : `You have ${n} of 8 badges. Type your name. You can print now, or earn more badges first!`);
+  const inp = $("#certName"), card = $("#certCard");
+  const date = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  function draw() {
+    const name = inp.value.trim();
+    card.innerHTML = `<div class="row center" style="gap:4px;align-items:flex-end"><div class="cfig" style="width:96px">${figure("cap")}</div>
+      <div><div class="tag" style="transform:rotate(-3deg)">OFFICIAL</div><div class="ctitle">FRACTION HERO</div><div style="font-family:var(--head);font-size:1.3rem">CERTIFICATE</div></div><div class="cfig small" style="width:84px">${figure("pint")}</div></div>

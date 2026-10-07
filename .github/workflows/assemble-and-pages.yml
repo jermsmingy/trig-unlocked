@@ -24,6 +24,7 @@ jobs:
           echo "assembled=false" >> "$GITHUB_OUTPUT"
           if [ ! -f parts/SHA256SUMS ] || [ ! -f parts/TARGET ]; then echo "Nothing to assemble."; exit 0; fi
           read -r target expected msg < parts/TARGET
+          case "$target" in index.html|lewis-structures/index.html) echo "Refusing to overwrite a protected lesson: $target"; exit 1;; esac
           cd parts
           if ! sha256sum -c SHA256SUMS; then echo "Parts incomplete or mismatched; skipping."; exit 0; fi
           perl -pi -e 's/\@\@E:([a-z#0-9]+)\@\@/chr(38).$1.";"/ge' part*.txt
@@ -31,11 +32,15 @@ jobs:
           mkdir -p "$(dirname "$target")"
           cat parts/part*.txt > "$target"
           echo "$expected  $target" | sha256sum -c -
-          echo "a39976aebd19a94c8785d6d5d3c197e56a8bb8d6e0728779c2984c401549c3b8  index.html" | sha256sum -c -
+          printf '%s\n' \
+            "a39976aebd19a94c8785d6d5d3c197e56a8bb8d6e0728779c2984c401549c3b8  index.html" \
+            "0970a3265d0f6b8b16ea004da9fb9820a37e7d12fa06fb6c70c227e47d80d1f4  lewis-structures/index.html" \
+            | sha256sum -c -
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git rm -r -q -f parts
           git add "$target"
+          if git diff --cached --name-only | grep -qxE 'index\.html|lewis-structures/index\.html'; then echo "Protected lesson staged; aborting."; exit 1; fi
           git commit -m "$msg"
           git push
           echo "assembled=true" >> "$GITHUB_OUTPUT"
