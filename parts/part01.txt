@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trig, Unlocked · An Interactive Precalculus Lesson</title>
+<meta name="description" content="An interactive lesson on trigonometric functions and identities: unit circle, graphs, identities, worked examples and practice.">
+<meta name="theme-color" content="#6d4aff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Ccircle r='10' fill='none' stroke='%236d4aff' stroke-width='2.5'/%3E%3Ccircle cx='7' cy='-7' r='3' fill='%23ff4f9a'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f7fb; --bg2:#eef0f8; --card:#ffffff; --text:#1c2033; --muted:#5d6480; --line:#dfe3ef;
+  --accent:#6d4aff; --accent2:#ff4f9a; --accent3:#00b4d8;
+  --sin:#e8346f; --cos:#2b78f0; --tan:#e69500; --ok:#12a56a; --bad:#e5484d;
+  --grid:#e6e9f2; --axis:#9aa1b9; --shadow:0 6px 24px rgba(30,35,70,.08), 0 1px 3px rgba(30,35,70,.06);
+  --radius:18px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",Georgia,serif;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --bg:#0e1020; --bg2:#151831; --card:#1a1d38; --text:#eef0ff; --muted:#a3a9cc; --line:#2c3159;
+  --accent:#9b84ff; --accent2:#ff6fae; --accent3:#4dd5f0;
+  --sin:#ff5c8f; --cos:#5aa2ff; --tan:#ffb83d; --ok:#2fd18b; --bad:#ff6b6f;
+  --grid:#252a4d; --axis:#6c739c; --shadow:0 8px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%;transition:background .3s,color .3s}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.2;margin:.2em 0 .5em}
+h2{font-size:clamp(1.5rem,3.5vw,2.1rem)}
+h3{font-size:1.2rem}
+p{margin:.5em 0 .9em}
+button{font:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+
+/* ---------- top bar / nav ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line)}
+.topbar .row{display:flex;align-items:center;gap:10px;padding:8px 18px;max-width:1240px;margin:0 auto}
+.brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text)}
+.brand .logo{width:28px;height:28px}
+.navchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px;scroll-behavior:smooth}
+.navchips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.85rem;text-decoration:none;white-space:nowrap;transition:.2s}
+.chip .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg2);font-size:.72rem;font-weight:700}
+.chip.visited .n{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.chip.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.chip.active .n{background:rgba(255,255,255,.25);color:#fff}
+.iconbtn{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:1.1rem}
+.progress{height:3px;background:transparent}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));transition:width .1s}
+
+/* ---------- sections & cards ---------- */
+section{padding:48px 0 24px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sec-num{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.lead{color:var(--muted);font-size:1.07rem;max-width:760px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card,.ex,.q{min-width:0}
+.fb .m,.tip .m,.why .m,.prompt .m,.lead .m,.goal .m{white-space:normal}
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.grid2,.split{grid-template-columns:minmax(0,1fr)}.grid3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:520px){.grid3{grid-template-columns:minmax(0,1fr)}.card{padding:15px}section{padding:34px 0 14px}.wrap{padding:0 12px}}
+.tip{border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card));padding:12px 14px;border-radius:12px;margin:12px 0}
+.tip.warn{border-color:var(--tan);background:color-mix(in srgb,var(--tan) 10%,var(--card))}
+.tip.good{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 9%,var(--card))}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:700;background:var(--bg2);color:var(--muted)}
+.c-sin{color:var(--sin)} .c-cos{color:var(--cos)} .c-tan{color:var(--tan)} .c-ok{color:var(--ok)} .c-bad{color:var(--bad)}
+.muted{color:var(--muted)} .small{font-size:.88rem}
+.center{text-align:center}
+
+/* ---------- controls ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-weight:600;transition:transform .08s,background .2s,border-color .2s;touch-action:manipulation}
+.btn:hover{border-color:var(--accent)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.btn.small{padding:6px 11px;min-height:36px;font-size:.88rem;border-radius:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:8px 14px;min-height:40px;cursor:pointer;font-weight:600}
+.seg button.on{background:var(--accent);color:#fff}
+label.ctl{display:block;margin:10px 0 2px;font-weight:600;font-size:.93rem}
+label.ctl .val{float:right;font-family:var(--math);font-weight:700;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;touch-action:pan-y}
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;margin:4px 14px 4px 0;font-size:.93rem}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+input[type=text],select{font:inherit;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);min-height:44px;width:100%}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input.mathin{font-family:var(--math);font-size:1.1rem}
+
+/* ---------- math typesetting ---------- */
+.m{font-family:var(--math);font-size:1.08em;white-space:nowrap}
+.m i{font-style:italic}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.88em;margin:0 .12em;line-height:1.15}
+.fr>span:first-child{border-bottom:1.4px solid currentColor;padding:0 .18em .05em}
+.fr>span:last-child{padding:.05em .18em 0}
+.rt{white-space:nowrap}
+.rt>.rad{display:inline-block;border-top:1.4px solid currentColor;padding:.06em .08em 0;margin-left:.02em;line-height:1.15}
+.rt:has(.fr)>.sq{font-size:1.75em;vertical-align:-.12em;line-height:1}
+.rt:has(.fr)>.rad{vertical-align:-.05em}
+.m sup{font-size:.68em;vertical-align:.6em;line-height:0}
+.m sub{font-size:.68em;line-height:0}
+.eq{display:block;text-align:center;font-family:var(--math);font-size:1.2rem;margin:12px 0;white-space:normal;overflow-x:auto}
+.formula{background:var(--bg2);border-radius:12px;padding:10px 12px;margin:8px 0;font-family:var(--math);font-size:1.1rem;overflow-x:auto}
+.formula .m{font-size:1em}
+
+/* ---------- hero ---------- */
+.hero{padding:46px 0 10px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:center}
+@media (max-width:860px){.hero-grid{grid-template-columns:minmax(0,1fr)}}
+.hero h1{font-size:clamp(2.2rem,6vw,3.7rem);letter-spacing:-.03em;margin:.1em 0 .25em}
+.grad{background:linear-gradient(120deg,var(--accent),var(--accent2) 55%,var(--accent3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kicker{display:inline-block;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);padding:4px 12px;border-radius:999px;font-size:.85rem}
+.howto{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.howto .card{margin:0;padding:14px}
+.howto .ic{font-size:1.5rem}
+@media (max-width:860px){.howto{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+#heroCanvas{width:100%;aspect-ratio:1.25/1;display:block}
+
+/* ---------- visuals ---------- */
+svg{display:block;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.viz{width:100%;background:var(--card);border-radius:14px}
+canvas.plot{width:100%;display:block;border-radius:14px;background:var(--card);touch-action:pan-y}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center}
+.readout dt{color:var(--muted);font-size:.9rem}
+.readout dd{margin:0;font-family:var(--math);font-size:1.2rem;font-weight:600}
+.bigval{font-family:var(--math);font-size:1.6rem;font-weight:700}
+.handle{cursor:grab}
+.handle:active{cursor:grabbing}
+.astc text{font-weight:800}
+.quad-on{opacity:1!important}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.88rem;color:var(--muted);margin:6px 0}
+.legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;background:currentColor;margin-right:6px;vertical-align:middle}
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem}
+table.tbl th,table.tbl td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:center}
+table.tbl th{color:var(--muted);font-weight:700}
+.scrollx{overflow-x:auto}
+.ratio{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:var(--bg2);margin:6px 0;transition:box-shadow .2s;cursor:default}
+.ratio:hover,.ratio.hl{box-shadow:0 0 0 2px var(--accent) inset}
+.ratio b{font-family:var(--math);font-size:1.1rem}
+.ratio .m{font-size:1.05rem}
+.soh{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.soh div{text-align:center;padding:12px 6px;border-radius:14px;color:#fff;font-weight:800;font-size:1.25rem;letter-spacing:.06em}
+.soh small{display:block;font-weight:500;letter-spacing:0;font-size:.78rem;opacity:.95}
+.bar{height:26px;border-radius:8px;overflow:hidden;display:flex;background:var(--bg2);margin:8px 0}
+.bar>div{height:100%;transition:width .15s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden}
+
+/* ---------- steps (worked examples) ---------- */
+.ex{border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;background:var(--card);box-shadow:var(--shadow)}
+.ex h3{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ex .goal{white-space:normal;line-height:2;font-family:var(--math);font-size:1.15rem;background:var(--bg2);padding:10px 12px;border-radius:12px;overflow-x:auto}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps li{display:none;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;padding:10px 4px;border-bottom:1px dashed var(--line);animation:pop .35s ease}
+.steps li.shown{display:grid}
+.steps li::before{counter-increment:st;content:counter(st);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-weight:800;font-size:.85rem}
+.steps .expr{font-family:var(--math);font-size:1.15rem;overflow-x:auto;padding:2px 0;white-space:normal;line-height:2}
+.steps .why{font-size:.9rem;color:var(--muted);margin-top:2px}
+.steps .why b{color:var(--accent)}
+.hintbox{display:none;margin:8px 0}
+.hintbox.on{display:block;animation:pop .3s}
+.done-badge{display:none}
+.ex.complete .done-badge{display:inline-block;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- practice ---------- */
+.scorebar{position:sticky;top:64px;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow)}
+.meter{flex:1;min-width:140px;height:10px;border-radius:99px;background:var(--bg2);overflow:hidden}
+.meter>div{height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--accent3));transition:width .4s}
+.q{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;background:var(--card);transition:border-color .3s}
+.q.right{border-color:var(--ok)} .q.wrong{border-color:var(--bad)}
+.q .qhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.q .qn{font-weight:800;color:var(--accent)}
+.q .prompt{font-size:1.07rem}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+@media (max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;justify-content:flex-start;font-family:var(--math);font-size:1.08rem;font-weight:500}
+.opt.sel-right{background:color-mix(in srgb,var(--ok) 16%,var(--card));border-color:var(--ok)}
+.opt.sel-wrong{background:color-mix(in srgb,var(--bad) 14%,var(--card));border-color:var(--bad)}
+.ansrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.ansrow input{flex:1;min-width:160px;width:auto}
+.preview{min-height:1.6em;font-size:.95rem;color:var(--muted)}
+.fb{display:none;margin-top:8px;padding:10px 12px;border-radius:12px;animation:pop .3s}
+.fb.on{display:block}
+.fb.ok{background:color-mix(in srgb,var(--ok) 12%,var(--card));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.fb.no{background:color-mix(in srgb,var(--bad) 10%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 40%,transparent)}
+.fb.info{background:var(--bg2)}
+.keypad{display:flex;gap:6px;flex-wrap:wrap}
+.keypad .btn{min-width:44px;font-family:var(--math)}
+
+@media (max-width:520px){.brand span{display:none}.topbar .row{padding:8px 10px}.scorebar{top:58px;padding:8px 10px;gap:8px;flex-wrap:nowrap}.scorebar #scoreSub{display:none}.scorebar .meter{min-width:50px}.scorebar .btn{padding:4px 8px;min-height:32px}}
+/* ---------- drill ---------- */
+.drill{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--card)),color-mix(in srgb,var(--accent2) 12%,var(--card)));}
+.drill-q{font-family:var(--math);font-size:clamp(2rem,7vw,3rem);text-align:center;font-weight:700;margin:10px 0;min-height:1.6em}
+.drill-stats{display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;text-align:center}
+.drill-stats div b{display:block;font-size:1.6rem}
+.timer{height:10px;border-radius:99px;background:var(--bg2);overflow:hidden;margin:8px 0}
+.timer>div{height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .2s linear}
+.drill .opts{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:620px){.drill .opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.drill .opt{justify-content:center;font-size:1.25rem;min-height:56px}
+.flash-ok{animation:fok .4s}.flash-no{animation:fno .4s}
+@keyframes fok{50%{box-shadow:0 0 0 4px var(--ok)}}
+@keyframes fno{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+/* ---------- cheat sheet ---------- */
+.cheat-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.cheat-grid{grid-template-columns:minmax(0,1fr)}}
+.cheat h4{margin:12px 0 4px;color:var(--accent);font-size:1rem}
+.cheat .formula{font-size:1rem;padding:6px 10px;margin:4px 0}
+footer{padding:40px 0 60px;text-align:center;color:var(--muted);font-size:.9rem}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:100;width:100%;height:100%}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:101;transition:transform .35s;box-shadow:var(--shadow)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ---------- print: cheat sheet only ---------- */
+@media print{
+  @page{margin:12mm}
+  html,body{background:#fff!important;color:#000!important}
+  html[data-theme="dark"]{--bg:#fff;--card:#fff;--text:#000;--muted:#333;--line:#bbb;--bg2:#f1f1f1;--grid:#ddd;--axis:#777}
+  .topbar,footer,section:not(#cheat),.noprint,#confetti,.toast{display:none!important}
+  section#cheat{padding:0}
+  .sec-head{margin:0 0 4px}.sec-num{display:none}
+  .cheat-grid{display:block}
+  .cheat .card{box-shadow:none;border:1px solid #bbb;margin:6px 0;padding:8px}
+  .cheat .card:first-child{border:0;padding:0}
+  #cheatSvg{width:4.3in;margin:0 auto}
+  .cheat .card:last-child{columns:2;column-gap:14px;font-size:12px}
+  .cheat h4{break-after:avoid;margin:6px 0 2px;font-size:12px}
+  .cheat .formula{background:#f3f3f3;break-inside:avoid;font-size:12px;padding:4px 8px;margin:3px 0}
+  .cheat .formula .m{white-space:normal}
+  .cheat p{break-inside:avoid;font-size:11px;margin:4px 0}
+}
+}
+
+</style>
+</head>
+<body>
+<noscript><div style="padding:12px;background:#ffe9a8;color:#000;text-align:center">This lesson needs JavaScript turned on for the interactive parts.</div></noscript>
+<header class="topbar">
+  <div class="row">
+    <a class="brand" href="#welcome" aria-label="Back to top">
+      <svg class="logo" viewBox="-12 -12 24 24" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d4aff"/><stop offset="1" stop-color="#ff4f9a"/></linearGradient></defs><circle r="10" fill="none" stroke="url(#lg)" stroke-width="2.4"/><line x1="0" y1="0" x2="7.07" y2="-7.07" stroke="url(#lg)" stroke-width="2.2"/><circle cx="7.07" cy="-7.07" r="2.6" fill="#ff4f9a"/></svg>
+      <span>Trig, Unlocked</span>
+    </a>
+    <nav class="navchips" id="navchips" aria-label="Lesson sections"></nav>
+    <button class="iconbtn" id="themeBtn" title="Toggle light/dark mode" aria-label="Toggle light or dark mode">◐</button>
+  </div>
+  <div class="progress"><div id="progbar"></div></div>
+</header>
+
+<main>
+<!-- ======================= 1. WELCOME ======================= -->
+<section id="welcome" class="hero" data-title="Welcome">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">✨ An interactive lesson by Grok Bot</span>
+        <h1>Trig, <span class="grad">Unlocked</span></h1>
+        <p class="lead">Trigonometry is really just one idea: <b>a point going around a circle</b>. Once you <i>see</i> that, sine, cosine, tangent, and all those identities stop being things to memorize and start being things you can figure out.</p>
+        <p class="lead">Drag, slide, and tap everything. Nothing here can break, so experiment.</p>
+        <div class="btnrow"><a class="btn primary" href="#angles">Start the lesson →</a><a class="btn" href="#practice">Jump to practice</a><a class="btn" href="#cheat">Cheat sheet</a></div>
+        <p class="small muted">Color code used everywhere: <b class="c-cos">cos is blue</b> (the <i>x</i>-direction), <b class="c-sin">sin is pink</b> (the <i>y</i>-direction), <b class="c-tan">tan is gold</b>.</p>
+      </div>
+      <div class="card" style="padding:10px"><canvas id="heroCanvas" aria-label="Animated point moving around a circle and tracing a sine wave"></canvas></div>
+    </div>
+    <div class="howto">
+      <div class="card"><div class="ic">👆</div><b>Drag & slide</b><div class="small muted">Every diagram moves. Drag the dots, move the sliders.</div></div>
+      <div class="card"><div class="ic">🪜</div><b>Step by step</b><div class="small muted">Worked examples show one step at a time, and each step says why.</div></div>
+      <div class="card"><div class="ic">🎯</div><b>Practice</b><div class="small muted">15 problems with instant feedback and a timed speed drill.</div></div>
+      <div class="card"><div class="ic">🖨️</div><b>Cheat sheet</b><div class="small muted">A one-page summary you can print for studying.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 2. ANGLES ======================= -->
+<section id="angles" data-title="Radians">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">2</div><h2>Angles: degrees vs. radians</h2></div>
+    <p class="lead">Degrees cut a circle into 360 slices, a number someone just picked. <b>Radians</b> measure an angle by how much of the circle's edge it covers, counted in radius-lengths. That's why math (and calculus) prefers them.</p>
+    <div class="split">
+      <div class="card">
+        <svg id="radSvg" class="viz" viewBox="-1.6 -1.6 3.2 3.2" aria-label="Angle diagram showing arc length in radians"></svg>
+        <div class="legend"><span style="color:var(--accent2)">arc = r·θ (here r = 1)</span><span style="color:var(--muted)">ticks every 1 radian</span></div>
+      </div>
+      <div class="card">
+        <label class="ctl" for="degSlider">Angle <span class="val" id="degVal">135°</span></label>
+        <input type="range" id="degSlider" min="-360" max="720" step="1" value="135" aria-label="Angle in degrees">
+        <div class="btnrow" id="degPresets"></div>
+        <dl class="readout">
+          <dt>Degrees</dt><dd id="rDeg">135°</dd>
+          <dt>Radians (exact)</dt><dd id="rRadExact">—</dd>
+          <dt>Radians (decimal)</dt><dd id="rRadDec">—</dd>
+          <dt>Coterminal in [0°, 360°)</dt><dd id="rCot">—</dd>
+        </dl>
+        <div class="tip"><b>The conversion:</b> a full turn is <span class="m">360° = 2π</span> rad, so <span class="m">180° = π</span>.
+          <div class="eq"><span class="m">radians = degrees × \f{π}{180}</span> &nbsp;&nbsp; <span class="m">degrees = radians × \f{180}{π}</span></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Try it: convert either way</h3>
+      <div class="grid2">
+        <div><label class="ctl" for="convDeg">Degrees → radians</label><input type="text" id="convDeg" class="mathin" value="210" inputmode="decimal" autocomplete="off"><div class="preview" id="convDegOut"></div></div>
+        <div><label class="ctl" for="convRad">Radians → degrees <span class="small muted">(type things like <code>3pi/4</code> or <code>2.5</code>)</span></label><input type="text" id="convRad" class="mathin" value="5pi/6" autocomplete="off"><div class="preview" id="convRadOut"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
