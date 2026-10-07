@@ -1,0 +1,292 @@
+    c.fillStyle = "#fff"; c.beginPath(); c.arc(px, py, 5, 0, TAU); c.fill();
+    c.fillStyle = cssVar("--sin"); c.beginPath(); c.arc(gx, py, 6, 0, TAU); c.fill();
+    c.font = "600 15px Georgia, serif"; c.fillStyle = cssVar("--sin"); c.fillText("y = sin θ", gx + 10, 22);
+    c.fillStyle = cssVar("--cos"); c.fillText("y = cos θ", gx + 100, 22);
+    requestAnimationFrame(frame);
+  }
+})();
+
+/* ---------- 2. angles & radians ---------- */
+(function angles() {
+  const svg = $("#radSvg"), sl = $("#degSlider");
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--line);stroke-width:.02" }, svg);
+  S("line", { x1: -1.45, y1: 0, x2: 1.45, y2: 0, style: "stroke:var(--axis);stroke-width:.012" }, svg);
+  S("line", { x1: 0, y1: -1.45, x2: 0, y2: 1.45, style: "stroke:var(--axis);stroke-width:.012" }, svg);
+  for (let k = 1; k <= 6; k++) {   // radian ticks
+    const c = Math.cos(k), s = Math.sin(k);
+    S("line", { x1: .93 * c, y1: -.93 * s, x2: 1.07 * c, y2: -1.07 * s, style: "stroke:var(--muted);stroke-width:.018" }, svg);
+    S("text", { x: 1.2 * c, y: -1.2 * s + .04, "text-anchor": "middle", "font-size": .11, style: "fill:var(--muted)", text: k + " rad" }, svg);
+  }
+  const turns = S("path", { fill: "none", style: "stroke:var(--accent2);stroke-width:.03;opacity:.35" }, svg);
+  const arc = S("path", { fill: "none", style: "stroke:var(--accent2);stroke-width:.05;stroke-linecap:round" }, svg);
+  const small = S("path", { fill: "none", style: "stroke:var(--accent);stroke-width:.02" }, svg);
+  S("line", { x1: 0, y1: 0, x2: 1, y2: 0, style: "stroke:var(--text);stroke-width:.025" }, svg);
+  const ray = S("line", { x1: 0, y1: 0, style: "stroke:var(--text);stroke-width:.03;stroke-linecap:round" }, svg);
+  const dot = S("circle", { r: .05, style: "fill:var(--accent2)" }, svg);
+  const lbl = S("text", { "font-size": .14, "text-anchor": "middle", style: "fill:var(--accent);font-weight:700" }, svg);
+  const presets = [0, 30, 45, 60, 90, 180, 270, 360, -90, 450];
+  presets.forEach(d => { const b = document.createElement("button"); b.className = "btn small"; b.textContent = d + "°"; b.onclick = () => { sl.value = d; upd(); }; $("#degPresets").appendChild(b); });
+  function upd() {
+    const d = +sl.value, a = d * PI / 180, norm = ((d % 360) + 360) % 360;
+    $("#degVal").textContent = d + "°"; $("#rDeg").textContent = d + "°";
+    $("#rRadExact").innerHTML = tex(degToRadTex(d)); $("#rRadDec").textContent = "≈ " + fmtNum(a, 4) + " rad";
+    $("#rCot").innerHTML = norm + "° = " + tex(degToRadTex(norm));
+    const full = Math.floor(Math.abs(a) / TAU) > 0;
+    turns.setAttribute("d", full ? "M 1 0 A 1 1 0 1 0 -1 0 A 1 1 0 1 0 1 0" : "");
+    const rem = a >= 0 ? a % TAU : -((-a) % TAU);
+    const end = Math.abs(rem) < 1e-9 && a !== 0 ? (a > 0 ? TAU - 1e-4 : -TAU + 1e-4) : rem;
+    arc.setAttribute("d", arcPath(1, 0, end));
+    small.setAttribute("d", arcPath(.25, 0, end));
+    ray.setAttribute("x2", Math.cos(a)); ray.setAttribute("y2", -Math.sin(a));
+    dot.setAttribute("cx", Math.cos(a)); dot.setAttribute("cy", -Math.sin(a));
+    const mid = end / 2; lbl.setAttribute("x", .45 * Math.cos(mid)); lbl.setAttribute("y", -.45 * Math.sin(mid) + .05);
+    lbl.textContent = Math.abs(a) > 0.2 ? fmtNum(a, 2) + " rad" : "";
+  }
+  sl.addEventListener("input", upd); upd();
+  function convDeg() {
+    const out = $("#convDegOut"), v = $("#convDeg").value.trim();
+    try {
+      const n = makeFn(v, { noVar: true }).f(0);
+      if (!isFinite(n)) throw new Error("Type a number of degrees");
+      const exact = Number.isInteger(n) ? tex(degToRadTex(n)) + " = " : "";
+      out.innerHTML = `<span class="m">${fmtNum(n, 4)}° × ${tex("\\f{π}{180}")} = ${exact}${fmtNum(n * PI / 180, 4)}</span> rad`;
+    } catch (e) { out.textContent = v ? e.message : ""; }
+  }
+  function convRad() {
+    const out = $("#convRadOut"), v = $("#convRad").value.trim();
+    try {
+      const m = makeFn(v, { noVar: true }), n = m.f(0);
+      if (!isFinite(n)) throw new Error("Type a number");
+      out.innerHTML = `<span class="m">${tex(m.tex)} × ${tex("\\f{180}{π}")} = ${fmtNum(n * 180 / PI, 4)}°</span>`;
+    } catch (e) { out.textContent = v ? e.message : ""; }
+  }
+  $("#convDeg").addEventListener("input", convDeg); $("#convRad").addEventListener("input", convRad); convDeg(); convRad();
+})();
+
+/* ---------- 3. unit circle ---------- */
+const UC = (function unitCircle() {
+  const svg = $("#ucSvg"); svg.setAttribute("tabindex", "0");
+  const quads = [[0, -1.62], [-1.62, -1.62], [-1.62, 0], [0, 0]].map(([x, y], i) =>
+    S("rect", { x, y, width: 1.62, height: 1.62, style: "fill:var(--accent);opacity:0;transition:opacity .25s" }, svg));
+  const astc = [["A", "All", 1.32, -1.38], ["S", "Sin", -1.32, -1.38], ["T", "Tan", -1.32, 1.42], ["C", "Cos", 1.32, 1.42]].map(([L, w, x, y]) => {
+    const g = S("g", { style: "opacity:.35;transition:opacity .25s" }, svg);
+    S("text", { x, y, "text-anchor": "middle", "font-size": .2, style: "fill:var(--accent);font-weight:800", text: L }, g);
+    S("text", { x, y: y + .12, "text-anchor": "middle", "font-size": .075, style: "fill:var(--muted)", text: w + " +" }, g);
+    return g;
+  });
+  ["I", "II", "III", "IV"].forEach((q, i) => S("text", { x: [.75, -.75, -.75, .75][i], y: [-.75, -.75, .8, .8][i], "text-anchor": "middle", "font-size": .1, style: "fill:var(--muted);opacity:.6", text: q }, svg));
+  S("line", { x1: -1.55, y1: 0, x2: 1.55, y2: 0, style: "stroke:var(--axis);stroke-width:.01" }, svg);
+  S("line", { x1: 0, y1: -1.55, x2: 0, y2: 1.55, style: "stroke:var(--axis);stroke-width:.01" }, svg);
+  S("text", { x: 1.5, y: -.04, "font-size": .09, style: "fill:var(--muted)", text: "x" }, svg);
+  S("text", { x: .04, y: -1.47, "font-size": .09, style: "fill:var(--muted)", text: "y" }, svg);
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--text);stroke-width:.018;opacity:.75" }, svg);
+  const tanG = S("g", { style: "display:none" }, svg);
+  S("line", { x1: 1, y1: -1.6, x2: 1, y2: 1.6, style: "stroke:var(--tan);stroke-width:.008;opacity:.5" }, tanG);
+  const tanExt = S("line", { style: "stroke:var(--tan);stroke-width:.012;stroke-dasharray:.04 .03" }, tanG);
+  const tanSeg = S("line", { x1: 1, y1: 0, x2: 1, style: "stroke:var(--tan);stroke-width:.04;stroke-linecap:round" }, tanG);
+  const tanLbl = S("text", { x: 1.04, "font-size": .085, style: "fill:var(--tan);font-weight:700" }, tanG);
+  const ticks = S("g", {}, svg);
+  SPECIAL.forEach(d => { const a = d * PI / 180; const c = S("circle", { cx: Math.cos(a), cy: -Math.sin(a), r: .022, style: "fill:var(--muted);cursor:pointer" }, ticks); c.addEventListener("click", () => set(d * PI / 180, true)); });
+  const labelsG = S("g", { style: "display:none" }, svg);
+  drawSpecialLabels(labelsG, { r: 1.08, fs: .062, deg: false });
+  const tri = S("polygon", { style: "fill:var(--accent);opacity:.1" }, svg);
+  const refArc = S("path", { fill: "none", style: "stroke:var(--accent2);stroke-width:.018;stroke-dasharray:.03 .02" }, svg);
+  const angArc = S("path", { fill: "none", style: "stroke:var(--accent);stroke-width:.022" }, svg);
+  const cosLeg = S("line", { x1: 0, y1: 0, y2: 0, style: "stroke:var(--cos);stroke-width:.04;stroke-linecap:round" }, svg);
+  const sinLeg = S("line", { y1: 0, style: "stroke:var(--sin);stroke-width:.04;stroke-linecap:round" }, svg);
+  const hyp = S("line", { x1: 0, y1: 0, style: "stroke:var(--text);stroke-width:.025;stroke-linecap:round" }, svg);
+  const rightMark = S("path", { fill: "none", style: "stroke:var(--muted);stroke-width:.01" }, svg);
+  const cosLbl = S("text", { "font-size": .085, "text-anchor": "middle", style: "fill:var(--cos);font-weight:700" }, svg);
+  const sinLbl = S("text", { "font-size": .085, style: "fill:var(--sin);font-weight:700" }, svg);
+  const thLbl = S("text", { "font-size": .1, "text-anchor": "middle", style: "fill:var(--accent);font-style:italic;font-weight:700", text: "θ" }, svg);
+  const ptLbl = S("text", { "font-size": .085, style: "fill:var(--text);font-weight:700;paint-order:stroke;stroke:var(--card);stroke-width:.03" }, svg);
+  const hit = S("circle", { r: .16, class: "handle", style: "fill:transparent" }, svg);
+  const glow = S("circle", { r: .09, style: "fill:var(--accent2);opacity:.25;pointer-events:none" }, svg);
+  const pt = S("circle", { r: .05, style: "fill:var(--accent2);stroke:#fff;stroke-width:.018;pointer-events:none" }, svg);
+
+  let theta = PI / 3, snapped = true, spinning = false, dragging = false;
+  const snapOn = () => $("#ucSnap").checked;
+  function nearestSpecial(a) { let best = 0, bd = 9; SPECIAL.concat([360]).forEach(d => { const diff = Math.abs(a - d * PI / 180); if (diff < bd) { bd = diff; best = d % 360; } }); return best; }
+  function set(a, forceSnap) {
+    a = ((a % TAU) + TAU) % TAU;
+    if ((snapOn() || forceSnap) && !spinning) { a = nearestSpecial(a) * PI / 180; snapped = true; } else snapped = false;
+    theta = a; draw();
+  }
+  function draw() {
+    const a = theta, c = Math.cos(a), s = Math.sin(a), deg = a * 180 / PI;
+    const degR = Math.round(deg * 10) / 10, isSp = snapped || SPECIAL.includes(Math.round(deg * 1e6) / 1e6);
+    const dInt = Math.round(deg) % 360;
+    const ex = isSp ? exactTrig(dInt) : null;
+    const X = c, Y = -s;
+    tri.setAttribute("points", `0,0 ${X},0 ${X},${Y}`);
+    cosLeg.setAttribute("x2", X); sinLeg.setAttribute("x1", X); sinLeg.setAttribute("x2", X); sinLeg.setAttribute("y2", Y);
+    hyp.setAttribute("x2", X); hyp.setAttribute("y2", Y);
+    [hit, glow, pt].forEach(e => { e.setAttribute("cx", X); e.setAttribute("cy", Y); });
+    angArc.setAttribute("d", arcPath(.2, 0, a < 1e-6 ? 0 : a));
+    // reference angle arc: between terminal side and nearest x-axis
+    const ref = refAngleDeg(deg) * PI / 180;
+    let base = (deg <= 90) ? 0 : (deg <= 270 ? PI : TAU);
+    refArc.setAttribute("d", (deg > 90 && ref > 1e-6 && Math.abs(deg - 180) > 1e-6) ? arcPath(.34, base, a) : "");
+    const showMark = Math.abs(c) > .08 && Math.abs(s) > .08;
+    const ox = -Math.sign(c) * .07;
+    rightMark.setAttribute("d", showMark ? `M ${X + ox} 0 L ${X + ox} ${s > 0 ? -.07 : .07} L ${X} ${s > 0 ? -.07 : .07}` : "");
+    const cs = ex ? ex.plain.slice(1, -1).split(", ") : [fmtNum(c, 3), fmtNum(s, 3)];
+    cosLbl.setAttribute("x", X / 2); cosLbl.setAttribute("y", s >= 0 ? .11 : -.05); cosLbl.textContent = Math.abs(c) > .15 ? "cos θ" : "";
+    sinLbl.setAttribute("x", X + (c >= 0 ? .04 : -.04)); sinLbl.setAttribute("y", Y / 2 + .03); sinLbl.setAttribute("text-anchor", c >= 0 ? "start" : "end"); sinLbl.textContent = Math.abs(s) > .15 ? "sin θ" : "";
+    const mid = a / 2; thLbl.setAttribute("x", .29 * Math.cos(mid)); thLbl.setAttribute("y", -.29 * Math.sin(mid) + .035);
+    thLbl.style.display = a > .25 ? "" : "none";
+    ptLbl.setAttribute("x", X * 1.12 + (c >= 0 ? 0 : -0)); ptLbl.setAttribute("y", Y * 1.12 + (s >= 0 ? -.04 : .1));
+    ptLbl.setAttribute("text-anchor", Math.abs(c) < .2 ? "middle" : c > 0 ? "start" : "end");
+    ptLbl.textContent = $("#ucLabels").checked ? "" : `(${cs[0]}, ${cs[1]})`;
+    // tangent line
+    const showTan = $("#ucTan").checked && Math.abs(c) > 1e-9;
+    tanG.style.display = showTan ? "" : "none";
+    if (showTan) {
+      const t = clamp(s / c, -40, 40);
+      tanSeg.setAttribute("y2", -t); tanExt.setAttribute("x1", X); tanExt.setAttribute("y1", Y); tanExt.setAttribute("x2", 1); tanExt.setAttribute("y2", -t);
+      tanLbl.setAttribute("y", clamp(-t / 2, -1.5, 1.5) + .03); tanLbl.textContent = "tan θ";
+    }
+    // quadrant / ASTC
+    const q = isAxis(deg) ? 0 : deg < 90 ? 1 : deg < 180 ? 2 : deg < 270 ? 3 : 4;
+    quads.forEach((r, i) => r.style.opacity = (i + 1 === q) ? .07 : 0);
+    astc.forEach((g, i) => g.style.opacity = (i + 1 === q) ? 1 : .3);
+    [1, 2, 3, 4].forEach(i => { const row = $("#astc" + i); row.style.background = i === q ? "color-mix(in srgb, var(--accent) 12%, transparent)" : ""; });
+    // readouts
+    $("#ucAngle").innerHTML = `θ = ${ex ? dInt : fmtNum(degR, 1)}°`;
+    $("#ucRad").innerHTML = ex ? `<span class="m">${tex(degToRadTex(dInt))}</span> ≈ ${fmtNum(a, 4)}` : "≈ " + fmtNum(a, 4);
+    $("#ucPt").innerHTML = ex ? `<span class="m">(${tex(ex.cos)}, ${tex(ex.sin)})</span>` : `(${fmtNum(c, 4)}, ${fmtNum(s, 4)})`;
+    $("#ucCos").innerHTML = ex ? `<span class="m">${tex(ex.cos)}</span>` + approx(c) : fmtNum(c, 4);
+    $("#ucSin").innerHTML = ex ? `<span class="m">${tex(ex.sin)}</span>` + approx(s) : fmtNum(s, 4);
+    const tanUndef = Math.abs(c) < 1e-9;
+    $("#ucTanV").innerHTML = tanUndef ? "undefined <span class='small muted'>(cos θ = 0, can't divide by 0)</span>" : ex ? `<span class="m">${tex(ex.tan)}</span>` + approx(s / c) : fmtNum(s / c, 4);
+    $("#ucQuad").innerHTML = q === 0 ? `on an axis <span class="small muted">(quadrantal angle)</span>` : `${["", "I", "II", "III", "IV"][q]} <span class="small muted">${["", "all positive", "sin positive", "tan positive", "cos positive"][q]}</span>`;
+    const refD = refAngleDeg(ex ? dInt : deg);
+    $("#ucRef").innerHTML = (ex ? `${refD}° = <span class="m">${tex(degToRadTex(refD))}</span>` : fmtNum(refD, 1) + "°") +
+      ` <span class="small muted">${q === 1 ? "(θ itself)" : q === 2 ? "(180° − θ)" : q === 3 ? "(θ − 180°)" : q === 4 ? "(360° − θ)" : ""}</span>`;
+    svg.setAttribute("aria-valuetext", `theta ${fmtNum(degR, 1)} degrees`);
+  }
+  const approx = v => Math.abs(v - Math.round(v)) < 1e-9 ? "" : ` <span class="small muted">≈ ${fmtNum(v, 4)}</span>`;
+  const isAxis = d => [0, 90, 180, 270, 360].some(k => Math.abs(d - k) < 1e-6);
+  function fromEvent(e) { const p = svgPoint(svg, e); if (Math.hypot(p.x, p.y) < .05) return; set(Math.atan2(-p.y, p.x)); }
+  svg.addEventListener("pointerdown", e => { const p = svgPoint(svg, e); if (Math.hypot(p.x, p.y) > 1.5) return; stopSpin(); dragging = true; svg.setPointerCapture(e.pointerId); fromEvent(e); e.preventDefault(); });
+  svg.addEventListener("pointermove", e => { if (dragging) fromEvent(e); });
+  ["pointerup", "pointercancel"].forEach(t => svg.addEventListener(t, () => dragging = false));
+  svg.addEventListener("keydown", e => {
+    const step = snapOn() ? null : PI / 180;
+    let dir = (e.key === "ArrowRight" || e.key === "ArrowUp") ? 1 : (e.key === "ArrowLeft" || e.key === "ArrowDown") ? -1 : 0;
+    if (!dir) return; e.preventDefault(); stopSpin();
+    if (step) set(theta + dir * step);
+    else { const d = Math.round(theta * 180 / PI) % 360, i = SPECIAL.indexOf(d); const j = (i + dir + 16) % 16; set(SPECIAL[j] * PI / 180); }
+  });
+  ["ucSnap", "ucTan", "ucLabels"].forEach(id => $("#" + id).addEventListener("change", () => { labelsG.style.display = $("#ucLabels").checked ? "" : "none"; ticks.style.opacity = $("#ucLabels").checked ? 1 : .8; if (id === "ucSnap" && snapOn()) set(theta); else draw(); }));
+  // jump buttons
+  SPECIAL.concat([]).forEach(d => {
+    const b = document.createElement("button"); b.className = "btn small m"; b.innerHTML = tex(degToRadTex(d)); b.dataset.done = 1;
+    b.title = d + "°"; b.onclick = () => { stopSpin(); set(d * PI / 180, true); }; $("#ucButtons").appendChild(b);
+  });
+  // spin
+  let raf = 0, lastT = 0;
+  function spinFrame(ts) { if (!spinning) return; const dt = lastT ? (ts - lastT) / 1000 : 0; lastT = ts; theta = (theta + dt * .7) % TAU; snapped = false; draw(); raf = requestAnimationFrame(spinFrame); }
+  function stopSpin() { if (!spinning) return; spinning = false; cancelAnimationFrame(raf); $("#ucSpin").textContent = "▶ Spin"; $("#ucSpin").classList.remove("on"); if (snapOn()) set(theta); }
+  $("#ucSpin").addEventListener("click", () => { if (spinning) return stopSpin(); spinning = true; lastT = 0; $("#ucSpin").textContent = "⏸ Stop"; $("#ucSpin").classList.add("on"); raf = requestAnimationFrame(spinFrame); });
+  draw();
+  return { set: (d) => set(d * PI / 180, true) };
+})();
+
+/* ---------- 4. SOH CAH TOA triangle ---------- */
+(function triangle() {
+  const svg = $("#triSvg"), so = $("#oppS"), sa = $("#adjS");
+  so.step = sa.step = "0.01";
+  const K = 38, Ax = 40, Ay = 268;
+  S("rect", { x: 0, y: 0, width: 400, height: 300, fill: "transparent" }, svg);
+  const fill = S("polygon", { style: "fill:var(--accent);opacity:.08" }, svg);
+  const adj = S("line", { style: "stroke:var(--cos);stroke-width:5;stroke-linecap:round" }, svg);
+  const opp = S("line", { style: "stroke:var(--sin);stroke-width:5;stroke-linecap:round" }, svg);
+  const hyp = S("line", { style: "stroke:var(--accent);stroke-width:5;stroke-linecap:round" }, svg);
+  const rm = S("path", { fill: "none", style: "stroke:var(--muted);stroke-width:1.5" }, svg);
+  const arc = S("path", { fill: "none", style: "stroke:var(--text);stroke-width:2" }, svg);
+  const th = S("text", { "font-size": 18, style: "fill:var(--text);font-style:italic;font-family:Georgia,serif", text: "θ" }, svg);
+  const lA = S("text", { "font-size": 15, "text-anchor": "middle", style: "fill:var(--cos);font-weight:700" }, svg);
+  const lO = S("text", { "font-size": 15, style: "fill:var(--sin);font-weight:700" }, svg);
+  const lH = S("text", { "font-size": 15, "text-anchor": "end", style: "fill:var(--accent);font-weight:700" }, svg);
+  const hB = S("circle", { r: 17, class: "handle", style: "fill:var(--sin);stroke:#fff;stroke-width:3" }, svg);
+  const hC = S("circle", { r: 17, class: "handle", style: "fill:var(--cos);stroke:#fff;stroke-width:3" }, svg);
+  const HL = { sin: ["opp", "hyp"], cos: ["adj", "hyp"], tan: ["opp", "adj"], csc: ["hyp", "opp"], sec: ["hyp", "adj"], cot: ["adj", "opp"] };
+  const sides = { opp, adj, hyp };
+  function draw() {
+    const o = +so.value, a = +sa.value, h = Math.hypot(o, a), Cx = Ax + a * K, By = Ay - o * K;
+    fill.setAttribute("points", `${Ax},${Ay} ${Cx},${Ay} ${Cx},${By}`);
+    adj.setAttribute("x1", Ax); adj.setAttribute("y1", Ay); adj.setAttribute("x2", Cx); adj.setAttribute("y2", Ay);
+    opp.setAttribute("x1", Cx); opp.setAttribute("y1", Ay); opp.setAttribute("x2", Cx); opp.setAttribute("y2", By);
+    hyp.setAttribute("x1", Ax); hyp.setAttribute("y1", Ay); hyp.setAttribute("x2", Cx); hyp.setAttribute("y2", By);
+    rm.setAttribute("d", `M ${Cx - 14} ${Ay} L ${Cx - 14} ${Ay - 14} L ${Cx} ${Ay - 14}`);
+    const ang = Math.atan2(o, a), r = 34;
+    arc.setAttribute("d", `M ${Ax + r} ${Ay} A ${r} ${r} 0 0 0 ${Ax + r * Math.cos(ang)} ${Ay - r * Math.sin(ang)}`);
+    th.setAttribute("x", Ax + 42 * Math.cos(ang / 2)); th.setAttribute("y", Ay - 42 * Math.sin(ang / 2) + 6);
+    lA.setAttribute("x", (Ax + Cx) / 2); lA.setAttribute("y", Ay + 22); lA.textContent = `adjacent = ${fmtNum(a, 2)}`;
+    lO.setAttribute("x", Cx + 10); lO.setAttribute("y", (Ay + By) / 2 + 5); lO.setAttribute("text-anchor", Cx > 300 ? "end" : "start");
+    if (Cx > 300) lO.setAttribute("x", Cx - 12);
+    lO.textContent = `opp = ${fmtNum(o, 2)}`;
+    const mx = (Ax + Cx) / 2, my = (Ay + By) / 2;
+    lH.setAttribute("x", mx - 10); lH.setAttribute("y", my - 10); lH.textContent = `hyp = ${fmtNum(h, 2)}`;
+    hB.setAttribute("cx", Cx); hB.setAttribute("cy", By); hC.setAttribute("cx", Cx); hC.setAttribute("cy", Ay);
+    $("#oppV").textContent = fmtNum(o, 2); $("#adjV").textContent = fmtNum(a, 2);
+    $("#triAng").innerHTML = `θ ≈ ${fmtNum(ang * 180 / PI, 2)}° <span class="small muted">≈ ${fmtNum(ang, 4)} rad</span>`;
+    const H = fmtNum(h, 2), O = fmtNum(o, 2), A = fmtNum(a, 2);
+    const rows = [["sin", "opp", "hyp", O, H, o / h, "sin"], ["cos", "adj", "hyp", A, H, a / h, "cos"], ["tan", "opp", "adj", O, A, o / a, "tan"],
+      ["csc", "hyp", "opp", H, O, h / o, "sin"], ["sec", "hyp", "adj", H, A, h / a, "cos"], ["cot", "adj", "opp", A, O, a / o, "tan"]];
+    $("#ratios").innerHTML = rows.map(([f, n, d, nv, dv, v, col]) =>
+      `<div class="ratio" data-f="${f}"><b class="c-${col}">${f} θ</b><span class="m">${tex(`\\f{${n}}{${d}} = \\f{${nv}}{${dv}}`)}</span><b>≈ ${fmtNum(v, 4)}</b></div>`).join("") +
+      `<p class="small muted" style="margin-top:8px">Check: <span class="m">sin<sup>2</sup>θ + cos<sup>2</sup>θ = ${fmtNum((o / h) ** 2, 4)} + ${fmtNum((a / h) ** 2, 4)} = ${fmtNum((o / h) ** 2 + (a / h) ** 2, 4)}</span> (always!)</p>`;
+    $$("#ratios .ratio").forEach(el => {
+      const on = () => { Object.values(sides).forEach(s => s.style.opacity = .25); HL[el.dataset.f].forEach(k => sides[k].style.opacity = 1); };
+      const off = () => Object.values(sides).forEach(s => s.style.opacity = 1);
+      el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
+    });
+  }
+  let drag = null;
+  [[hB, "B"], [hC, "C"]].forEach(([h, k]) => h.addEventListener("pointerdown", e => { drag = k; svg.setPointerCapture(e.pointerId); e.preventDefault(); }));
+  svg.addEventListener("pointermove", e => {
+    if (!drag) return; const p = svgPoint(svg, e);
+    if (drag === "B") so.value = clamp((Ay - p.y) / K, .5, 6).toFixed(2); else sa.value = clamp((p.x - Ax) / K, .5, 8).toFixed(2);
+    draw();
+  });
+  ["pointerup", "pointercancel"].forEach(t => svg.addEventListener(t, () => drag = null));
+  so.addEventListener("input", draw); sa.addEventListener("input", draw);
+  [["3-4-5", 3, 4], ["6-8-10 (same shape!)", 6, 8], ["45° (1-1-√2)", 3, 3], ["30° (1-√3-2)", 2, 2 * Math.sqrt(3)], ["60° (√3-1-2)", 2 * Math.sqrt(3), 2]].forEach(([t, o, a]) => {
+    const b = document.createElement("button"); b.className = "btn small"; b.textContent = t; b.onclick = () => { so.value = o; sa.value = a; draw(); }; $("#triPresets").appendChild(b);
+  });
+  draw();
+})();
+
+/* ---------- 5a. circle → wave tracer ---------- */
+(function tracer() {
+  const cv = $("#traceCanvas"), scrub = $("#trScrub"); let t = 0, playing = true, last = 0, visible = false, looping = false;
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !looping) { looping = true; last = 0; requestAnimationFrame(frame); } }).observe(cv);
+  function draw() {
+    const narrow = cv.clientWidth < 620;
+    const { ctx: c, w, h } = prepCanvas(cv, narrow ? 1.75 : 2.5);
+    const R = Math.min(h * .36, w * (narrow ? .19 : .14)), cx = R + 16, cy = h / 2;
+    const box = { l: cx + R + 26, r: w - 14, t: cy - R * 1.25, b: cy + R * 1.25 };
+    const P = new Plot(c, box, [0, TAU], [-1.25, 1.25]);
+    P.grid({ piStep: 2, yStep: 1, labels: true });
+    c.strokeStyle = cssVar("--axis"); c.lineWidth = 1;
+    c.beginPath(); c.moveTo(cx - R - 8, cy); c.lineTo(cx + R + 8, cy); c.moveTo(cx, cy - R - 8); c.lineTo(cx, cy + R + 8); c.stroke();
+    c.strokeStyle = cssVar("--text"); c.globalAlpha = .7; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.stroke(); c.globalAlpha = 1;
+    const showS = $("#trSin").checked, showC = $("#trCos").checked;
+    const px = cx + R * Math.cos(t), py = cy - R * Math.sin(t);
+    // angle arc
+    c.strokeStyle = cssVar("--accent"); c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, R * .22, 0, -t, true); c.stroke();
+    if (showC) { P.fn(Math.cos, { color: cssVar("--cos"), width: 1.2, dash: [3, 4] }); P.fn(Math.cos, { color: cssVar("--cos"), width: 3.5, from: 0, to: t, n: 400 }); }
+    if (showS) { P.fn(Math.sin, { color: cssVar("--sin"), width: 1.2, dash: [3, 4] }); P.fn(Math.sin, { color: cssVar("--sin"), width: 3.5, from: 0, to: t, n: 400 }); }
+    const gx = P.X(t);
+    c.setLineDash([5, 5]); c.lineWidth = 1.4;
+    if (showS) { c.strokeStyle = cssVar("--sin"); c.beginPath(); c.moveTo(px, py); c.lineTo(gx, py); c.stroke(); }
+    if (showC) { c.strokeStyle = cssVar("--cos"); c.beginPath(); c.moveTo(gx, P.Y(Math.cos(t))); c.lineTo(gx, cy); c.stroke(); }
+    c.setLineDash([]);
+    c.lineWidth = 4; c.lineCap = "round";
+    c.strokeStyle = cssVar("--cos"); c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, cy); c.stroke();
+    c.strokeStyle = cssVar("--sin"); c.beginPath(); c.moveTo(px, cy); c.lineTo(px, py); c.stroke();
+    c.strokeStyle = cssVar("--text"); c.lineWidth = 2; c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, py); c.stroke();
+    c.fillStyle = cssVar("--accent2"); c.beginPath(); c.arc(px, py, 6, 0, TAU); c.fill();
+    if (showS) { c.fillStyle = cssVar("--sin"); c.beginPath(); c.arc(gx, P.Y(Math.sin(t)), 6, 0, TAU); c.fill(); }
