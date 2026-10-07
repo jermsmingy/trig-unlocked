@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trig, Unlocked · An Interactive Precalculus Lesson</title>
+<meta name="description" content="An interactive lesson on trigonometric functions and identities: unit circle, graphs, identities, worked examples and practice.">
+<meta name="theme-color" content="#6d4aff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Ccircle r='10' fill='none' stroke='%236d4aff' stroke-width='2.5'/%3E%3Ccircle cx='7' cy='-7' r='3' fill='%23ff4f9a'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f7fb; --bg2:#eef0f8; --card:#ffffff; --text:#1c2033; --muted:#5d6480; --line:#dfe3ef;
+  --accent:#6d4aff; --accent2:#ff4f9a; --accent3:#00b4d8;
+  --sin:#e8346f; --cos:#2b78f0; --tan:#e69500; --ok:#12a56a; --bad:#e5484d;
+  --grid:#e6e9f2; --axis:#9aa1b9; --shadow:0 6px 24px rgba(30,35,70,.08), 0 1px 3px rgba(30,35,70,.06);
+  --radius:18px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --math:"Cambria Math","STIX Two Math","Latin Modern Math","Times New Roman",Georgia,serif;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --bg:#0e1020; --bg2:#151831; --card:#1a1d38; --text:#eef0ff; --muted:#a3a9cc; --line:#2c3159;
+  --accent:#9b84ff; --accent2:#ff6fae; --accent3:#4dd5f0;
+  --sin:#ff5c8f; --cos:#5aa2ff; --tan:#ffb83d; --ok:#2fd18b; --bad:#ff6b6f;
+  --grid:#252a4d; --axis:#6c739c; --shadow:0 8px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:110px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%;transition:background .3s,color .3s}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.2;margin:.2em 0 .5em}
+h2{font-size:clamp(1.5rem,3.5vw,2.1rem)}
+h3{font-size:1.2rem}
+p{margin:.5em 0 .9em}
+button{font:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+
+/* ---------- top bar / nav ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.6) blur(14px);-webkit-backdrop-filter:saturate(1.6) blur(14px);border-bottom:1px solid var(--line)}
+.topbar .row{display:flex;align-items:center;gap:10px;padding:8px 18px;max-width:1240px;margin:0 auto}
+.brand{font-weight:800;letter-spacing:-.02em;white-space:nowrap;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text)}
+.brand .logo{width:28px;height:28px}
+.navchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px;scroll-behavior:smooth}
+.navchips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:.85rem;text-decoration:none;white-space:nowrap;transition:.2s}
+.chip .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--bg2);font-size:.72rem;font-weight:700}
+.chip.visited .n{background:color-mix(in srgb,var(--ok) 20%,transparent);color:var(--ok)}
+.chip.active{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent}
+.chip.active .n{background:rgba(255,255,255,.25);color:#fff}
+.iconbtn{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:1.1rem}
+.progress{height:3px;background:transparent}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));transition:width .1s}
+
+/* ---------- sections & cards ---------- */
+section{padding:48px 0 24px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sec-num{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.lead{color:var(--muted);font-size:1.07rem;max-width:760px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin:16px 0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card,.ex,.q{min-width:0}
+.fb .m,.tip .m,.why .m,.prompt .m,.lead .m,.goal .m{white-space:normal}
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.grid2,.split{grid-template-columns:minmax(0,1fr)}.grid3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media (max-width:520px){.grid3{grid-template-columns:minmax(0,1fr)}.card{padding:15px}section{padding:34px 0 14px}.wrap{padding:0 12px}}
+.tip{border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card));padding:12px 14px;border-radius:12px;margin:12px 0}
+.tip.warn{border-color:var(--tan);background:color-mix(in srgb,var(--tan) 10%,var(--card))}
+.tip.good{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 9%,var(--card))}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:700;background:var(--bg2);color:var(--muted)}
+.c-sin{color:var(--sin)} .c-cos{color:var(--cos)} .c-tan{color:var(--tan)} .c-ok{color:var(--ok)} .c-bad{color:var(--bad)}
+.muted{color:var(--muted)} .small{font-size:.88rem}
+.center{text-align:center}
+
+/* ---------- controls ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-weight:600;transition:transform .08s,background .2s,border-color .2s;touch-action:manipulation}
+.btn:hover{border-color:var(--accent)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.btn.small{padding:6px 11px;min-height:36px;font-size:.88rem;border-radius:10px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:transparent;color:var(--muted);padding:8px 14px;min-height:40px;cursor:pointer;font-weight:600}
+.seg button.on{background:var(--accent);color:#fff}
+label.ctl{display:block;margin:10px 0 2px;font-weight:600;font-size:.93rem}
+label.ctl .val{float:right;font-family:var(--math);font-weight:700;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);height:32px;touch-action:pan-y}
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;margin:4px 14px 4px 0;font-size:.93rem}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+input[type=text],select{font:inherit;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--text);min-height:44px;width:100%}
+input[type=text]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input.mathin{font-family:var(--math);font-size:1.1rem}
+
+/* ---------- math typesetting ---------- */
+.m{font-family:var(--math);font-size:1.08em;white-space:nowrap}
+.m i{font-style:italic}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.88em;margin:0 .12em;line-height:1.15}
+.fr>span:first-child{border-bottom:1.4px solid currentColor;padding:0 .18em .05em}
+.fr>span:last-child{padding:.05em .18em 0}
+.rt{white-space:nowrap}
+.rt>.rad{display:inline-block;border-top:1.4px solid currentColor;padding:.06em .08em 0;margin-left:.02em;line-height:1.15}
+.rt:has(.fr)>.sq{font-size:1.75em;vertical-align:-.12em;line-height:1}
+.rt:has(.fr)>.rad{vertical-align:-.05em}
+.m sup{font-size:.68em;vertical-align:.6em;line-height:0}
+.m sub{font-size:.68em;line-height:0}
+.eq{display:block;text-align:center;font-family:var(--math);font-size:1.2rem;margin:12px 0;white-space:normal;overflow-x:auto}
+.formula{background:var(--bg2);border-radius:12px;padding:10px 12px;margin:8px 0;font-family:var(--math);font-size:1.1rem;overflow-x:auto}
+.formula .m{font-size:1em}
+
+/* ---------- hero ---------- */
+.hero{padding:46px 0 10px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:center}
+@media (max-width:860px){.hero-grid{grid-template-columns:minmax(0,1fr)}}
+.hero h1{font-size:clamp(2.2rem,6vw,3.7rem);letter-spacing:-.03em;margin:.1em 0 .25em}
+.grad{background:linear-gradient(120deg,var(--accent),var(--accent2) 55%,var(--accent3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kicker{display:inline-block;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);padding:4px 12px;border-radius:999px;font-size:.85rem}
+.howto{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.howto .card{margin:0;padding:14px}
+.howto .ic{font-size:1.5rem}
+@media (max-width:860px){.howto{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+#heroCanvas{width:100%;aspect-ratio:1.25/1;display:block}
+
+/* ---------- visuals ---------- */
+svg{display:block;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.viz{width:100%;background:var(--card);border-radius:14px}
+canvas.plot{width:100%;display:block;border-radius:14px;background:var(--card);touch-action:pan-y}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center}
+.readout dt{color:var(--muted);font-size:.9rem}
+.readout dd{margin:0;font-family:var(--math);font-size:1.2rem;font-weight:600}
+.bigval{font-family:var(--math);font-size:1.6rem;font-weight:700}
+.handle{cursor:grab}
+.handle:active{cursor:grabbing}
+.astc text{font-weight:800}
+.quad-on{opacity:1!important}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.88rem;color:var(--muted);margin:6px 0}
+.legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;background:currentColor;margin-right:6px;vertical-align:middle}
+table.tbl{border-collapse:collapse;width:100%;font-size:.95rem}
+table.tbl th,table.tbl td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:center}
+table.tbl th{color:var(--muted);font-weight:700}
+.scrollx{overflow-x:auto}
+.ratio{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:12px;background:var(--bg2);margin:6px 0;transition:box-shadow .2s;cursor:default}
+.ratio:hover,.ratio.hl{box-shadow:0 0 0 2px var(--accent) inset}
+.ratio b{font-family:var(--math);font-size:1.1rem}
+.ratio .m{font-size:1.05rem}
+.soh{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.soh div{text-align:center;padding:12px 6px;border-radius:14px;color:#fff;font-weight:800;font-size:1.25rem;letter-spacing:.06em}
+.soh small{display:block;font-weight:500;letter-spacing:0;font-size:.78rem;opacity:.95}
+.bar{height:26px;border-radius:8px;overflow:hidden;display:flex;background:var(--bg2);margin:8px 0}
+.bar>div{height:100%;transition:width .15s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden}
+
+/* ---------- steps (worked examples) ---------- */
+.ex{border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;background:var(--card);box-shadow:var(--shadow)}
+.ex h3{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ex .goal{white-space:normal;line-height:2;font-family:var(--math);font-size:1.15rem;background:var(--bg2);padding:10px 12px;border-radius:12px;overflow-x:auto}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps li{display:none;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:start;padding:10px 4px;border-bottom:1px dashed var(--line);animation:pop .35s ease}
+.steps li.shown{display:grid}
+.steps li::before{counter-increment:st;content:counter(st);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);font-weight:800;font-size:.85rem}
+.steps .expr{font-family:var(--math);font-size:1.15rem;overflow-x:auto;padding:2px 0;white-space:normal;line-height:2}
+.steps .why{font-size:.9rem;color:var(--muted);margin-top:2px}
+.steps .why b{color:var(--accent)}
+.hintbox{display:none;margin:8px 0}
+.hintbox.on{display:block;animation:pop .3s}
+.done-badge{display:none}
+.ex.complete .done-badge{display:inline-block;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- practice ---------- */
+.scorebar{position:sticky;top:64px;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow)}
+.meter{flex:1;min-width:140px;height:10px;border-radius:99px;background:var(--bg2);overflow:hidden}
+.meter>div{height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--accent3));transition:width .4s}
+.q{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;background:var(--card);transition:border-color .3s}
+.q.right{border-color:var(--ok)} .q.wrong{border-color:var(--bad)}
+.q .qhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.q .qn{font-weight:800;color:var(--accent)}
+.q .prompt{font-size:1.07rem}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+@media (max-width:520px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;justify-content:flex-start;font-family:var(--math);font-size:1.08rem;font-weight:500}
+.opt.sel-right{background:color-mix(in srgb,var(--ok) 16%,var(--card));border-color:var(--ok)}
+.opt.sel-wrong{background:color-mix(in srgb,var(--bad) 14%,var(--card));border-color:var(--bad)}
+.ansrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.ansrow input{flex:1;min-width:160px;width:auto}
+.preview{min-height:1.6em;font-size:.95rem;color:var(--muted)}
+.fb{display:none;margin-top:8px;padding:10px 12px;border-radius:12px;animation:pop .3s}
+.fb.on{display:block}
+.fb.ok{background:color-mix(in srgb,var(--ok) 12%,var(--card));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.fb.no{background:color-mix(in srgb,var(--bad) 10%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 40%,transparent)}
+.fb.info{background:var(--bg2)}
+.keypad{display:flex;gap:6px;flex-wrap:wrap}
+.keypad .btn{min-width:44px;font-family:var(--math)}
+
+@media (max-width:520px){.brand span{display:none}.topbar .row{padding:8px 10px}.scorebar{top:58px;padding:8px 10px;gap:8px;flex-wrap:nowrap}.scorebar #scoreSub{display:none}.scorebar .meter{min-width:50px}.scorebar .btn{padding:4px 8px;min-height:32px}}
+/* ---------- drill ---------- */
+.drill{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--card)),color-mix(in srgb,var(--accent2) 12%,var(--card)));}
+.drill-q{font-family:var(--math);font-size:clamp(2rem,7vw,3rem);text-align:center;font-weight:700;margin:10px 0;min-height:1.6em}
+.drill-stats{display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;text-align:center}
+.drill-stats div b{display:block;font-size:1.6rem}
+.timer{height:10px;border-radius:99px;background:var(--bg2);overflow:hidden;margin:8px 0}
+.timer>div{height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .2s linear}
+.drill .opts{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:620px){.drill .opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.drill .opt{justify-content:center;font-size:1.25rem;min-height:56px}
+.flash-ok{animation:fok .4s}.flash-no{animation:fno .4s}
+@keyframes fok{50%{box-shadow:0 0 0 4px var(--ok)}}
+@keyframes fno{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+/* ---------- cheat sheet ---------- */
+.cheat-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.cheat-grid{grid-template-columns:minmax(0,1fr)}}
+.cheat h4{margin:12px 0 4px;color:var(--accent);font-size:1rem}
+.cheat .formula{font-size:1rem;padding:6px 10px;margin:4px 0}
+footer{padding:40px 0 60px;text-align:center;color:var(--muted);font-size:.9rem}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:100;width:100%;height:100%}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:101;transition:transform .35s;box-shadow:var(--shadow)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ---------- print: cheat sheet only ---------- */
+@media print{
+  @page{margin:12mm}
+  html,body{background:#fff!important;color:#000!important}
+  html[data-theme="dark"]{--bg:#fff;--card:#fff;--text:#000;--muted:#333;--line:#bbb;--bg2:#f1f1f1;--grid:#ddd;--axis:#777}
+  .topbar,footer,section:not(#cheat),.noprint,#confetti,.toast{display:none!important}
+  section#cheat{padding:0}
+  .sec-head{margin:0 0 4px}.sec-num{display:none}
+  .cheat-grid{display:block}
+  .cheat .card{box-shadow:none;border:1px solid #bbb;margin:6px 0;padding:8px}
+  .cheat .card:first-child{border:0;padding:0}
+  #cheatSvg{width:4.3in;margin:0 auto}
+  .cheat .card:last-child{columns:2;column-gap:14px;font-size:12px}
+  .cheat h4{break-after:avoid;margin:6px 0 2px;font-size:12px}
+  .cheat .formula{background:#f3f3f3;break-inside:avoid;font-size:12px;padding:4px 8px;margin:3px 0}
+  .cheat .formula .m{white-space:normal}
+  .cheat p{break-inside:avoid;font-size:11px;margin:4px 0}
+}
+}
+
+</style>
+</head>
+<body>
+<noscript><div style="padding:12px;background:#ffe9a8;color:#000;text-align:center">This lesson needs JavaScript turned on for the interactive parts.</div></noscript>
+<header class="topbar">
+  <div class="row">
+    <a class="brand" href="#welcome" aria-label="Back to top">
+      <svg class="logo" viewBox="-12 -12 24 24" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6d4aff"/><stop offset="1" stop-color="#ff4f9a"/></linearGradient></defs><circle r="10" fill="none" stroke="url(#lg)" stroke-width="2.4"/><line x1="0" y1="0" x2="7.07" y2="-7.07" stroke="url(#lg)" stroke-width="2.2"/><circle cx="7.07" cy="-7.07" r="2.6" fill="#ff4f9a"/></svg>
+      <span>Trig, Unlocked</span>
+    </a>
+    <nav class="navchips" id="navchips" aria-label="Lesson sections"></nav>
+    <button class="iconbtn" id="themeBtn" title="Toggle light/dark mode" aria-label="Toggle light or dark mode">◐</button>
+  </div>
+  <div class="progress"><div id="progbar"></div></div>
+</header>
+
+<main>
+<!-- ======================= 1. WELCOME ======================= -->
+<section id="welcome" class="hero" data-title="Welcome">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="kicker">✨ An interactive lesson by Grok Bot</span>
+        <h1>Trig, <span class="grad">Unlocked</span></h1>
+        <p class="lead">Trigonometry is really just one idea: <b>a point going around a circle</b>. Once you <i>see</i> that, sine, cosine, tangent, and all those identities stop being things to memorize and start being things you can figure out.</p>
+        <p class="lead">Drag, slide, and tap everything. Nothing here can break, so experiment.</p>
+        <div class="btnrow"><a class="btn primary" href="#angles">Start the lesson →</a><a class="btn" href="#practice">Jump to practice</a><a class="btn" href="#cheat">Cheat sheet</a></div>
+        <p class="small muted">Color code used everywhere: <b class="c-cos">cos is blue</b> (the <i>x</i>-direction), <b class="c-sin">sin is pink</b> (the <i>y</i>-direction), <b class="c-tan">tan is gold</b>.</p>
+      </div>
+      <div class="card" style="padding:10px"><canvas id="heroCanvas" aria-label="Animated point moving around a circle and tracing a sine wave"></canvas></div>
+    </div>
+    <div class="howto">
+      <div class="card"><div class="ic">👆</div><b>Drag &amp; slide</b><div class="small muted">Every diagram moves. Drag the dots, move the sliders.</div></div>
+      <div class="card"><div class="ic">🪜</div><b>Step by step</b><div class="small muted">Worked examples show one step at a time, and each step says why.</div></div>
+      <div class="card"><div class="ic">🎯</div><b>Practice</b><div class="small muted">15 problems with instant feedback and a timed speed drill.</div></div>
+      <div class="card"><div class="ic">🖨️</div><b>Cheat sheet</b><div class="small muted">A one-page summary you can print for studying.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 2. ANGLES ======================= -->
+<section id="angles" data-title="Radians">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">2</div><h2>Angles: degrees vs. radians</h2></div>
+    <p class="lead">Degrees cut a circle into 360 slices, a number someone just picked. <b>Radians</b> measure an angle by how much of the circle's edge it covers, counted in radius-lengths. That's why math (and calculus) prefers them.</p>
+    <div class="split">
+      <div class="card">
+        <svg id="radSvg" class="viz" viewBox="-1.6 -1.6 3.2 3.2" aria-label="Angle diagram showing arc length in radians"></svg>
+        <div class="legend"><span style="color:var(--accent2)">arc = r·θ (here r = 1)</span><span style="color:var(--muted)">ticks every 1 radian</span></div>
+      </div>
+      <div class="card">
+        <label class="ctl" for="degSlider">Angle <span class="val" id="degVal">135°</span></label>
+        <input type="range" id="degSlider" min="-360" max="720" step="1" value="135" aria-label="Angle in degrees">
+        <div class="btnrow" id="degPresets"></div>
+        <dl class="readout">
+          <dt>Degrees</dt><dd id="rDeg">135°</dd>
+          <dt>Radians (exact)</dt><dd id="rRadExact">—</dd>
+          <dt>Radians (decimal)</dt><dd id="rRadDec">—</dd>
+          <dt>Coterminal in [0°, 360°)</dt><dd id="rCot">—</dd>
+        </dl>
+        <div class="tip"><b>The conversion:</b> a full turn is <span class="m">360° = 2π</span> rad, so <span class="m">180° = π</span>.
+          <div class="eq"><span class="m">radians = degrees × \f{π}{180}</span> &nbsp;&nbsp; <span class="m">degrees = radians × \f{180}{π}</span></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Try it: convert either way</h3>
+      <div class="grid2">
+        <div><label class="ctl" for="convDeg">Degrees → radians</label><input type="text" id="convDeg" class="mathin" value="210" inputmode="decimal" autocomplete="off"><div class="preview" id="convDegOut"></div></div>
+        <div><label class="ctl" for="convRad">Radians → degrees <span class="small muted">(type things like <code>3pi/4</code> or <code>2.5</code>)</span></label><input type="text" id="convRad" class="mathin" value="5pi/6" autocomplete="off"><div class="preview" id="convRadOut"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 3. UNIT CIRCLE ======================= -->
+<section id="unit" data-title="Unit circle">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">3</div><h2>The unit circle: the whole of trig in one picture</h2></div>
+    <p class="lead">This circle has radius 1. Pick any angle <span class="m">θ</span>, measured counterclockwise from the positive <i>x</i>-axis. The point where it lands is <b>(<span class="c-cos">cos θ</span>, <span class="c-sin">sin θ</span>)</b>. That's the definition. <b>Drag the dot.</b></p>
+    <div class="split">
+      <div class="card" style="padding:12px">
+        <svg id="ucSvg" class="viz" viewBox="-1.62 -1.62 3.24 3.24" aria-label="Interactive unit circle. Drag the point or use arrow keys."></svg>
+        <div class="btnrow" style="justify-content:center">
+          <label class="toggle"><input type="checkbox" id="ucSnap" checked> Snap to special angles</label>
+          <label class="toggle"><input type="checkbox" id="ucTan"> Show tangent line</label>
+          <label class="toggle"><input type="checkbox" id="ucLabels"> Label all special points</label>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div class="bigval" id="ucAngle">θ = 60°</div>
+            <div class="seg" role="group" aria-label="Spin"><button id="ucSpin">▶ Spin</button></div>
+          </div>
+          <dl class="readout" style="margin-top:8px">
+            <dt>Radians</dt><dd id="ucRad"></dd>
+            <dt>Point</dt><dd id="ucPt"></dd>
+            <dt class="c-cos">cos θ</dt><dd id="ucCos" class="c-cos"></dd>
+            <dt class="c-sin">sin θ</dt><dd id="ucSin" class="c-sin"></dd>
+            <dt class="c-tan">tan θ = <span class="m">\f{sin θ}{cos θ}</span></dt><dd id="ucTanV" class="c-tan"></dd>
+            <dt>Quadrant</dt><dd id="ucQuad"></dd>
+            <dt>Reference angle</dt><dd id="ucRef"></dd>
+          </dl>
+        </div>
+        <div class="card">
+          <h3>Jump to an angle</h3>
+          <div class="btnrow" id="ucButtons"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>🎓 "All Students Take Calculus"</h3>
+        <p>Which functions are <b>positive</b> in each quadrant? Go counterclockwise from Quadrant I:</p>
+        <table class="tbl"><tr><th>Quadrant</th><th>Letter</th><th>Positive</th><th>Why</th></tr>
+          <tr id="astc1"><td>I</td><td><b>A</b>ll</td><td>sin, cos, tan</td><td class="small">x &gt; 0, y &gt; 0</td></tr>
+          <tr id="astc2"><td>II</td><td><b>S</b>tudents</td><td>sin (and csc)</td><td class="small">x &lt; 0, y &gt; 0</td></tr>
+          <tr id="astc3"><td>III</td><td><b>T</b>ake</td><td>tan (and cot)</td><td class="small">x &lt; 0, y &lt; 0</td></tr>
+          <tr id="astc4"><td>IV</td><td><b>C</b>alculus</td><td>cos (and sec)</td><td class="small">x &gt; 0, y &lt; 0</td></tr></table>
+      </div>
+      <div class="card">
+        <h3>🔑 The reference angle trick</h3>
+        <p>The <b>reference angle</b> is the acute angle between the terminal side and the <i>x</i>-axis. Every special angle has the same values as its reference angle; only the <b>signs</b> change.</p>
+        <p>So you only need to memorize the first quadrant:</p>
+        <div class="scrollx"><table class="tbl"><tr><th>θ</th><th>0</th><th class="m">\f{π}{6}</th><th class="m">\f{π}{4}</th><th class="m">\f{π}{3}</th><th class="m">\f{π}{2}</th></tr>
+          <tr><td class="c-sin">sin</td><td class="m">0</td><td class="m">\f{1}{2}</td><td class="m">\f{\r{2}}{2}</td><td class="m">\f{\r{3}}{2}</td><td class="m">1</td></tr>
+          <tr><td class="c-cos">cos</td><td class="m">1</td><td class="m">\f{\r{3}}{2}</td><td class="m">\f{\r{2}}{2}</td><td class="m">\f{1}{2}</td><td class="m">0</td></tr></table></div>
+        <p class="small muted">Pattern for sin: <span class="m">\f{\r{0}}{2}, \f{\r{1}}{2}, \f{\r{2}}{2}, \f{\r{3}}{2}, \f{\r{4}}{2}</span>. Cos is the same list backwards.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 4. SOH CAH TOA ======================= -->
+<section id="soh" data-title="SOH CAH TOA">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">4</div><h2>SOH CAH TOA &amp; the six trig functions</h2></div>
+    <p class="lead">In a right triangle, the trig functions are <b>ratios of sides</b> measured from the angle <span class="m">θ</span>. Since they're ratios, a bigger triangle with the same angle gives the <i>same</i> values. Try it below.</p>
+    <div class="soh"><div style="background:var(--sin)">SOH<small>Sin = Opp / Hyp</small></div><div style="background:var(--cos)">CAH<small>Cos = Adj / Hyp</small></div><div style="background:var(--tan)">TOA<small>Tan = Opp / Adj</small></div></div>
+    <div class="split">
+      <div class="card" style="padding:12px">
+        <svg id="triSvg" class="viz" viewBox="0 0 400 300" aria-label="Resizable right triangle. Drag the corner handles."></svg>
+        <p class="small muted center">Drag the <b>pink handle</b> to change the opposite side and the <b>blue handle</b> to change the adjacent side.</p>
+        <div class="btnrow" style="justify-content:center" id="triPresets"></div>
+      </div>
+      <div class="card">
+        <label class="ctl" for="oppS">Opposite <span class="val" id="oppV"></span></label><input type="range" id="oppS" min="0.5" max="6" step="0.1" value="3">
+        <label class="ctl" for="adjS">Adjacent <span class="val" id="adjV"></span></label><input type="range" id="adjS" min="0.5" max="8" step="0.1" value="4">
+        <div class="bigval" style="margin:8px 0" id="triAng"></div>
+        <div id="ratios"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>The other three are reciprocals</h3>
+      <div class="grid3">
+        <div class="formula"><span class="m">csc θ = \f{1}{sin θ} = \f{hyp}{opp}</span></div>
+        <div class="formula"><span class="m">sec θ = \f{1}{cos θ} = \f{hyp}{adj}</span></div>
+        <div class="formula"><span class="m">cot θ = \f{1}{tan θ} = \f{adj}{opp}</span></div>
+      </div>
+      <p class="small muted">Memory trick: each "co-" function pairs with a <i>non</i>-co function. <b>s</b>ec ↔ <b>c</b>os and <b>c</b>sc ↔ <b>s</b>in, so every pair has exactly one "co".</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 5. GRAPHS ======================= -->
+<section id="graphs" data-title="Graphs">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">5</div><h2>From circle to wave: the graphs</h2></div>
+    <p class="lead">Watch the point go around the circle. Its <b class="c-sin">height</b> traces the sine graph. Its <b class="c-cos">horizontal position</b> traces cosine. Same circle, two waves.</p>
+    <div class="card">
+      <canvas id="traceCanvas" class="plot" aria-label="Animation: unit circle tracing sine and cosine graphs"></canvas>
+      <div class="btnrow" style="align-items:center">
+        <button class="btn small" id="trPlay">⏸ Pause</button>
+        <label class="toggle"><input type="checkbox" id="trSin" checked> <span class="c-sin">trace sin</span></label>
+        <label class="toggle"><input type="checkbox" id="trCos"> <span class="c-cos">trace cos</span></label>
+        <div style="flex:1;min-width:180px"><input type="range" id="trScrub" min="0" max="6.2832" step="0.001" value="0" aria-label="Scrub the angle"></div>
+        <span class="m" id="trT" style="min-width:110px"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🎛️ Transformation explorer</h3>
+      <div class="eq" id="trfEq" style="font-size:1.45rem"></div>
+      <div class="split">
+        <div><canvas id="trfCanvas" class="plot" aria-label="Graph of transformed sine or cosine"></canvas>
+          <div class="legend"><span style="color:var(--accent)">your function</span><span style="color:var(--axis)">parent function</span><span style="color:var(--ok)">midline</span><span style="color:var(--tan)">one period</span></div></div>
+        <div>
+          <div class="seg" id="trfFn"><button class="on" data-f="sin">sin</button><button data-f="cos">cos</button></div>
+          <label class="ctl" for="sA">A, amplitude/reflection <span class="val" id="vA"></span></label><input type="range" id="sA" min="-3" max="3" step="0.25" value="2">
+          <label class="ctl" for="sB">B, frequency <span class="val" id="vB"></span></label><input type="range" id="sB" min="0.25" max="4" step="0.25" value="1">
+          <label class="ctl" for="sC">C, phase shift <span class="val" id="vC"></span></label><input type="range" id="sC" min="-12" max="12" step="1" value="0">
+          <label class="ctl" for="sD">D, vertical shift <span class="val" id="vD"></span></label><input type="range" id="sD" min="-3" max="3" step="0.25" value="0">
+          <dl class="readout" style="margin-top:10px">
+            <dt>Amplitude |A|</dt><dd id="oAmp"></dd>
+            <dt>Period <span class="m">\f{2π}{B}</span></dt><dd id="oPer"></dd>
+            <dt>Phase shift C</dt><dd id="oPh"></dd>
+            <dt>Midline y = D</dt><dd id="oMid"></dd>
+            <dt>Range</dt><dd id="oRange"></dd>
+          </dl>
+          <div class="btnrow"><button class="btn small" id="trfReset">Reset</button><button class="btn small" id="trfRandom">🎲 Random challenge</button></div>
+          <div id="trfChallenge" class="tip warn" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Tangent and the reciprocal graphs: watch for asymptotes</h3>
+      <p>Since <span class="m">tan x = \f{sin x}{cos x}</span>, it blows up wherever <span class="m">cos x = 0</span>, at <span class="m">x = \f{π}{2} + kπ</span>. Those are the <b>vertical asymptotes</b> (dashed red lines).</p>
+      <div class="seg" id="asyFn"><button class="on" data-f="tan">tan</button><button data-f="cot">cot</button><button data-f="sec">sec</button><button data-f="csc">csc</button></div>
+      <canvas id="asyCanvas" class="plot" style="margin-top:10px" aria-label="Graph of tangent with asymptotes"></canvas>
+      <div id="asyInfo" class="tip"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 6. IDENTITIES ======================= -->
+<section id="identities" data-title="Identities">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">6</div><h2>The fundamental identities</h2></div>
+    <p class="lead">An <b>identity</b> is an equation that's true for <i>every</i> value of the variable where both sides are defined. These are the tools you'll use to simplify and prove things.</p>
+    <div class="split">
+      <div class="card">
+        <h3>The Pythagorean identity, seen</h3>
+        <svg id="pySvg" class="viz" viewBox="-1.35 -1.35 2.7 2.7" aria-label="Unit circle triangle showing sin squared plus cos squared equals one"></svg>
+        <input type="range" id="pyS" min="0" max="360" step="1" value="35" aria-label="Angle">
+      </div>
+      <div class="card">
+        <p>The triangle inside the unit circle has legs <span class="m c-cos">cos θ</span> and <span class="m c-sin">sin θ</span>, and hypotenuse <b>1</b> (the radius). Pythagoras says:</p>
+        <div class="eq"><span class="m"><span class="c-sin">sin<sup>2</sup>θ</span> + <span class="c-cos">cos<sup>2</sup>θ</span> = 1</span></div>
+        <div class="bar"><div id="pyBarS" style="background:var(--sin)"></div><div id="pyBarC" style="background:var(--cos)"></div></div>
+        <p class="center m" id="pyNums"></p>
+        <p>Divide every term by <span class="m">cos<sup>2</sup>θ</span> or by <span class="m">sin<sup>2</sup>θ</span> and you get the other two:</p>
+        <div class="formula"><span class="m">\f{sin<sup>2</sup>θ}{cos<sup>2</sup>θ} + \f{cos<sup>2</sup>θ}{cos<sup>2</sup>θ} = \f{1}{cos<sup>2</sup>θ} &nbsp;⟹&nbsp; <b>tan<sup>2</sup>θ + 1 = sec<sup>2</sup>θ</b></span></div>
+        <div class="formula"><span class="m">\f{sin<sup>2</sup>θ}{sin<sup>2</sup>θ} + \f{cos<sup>2</sup>θ}{sin<sup>2</sup>θ} = \f{1}{sin<sup>2</sup>θ} &nbsp;⟹&nbsp; <b>1 + cot<sup>2</sup>θ = csc<sup>2</sup>θ</b></span></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h3>Reciprocal</h3>
+        <div class="formula"><span class="m">csc θ = \f{1}{sin θ} &nbsp; sec θ = \f{1}{cos θ} &nbsp; cot θ = \f{1}{tan θ}</span></div>
+        <h3 style="margin-top:14px">Quotient</h3>
+        <div class="formula"><span class="m">tan θ = \f{sin θ}{cos θ} &nbsp;&nbsp; cot θ = \f{cos θ}{sin θ}</span></div></div>
+      <div class="card"><h3>Even / odd</h3>
+        <div class="formula"><span class="m">cos(−θ) = cos θ &nbsp; sec(−θ) = sec θ</span> <span class="pill">even</span></div>
+        <div class="formula"><span class="m">sin(−θ) = −sin θ &nbsp; tan(−θ) = −tan θ</span> <span class="pill">odd</span></div>
+        <div class="formula"><span class="m">csc(−θ) = −csc θ &nbsp; cot(−θ) = −cot θ</span> <span class="pill">odd</span></div>
+        <p class="small muted">Why: <span class="m">−θ</span> is the reflection of <span class="m">θ</span> across the <i>x</i>-axis. The <i>x</i>-coordinate (cos) stays the same; the <i>y</i>-coordinate (sin) flips sign.</p></div>
+    </div>
+    <div class="card"><h3>Cofunction ("co" = complement)</h3>
+      <div class="grid3">
+        <div class="formula"><span class="m">sin(\f{π}{2} − θ) = cos θ</span></div><div class="formula"><span class="m">tan(\f{π}{2} − θ) = cot θ</span></div><div class="formula"><span class="m">sec(\f{π}{2} − θ) = csc θ</span></div>
+        <div class="formula"><span class="m">cos(\f{π}{2} − θ) = sin θ</span></div><div class="formula"><span class="m">cot(\f{π}{2} − θ) = tan θ</span></div><div class="formula"><span class="m">csc(\f{π}{2} − θ) = sec θ</span></div>
+      </div>
+      <p class="small muted">In a right triangle, the two acute angles add to 90°, and the side that's "opposite" for one angle is "adjacent" for the other. So sin of one angle = cos of its complement. That's where the "co" in cosine comes from.</p></div>
+
+    <div class="card" id="checker">
+      <h3>🔬 Identity checker: graph both sides</h3>
+      <p>Pick an identity, or <b>type your own</b>. If the two graphs land exactly on top of each other everywhere, it's (very likely) an identity. If they separate anywhere, it's not.</p>
+      <label class="ctl" for="idPreset">Choose one</label>
+      <select id="idPreset"></select>
+      <div class="grid2" style="margin-top:8px">
+        <div><label class="ctl" for="idL">Left side</label><input type="text" id="idL" class="mathin" autocomplete="off" spellcheck="false"><div class="preview" id="idLp"></div></div>
+        <div><label class="ctl" for="idR">Right side</label><input type="text" id="idR" class="mathin" autocomplete="off" spellcheck="false"><div class="preview" id="idRp"></div></div>
+      </div>
+      <canvas id="idCanvas" class="plot" aria-label="Graph comparing both sides of an identity"></canvas>
+      <div class="legend"><span style="color:var(--accent)">left side</span><span style="color:var(--tan)">right side (dashed)</span></div>
+      <div id="idVerdict" class="tip"></div>
+      <details class="small muted"><summary>How to type expressions</summary>
+        <p>Use <code>x</code> (or θ) as the variable. Functions: <code>sin cos tan csc sec cot sqrt abs</code>. Powers: <code>sin^2 x</code> or <code>(sin x)^2</code>. Constants: <code>pi</code> or π. Implicit multiplication works: <code>2sin x cos x</code>, <code>sin 2x</code>. Graphs are strong evidence, not a proof. Use algebra to prove it (see Worked Examples).</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 7. FORMULAS ======================= -->
+<section id="formulas" data-title="Sum & double">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">7</div><h2>Sum, difference, double- &amp; half-angle formulas</h2></div>
+    <p class="lead">These let you find <b>exact</b> values for angles that aren't on the basic unit circle, like 75° or 22.5°, by building them out of angles you already know.</p>
+    <div class="tip warn"><b>Common trap:</b> <span class="m">sin(α + β) ≠ sin α + sin β</span>. Drag the sliders to see for yourself.
+      <div class="grid2" style="margin-top:6px">
+        <div><label class="ctl" for="aS">α <span class="val" id="aV"></span></label><input type="range" id="aS" min="0" max="180" step="5" value="45"></div>
+        <div><label class="ctl" for="bS">β <span class="val" id="bV"></span></label><input type="range" id="bS" min="0" max="180" step="5" value="30"></div>
+      </div>
+      <div id="trapOut" class="m" style="white-space:normal"></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Sum &amp; difference</h3>
+        <div class="formula"><span class="m">sin(α ± β) = sin α cos β ± cos α sin β</span></div>
+        <div class="formula"><span class="m">cos(α ± β) = cos α cos β ∓ sin α sin β</span></div>
+        <div class="formula"><span class="m">tan(α ± β) = \f{tan α ± tan β}{1 ∓ tan α tan β}</span></div>
+        <p class="small muted">Note the cosine formula <b>flips</b> the sign (∓).</p>
+        <div class="ex mini" data-ex="sum"></div>
+        <div class="ex mini" data-ex="diff"></div>
+      </div>
+      <div class="card">
+        <h3>Double-angle</h3>
+        <div class="formula"><span class="m">sin 2θ = 2 sin θ cos θ</span></div>
+        <div class="formula"><span class="m">cos 2θ = cos<sup>2</sup>θ − sin<sup>2</sup>θ = 2cos<sup>2</sup>θ − 1 = 1 − 2sin<sup>2</sup>θ</span></div>
+        <div class="formula"><span class="m">tan 2θ = \f{2 tan θ}{1 − tan<sup>2</sup>θ}</span></div>
+        <div class="ex mini" data-ex="double"></div>
+        <h3 style="margin-top:16px">Half-angle</h3>
+        <div class="formula"><span class="m">sin \f{θ}{2} = ±\r{\f{1 − cos θ}{2}} &nbsp;&nbsp; cos \f{θ}{2} = ±\r{\f{1 + cos θ}{2}}</span></div>
+        <div class="formula"><span class="m">tan \f{θ}{2} = \f{1 − cos θ}{sin θ} = \f{sin θ}{1 + cos θ}</span></div>
+        <p class="small muted">The ± is chosen by the quadrant of <span class="m">\f{θ}{2}</span>.</p>
+        <div class="ex mini" data-ex="half"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 8. WORKED EXAMPLES ======================= -->
+<section id="examples" data-title="Examples">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">8</div><h2>Worked examples, one step at a time</h2></div>
+    <p class="lead">Before each step, try to guess what comes next. Tap <b>💡 Hint</b> for a nudge, then <b>Next step</b> to check.</p>
+    <div class="tip"><b>Strategy for proving identities:</b> work on the <i>messier</i> side · rewrite everything in sin and cos · look for <span class="m">sin<sup>2</sup> + cos<sup>2</sup></span> · combine fractions · factor · multiply by a conjugate.</div>
+    <div id="exList"></div>
+  </div>
+</section>
+
+<!-- ======================= 9. PRACTICE ======================= -->
+<section id="practice" data-title="Practice">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">9</div><h2>Practice time 🎯</h2></div>
+    <p class="lead">15 problems. Your <b>first</b> answer counts toward your score, but you can keep trying until you get it. Type exact answers like <code>sqrt(3)/2</code>, <code>-1/2</code>, or use the <b>√</b> and <b>π</b> buttons.</p>
+    <div class="practice-wrap"><div class="scorebar"><b id="scoreTxt">Score: 0 / 15</b><div class="meter"><div id="scoreMeter"></div></div><span class="small muted" id="scoreSub">0 answered</span><button class="btn small" id="practiceReset">↺ Reset</button></div>
+    <div id="qList"></div></div>
+
+    <div class="card drill" id="drill">
+      <h3>⚡ Unit Circle Speed Drill</h3>
+      <p class="small">60 seconds. How many exact values can you get? <span class="muted">Correct = +1, wrong = no penalty, but your streak resets.</span></p>
+      <div class="drill-stats"><div><span class="small muted">Score</span><b id="dScore">0</b></div><div><span class="small muted">Streak</span><b id="dStreak">0</b></div><div><span class="small muted">Time</span><b id="dTime">60</b></div><div><span class="small muted">Best 🏆</span><b id="dBest">0</b></div></div>
+      <div class="timer"><div id="dTimer"></div></div>
+      <div class="drill-q" id="dQ">Ready?</div>
+      <div class="opts" id="dOpts"></div>
+      <div class="center"><button class="btn primary" id="dStart">Start drill</button></div>
+      <p class="center small muted" id="dMsg"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 10. CHEAT SHEET ======================= -->
+<section id="cheat" data-title="Cheat sheet">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-num">10</div><h2>Cheat sheet</h2></div>
+    <p class="lead noprint">Everything on one page. Tap <b>Print</b> (or Save as PDF) and only this section prints.</p>
+    <div class="btnrow noprint"><button class="btn primary" id="printBtn">🖨️ Print / Save as PDF</button></div>
+    <div class="cheat-grid cheat">
+      <div class="card"><svg id="cheatSvg" viewBox="-1.62 -1.45 3.24 2.9" aria-label="Unit circle with all special angles labeled"></svg></div>
+      <div class="card">
+        <h4>Definitions (unit circle)</h4>
+        <div class="formula"><span class="m">(x, y) = (cos θ, sin θ) &nbsp; tan θ = \f{y}{x}</span></div>
+        <h4>Right triangle</h4>
+        <div class="formula"><span class="m">sin = \f{opp}{hyp} &nbsp; cos = \f{adj}{hyp} &nbsp; tan = \f{opp}{adj}</span></div>
+        <h4>Reciprocal &amp; quotient</h4>
+        <div class="formula"><span class="m">csc = \f{1}{sin} &nbsp; sec = \f{1}{cos} &nbsp; cot = \f{1}{tan} = \f{cos}{sin}</span></div>
+        <h4>Pythagorean</h4>
+        <div class="formula"><span class="m">sin<sup>2</sup>θ + cos<sup>2</sup>θ = 1 &nbsp; 1 + tan<sup>2</sup>θ = sec<sup>2</sup>θ &nbsp; 1 + cot<sup>2</sup>θ = csc<sup>2</sup>θ</span></div>
+        <h4>Even / odd &amp; cofunction</h4>
+        <div class="formula"><span class="m">cos(−θ) = cos θ &nbsp; sin(−θ) = −sin θ &nbsp; tan(−θ) = −tan θ</span></div>
+        <div class="formula"><span class="m">sin(\f{π}{2} − θ) = cos θ &nbsp; cos(\f{π}{2} − θ) = sin θ</span></div>
+        <h4>Sum &amp; difference</h4>
+        <div class="formula"><span class="m">sin(α ± β) = sin α cos β ± cos α sin β</span></div>
+        <div class="formula"><span class="m">cos(α ± β) = cos α cos β ∓ sin α sin β</span></div>
+        <div class="formula"><span class="m">tan(α ± β) = \f{tan α ± tan β}{1 ∓ tan α tan β}</span></div>
+        <h4>Double &amp; half angle</h4>
+        <div class="formula"><span class="m">sin 2θ = 2sin θ cos θ &nbsp; tan 2θ = \f{2tan θ}{1 − tan<sup>2</sup>θ}</span></div>
+        <div class="formula"><span class="m">cos 2θ = cos<sup>2</sup>θ − sin<sup>2</sup>θ = 2cos<sup>2</sup>θ − 1 = 1 − 2sin<sup>2</sup>θ</span></div>
+        <div class="formula"><span class="m">sin \f{θ}{2} = ±\r{\f{1 − cos θ}{2}} &nbsp; cos \f{θ}{2} = ±\r{\f{1 + cos θ}{2}}</span></div>
+        <h4>Graphs: y = A sin(B(x − C)) + D</h4>
+        <div class="formula"><span class="m">amplitude |A| &nbsp; period \f{2π}{B} &nbsp; shift C &nbsp; midline y = D</span></div>
+        <p class="small muted">ASTC: <b>A</b>ll (I), <b>S</b>in (II), <b>T</b>an (III), <b>C</b>os (IV) are positive. &nbsp;180° = π rad.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer>Made with ❤️ by <b>Grok Bot</b> for a future trig master. Works offline: save this file and open it anytime.</footer>
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =========================================================
+   Trig, Unlocked: core helpers (math typesetting, safe parser, plotting)
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const TAU = Math.PI * 2, PI = Math.PI;
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("trigUnlocked." + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("trigUnlocked." + k, JSON.stringify(v)); } catch (e) {} }
+};
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; };
+const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------- mini math typesetter ----------
+   \f{num}{den}  fraction      \r{x}  square root
+   ^{..} or ^c   superscript   _{..}  subscript
+   '-' becomes a real minus sign; single-letter variables become italic.
+   HTML tags pass through untouched. */
+function tex(src) {
+  let i = 0;
+  function group() {               // read {...} or one char
+    if (src[i] === "{") {
+      let depth = 0, start = ++i;
+      for (; i < src.length; i++) {
+        if (src[i] === "{") depth++;
+        else if (src[i] === "}") { if (depth === 0) break; depth--; }
+      }
+      const inner = src.slice(start, i); i++;
+      return tex(inner);
+    }
+    if (src[i] === "\\") { const r = parseUntil(i, true); return r; }
+    return fmtText(src[i++] || "");
+  }
+  function parseUntil(_s, single) {  // parse a single command at i
+    let out = "";
+    const c2 = src[i + 1];
+    if (c2 === "f") { i += 2; const a = group(), b = group(); out = `<span class="fr"><span>${a}</span><span>${b}</span></span>`; }
+    else if (c2 === "r") { i += 2; const a = group(); out = `<span class="rt"><span class="sq">√</span><span class="rad">${a}</span></span>`; }
+    else { out = "\\"; i++; }
+    return out;
+  }
+  let out = "", buf = "";
+  const flush = () => { out += fmtText(buf); buf = ""; };
+  while (i < src.length) {
+    const c = src[i];
+    if (c === "<") { flush(); const j = src.indexOf(">", i); out += src.slice(i, j + 1); i = j + 1; }
+    else if (c === "&") { flush(); const j = src.indexOf(";", i); out += src.slice(i, j + 1); i = j + 1; }
+    else if (c === "\\") { flush(); out += parseUntil(i); }
+    else if (c === "^") { flush(); i++; out += `<sup>${group()}</sup>`; }
+    else if (c === "_") { flush(); i++; out += `<sub>${group()}</sub>`; }
+    else { buf += c; i++; }
+  }
+  flush();
+  return out;
+}
+function fmtText(t) {
+  return t.replace(/-/g, "−").replace(/(^|[^A-Za-z])([xyuθαβ])(?![A-Za-z])/g, "$1<i>$2</i>");
+}
+function renderMath(root = document) { $$(".m", root).forEach(el => { if (!el.dataset.done) { el.innerHTML = tex(el.innerHTML); el.dataset.done = 1; } }); }
+
+/* ---------- angle formatting ---------- */
+function piFracTex(n, d, sym = "π") {       // value = (n/d)·π as tex
+  if (n === 0) return "0";
+  const g = gcd(n, d); n /= g; d /= g;
+  if (d < 0) { n = -n; d = -d; }
+  const sign = n < 0 ? "-" : ""; n = Math.abs(n);
+  const num = (n === 1 ? "" : n) + sym;
+  return d === 1 ? sign + num : `${sign}\\f{${num}}{${d}}`;
+}
+const degToRadTex = deg => Number.isInteger(deg) ? piFracTex(deg, 180) : null;
+function piFracPlain(n, d) {   // for canvas/SVG text
+  if (n === 0) return "0";
+  const g = gcd(n, d); n /= g; d /= g;
+  const sign = n < 0 ? "−" : ""; n = Math.abs(n);
+  const num = (n === 1 ? "" : n) + "π";
+  return d === 1 ? sign + num : `${sign}${num}/${d}`;
+}
+const fmtNum = (v, dp = 4) => {
+  if (!isFinite(v)) return "undefined";
+  if (Math.abs(v) < 5e-10) v = 0;
+  let s = (+v.toFixed(dp)).toString();
+  return s.replace("-", "−");
+};
+
+/* ---------- exact values for the 16 special angles ---------- */
+const SPECIAL = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330];
+const MAG = {
+  0: { cos: "1", sin: "0", tan: "0", cp: "1", sp: "0" },
+  30: { cos: "\\f{\\r{3}}{2}", sin: "\\f{1}{2}", tan: "\\f{\\r{3}}{3}", cp: "√3/2", sp: "1/2" },
+  45: { cos: "\\f{\\r{2}}{2}", sin: "\\f{\\r{2}}{2}", tan: "1", cp: "√2/2", sp: "√2/2" },
+  60: { cos: "\\f{1}{2}", sin: "\\f{\\r{3}}{2}", tan: "\\r{3}", cp: "1/2", sp: "√3/2" },
+  90: { cos: "0", sin: "1", tan: null, cp: "0", sp: "1" }
+};
+function refAngleDeg(d) { d = ((d % 360) + 360) % 360; return d <= 90 ? d : d <= 180 ? 180 - d : d <= 270 ? d - 180 : 360 - d; }
+function exactTrig(deg) {         // {cos, sin, tan} as tex; tan null = undefined
+  deg = ((deg % 360) + 360) % 360;
+  const r = refAngleDeg(deg), m = MAG[r];
+  if (!m) return null;
+  const c = Math.cos(deg * PI / 180), s = Math.sin(deg * PI / 180);
+  const sx = Math.abs(c) < 1e-9 ? 0 : Math.sign(c), sy = Math.abs(s) < 1e-9 ? 0 : Math.sign(s);
+  const sg = (sign, v) => (v === "0" ? "0" : (sign < 0 ? "-" : "") + v);
+  const sgP = (sign, v) => (v === "0" ? "0" : (sign < 0 ? "−" : "") + v);
+  return {
+    cos: sg(sx, m.cos), sin: sg(sy, m.sin),
+    tan: m.tan === null ? null : sg(sx * sy, m.tan),
+    plain: `(${sgP(sx, m.cp)}, ${sgP(sy, m.sp)})`
+  };
+}
+
+/* ---------- safe expression parser (no eval) ---------- */
+const FUNCS = {
+  sin: Math.sin, cos: Math.cos, tan: Math.tan,
+  csc: x => 1 / Math.sin(x), sec: x => 1 / Math.cos(x), cot: x => Math.cos(x) / Math.sin(x),
+  sqrt: Math.sqrt, abs: Math.abs
+};
+const WORDS = ["theta", "sqrt", "sin", "cos", "tan", "csc", "sec", "cot", "abs", "pi", "x"];
+function tokenize(str) {
+  let s = String(str).toLowerCase()
+    .replace(/[−–—]/g, "-").replace(/[×·⋅∙]/g, "*").replace(/÷/g, "/")
+    .replace(/π/g, "pi").replace(/θ/g, "x").replace(/²/g, "^2").replace(/³/g, "^3")
+    .replace(/√/g, "sqrt").replace(/[\[{]/g, "(").replace(/[\]}]/g, ")");
+  const toks = [];
+  let i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (/[0-9.]/.test(c)) {
+      const m = s.slice(i).match(/^(\d+\.?\d*|\.\d+)/);
+      if (!m) throw new Error(`I can't read the number near "${s.slice(i, i + 4)}"`);
+      toks.push({ t: "num", v: parseFloat(m[1]), s: m[1] }); i += m[1].length; continue;
+    }
+    if (/[a-z]/.test(c)) {
+      let w = s.slice(i).match(/^[a-z]+/)[0], j = 0;
+      while (j < w.length) {
+        const name = WORDS.find(n => w.startsWith(n, j));
+        if (!name) throw new Error(`I don't recognize "${w.slice(j)}". Try sin, cos, tan, csc, sec, cot, sqrt, pi, x`);
+        toks.push(name === "pi" ? { t: "pi" } : (name === "x" || name === "theta") ? { t: "x" } : { t: "fn", v: name });
+        j += name.length;
+      }
+      i += w.length; continue;
+    }
+    if ("+-*/^()".includes(c)) { toks.push({ t: c }); i++; continue; }
+    throw new Error(`I don't understand the symbol "${c}"`);
+  }
+  return toks;
+}
+function parseExpr(str, opts = {}) {
+  const toks = tokenize(str);
+  if (!toks.length) throw new Error("Type an expression");
+  let p = 0;
+  const peek = () => toks[p], next = () => toks[p++];
+  const is = t => toks[p] && toks[p].t === t;
+  const expect = t => { if (!is(t)) throw new Error(t === ")" ? "Missing a closing parenthesis )" : `Expected "${t}"`); p++; };
+  const startsFactor = () => { const k = peek(); return k && (k.t === "num" || k.t === "x" || k.t === "pi" || k.t === "fn" || k.t === "("); };
+  const startsArgAtom = () => { const k = peek(); return k && (k.t === "num" || k.t === "x" || k.t === "pi" || k.t === "("); };
+  function expr() {
+    let a = term();
+    while (is("+") || is("-")) { const op = next().t; a = { t: "bin", op, a, b: term() }; }
+    return a;
+  }
+  function term() {
+    let a = unary();
+    for (;;) {
+      if (is("*") || is("/")) { const op = next().t; a = { t: "bin", op, a, b: unary() }; }
+      else if (startsFactor()) a = { t: "bin", op: "*", a, b: power(), imp: true };
+      else break;
+    }
+    return a;
+  }
+  function unary() {
+    if (is("-")) { next(); return { t: "neg", a: unary() }; }
+    if (is("+")) { next(); return unary(); }
+    return power();
+  }
+  function power() {
+    const base = primary();
+    if (is("^")) { next(); return { t: "bin", op: "^", a: base, b: unary() }; }
+    return base;
+  }
+  function atom() {
+    const k = next();
+    if (!k) throw new Error("The expression ends too early");
+    if (k.t === "num") return { t: "num", v: k.v, s: k.s };
+    if (k.t === "pi") return { t: "pi" };
+    if (k.t === "x") { if (opts.noVar) throw new Error("Give a number here, not x"); return { t: "x" }; }
+    if (k.t === "(") { const e = expr(); expect(")"); return { t: "par", a: e }; }
+    p--; return null;
+  }
+  function primary() {
+    const k = peek();
+    if (!k) throw new Error("The expression ends too early");
+    if (k.t === "fn") {
+      next();
+      let ex = null;
+      if (is("^")) {           // sin^2 x
+        next();
+        if (is("-")) { next(); const n = next(); if (!n || n.t !== "num") throw new Error("Put a number after ^"); ex = { t: "neg", a: { t: "num", v: n.v, s: n.s } }; }
+        else { ex = atom(); if (!ex) throw new Error("Put a number after ^"); }
+      }
+      let arg;
+      if (is("(")) { next(); arg = expr(); expect(")"); }
+      else {                    // sin 2x, sin x  (argument without parentheses)
+        let neg = false;
+        if (is("-")) { next(); neg = true; }
+        if (!startsArgAtom()) throw new Error(`${k.v} needs an input, like ${k.v}(x)`);
+        arg = argAtom();
+        while (startsArgAtom()) arg = { t: "bin", op: "*", a: arg, b: argAtom(), imp: true };
+        if (neg) arg = { t: "neg", a: arg };
+      }
+      const f = { t: "fn", f: k.v, a: arg };
+      return ex ? { t: "bin", op: "^", a: f, b: ex, fnpow: true } : f;
+    }
+    const a = atom();
+    if (!a) throw new Error(k.t === ")" ? "There's an extra )" : `Something is missing before "${k.t}"`);
+    return a;
+  }
+  function argAtom() {
+    const a = atom();
+    if (is("^")) { next(); return { t: "bin", op: "^", a, b: unary() }; }
+    return a;
+  }
+  const tree = expr();
+  if (p < toks.length) throw new Error(toks[p].t === ")" ? "There's an extra )" : "I couldn't understand the end of that");
+  return tree;
+}
+function compile(n) {
+  switch (n.t) {
+    case "num": { const v = n.v; return () => v; }
+    case "pi": return () => PI;
+    case "x": return x => x;
+    case "par": return compile(n.a);
+    case "neg": { const a = compile(n.a); return x => -a(x); }
+    case "fn": { const f = FUNCS[n.f], a = compile(n.a); return x => f(a(x)); }
+    case "bin": {
+      const a = compile(n.a), b = compile(n.b);
+      switch (n.op) {
+        case "+": return x => a(x) + b(x);
+        case "-": return x => a(x) - b(x);
+        case "*": return x => a(x) * b(x);
+        case "/": return x => a(x) / b(x);
+        case "^": return x => Math.pow(a(x), b(x));
+      }
+    }
+  }
+  throw new Error("bad node");
+}
+/* pretty-print a parsed tree back into tex (so she can see how it was read) */
+function toTex(n) {
+  const P = { num: 9, x: 9, pi: 9, par: 9, fn: 8, neg: 3 };
+  const prec = k => k.t === "bin" ? ({ "+": 1, "-": 1, "*": 2, "/": 2, "^": 4 })[k.op] : P[k.t];
+  const wrap = (k, minP) => prec(k) < minP ? "(" + toTex(k) + ")" : toTex(k);
+  const fnArg = a => (a.t === "x" || a.t === "num" || a.t === "pi" || (a.t === "bin" && a.imp && a.a.t === "num" && (a.b.t === "x" || a.b.t === "pi"))) ? " " + toTex(a) : (a.t === "par" ? toTex(a) : "(" + toTex(a) + ")");
+  switch (n.t) {
+    case "num": return n.s;
+    case "x": return "x";
+    case "pi": return "π";
+    case "par": return "(" + toTex(n.a) + ")";
+    case "neg": return "-" + wrap(n.a, 3);
+    case "fn":
+      if (n.f === "sqrt") return `\\r{${n.a.t === "par" ? toTex(n.a.a) : toTex(n.a)}}`;
+      if (n.f === "abs") return `|${n.a.t === "par" ? toTex(n.a.a) : toTex(n.a)}|`;
+      return n.f + fnArg(n.a);
+    case "bin": {
+      const { op, a, b } = n;
+      if (op === "/") return `\\f{${a.t === "par" ? toTex(a.a) : toTex(a)}}{${b.t === "par" ? toTex(b.a) : toTex(b)}}`;
+      if (op === "^") {
+        const e = b.t === "par" ? toTex(b.a) : toTex(b);
+        if (a.t === "fn" && !["sqrt", "abs"].includes(a.f)) return `${a.f}^{${e}}${fnArg(a.a)}`;
+        return `${wrap(a, 5)}^{${e}}`;
+      }
+      if (op === "*") {
+        const L = wrap(a, 2), R = wrap(b, 2.5);
+        const needDot = /^[0-9.]/.test(R) || (!n.imp);
+        return L + (needDot ? " · " : (b.t === "x" || b.t === "pi" || b.t === "par") && a.t === "num" ? "" : " ") + R;
+      }
+      return `${wrap(a, 1)} ${op === "+" ? "+" : "-"} ${wrap(b, 2)}`;
+    }
+  }
+  return "?";
+}
+function makeFn(str, opts) { const tree = parseExpr(str, opts); return { tree, f: compile(tree), tex: toTex(tree) }; }
+
+/* ---------- canvas plotting ---------- */
+function prepCanvas(cv, aspect) {
+  const w = Math.max(240, cv.clientWidth || cv.parentElement.clientWidth);
+  const h = Math.round(w / aspect);
+  cv.style.height = h + "px";
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+class Plot {
+  constructor(ctx, box, xr, yr) {
+    Object.assign(this, { ctx, box, x0: xr[0], x1: xr[1], y0: yr[0], y1: yr[1] });
+  }
+  X(x) { const b = this.box; return b.l + (x - this.x0) / (this.x1 - this.x0) * (b.r - b.l); }
+  Y(y) { const b = this.box; return b.b - (y - this.y0) / (this.y1 - this.y0) * (b.b - b.t); }
+  grid({ piStep = 2, yStep = 1, labels = true } = {}) {
+    const c = this.ctx, b = this.box;
+    c.save();
+    c.lineWidth = 1; c.strokeStyle = cssVar("--grid"); c.fillStyle = cssVar("--muted");
+    c.font = "12px system-ui, sans-serif";
+    const k0 = Math.ceil(this.x0 / (PI / piStep)), k1 = Math.floor(this.x1 / (PI / piStep));
+    for (let k = k0; k <= k1; k++) {
+      const X = this.X(k * PI / piStep);
+      c.beginPath(); c.moveTo(X, b.t); c.lineTo(X, b.b); c.stroke();
+    }
+    for (let y = Math.ceil(this.y0 / yStep) * yStep; y <= this.y1 + 1e-9; y += yStep) {
+      const Y = this.Y(y); c.beginPath(); c.moveTo(b.l, Y); c.lineTo(b.r, Y); c.stroke();
+    }
+    c.strokeStyle = cssVar("--axis"); c.lineWidth = 1.5;
+    if (this.y0 <= 0 && this.y1 >= 0) { c.beginPath(); c.moveTo(b.l, this.Y(0)); c.lineTo(b.r, this.Y(0)); c.stroke(); }
+    if (this.x0 <= 0 && this.x1 >= 0) { c.beginPath(); c.moveTo(this.X(0), b.t); c.lineTo(this.X(0), b.b); c.stroke(); }
+    if (labels) {
+      c.textAlign = "center"; c.textBaseline = "top";
+      const Y0 = clamp(this.Y(0) + 4, b.t, b.b - 14);
+      const skip = (b.r - b.l) / (k1 - k0 + 1) < 34 ? 2 : 1;
+      for (let k = k0; k <= k1; k++) { if (k === 0 || k % skip) continue; c.fillText(piFracPlain(k, piStep), this.X(k * PI / piStep), Y0); }
+      c.textAlign = "right"; c.textBaseline = "middle";
+      const X0 = clamp(this.X(0) - 5, b.l + 16, b.r);
+      for (let y = Math.ceil(this.y0 / yStep) * yStep; y <= this.y1 + 1e-9; y += yStep) { if (Math.abs(y) < 1e-9) continue; c.fillText(fmtNum(y, 2), X0, this.Y(y)); }
+    }
+    c.restore();
+  }
+  fn(f, { color, width = 2.5, dash = null, n = 900, breakJump = true, from = this.x0, to = this.x1 } = {}) {
+    const c = this.ctx, b = this.box, span = this.y1 - this.y0;
+    c.save();
+    c.beginPath(); c.rect(b.l, b.t - 2, b.r - b.l, b.b - b.t + 4); c.clip();
+    c.strokeStyle = color; c.lineWidth = width; c.lineJoin = "round"; c.lineCap = "round";
+    if (dash) c.setLineDash(dash);
+    c.beginPath();
+    let pen = false, prev = null;
+    for (let i = 0; i <= n; i++) {
+      const x = from + (to - from) * i / n, y = f(x);
+      const ok = isFinite(y) && Math.abs(y) < 1e6;
+      if (!ok) { pen = false; prev = null; continue; }
+      if (pen && breakJump && prev !== null && Math.abs(y - prev) > span * 1.2 && Math.sign(y) !== Math.sign(prev)) pen = false;
+      const Y = clamp(this.Y(y), b.t - span * 50, b.b + span * 50);
+      if (pen) c.lineTo(this.X(x), Y); else c.moveTo(this.X(x), Y);
+      pen = true; prev = y;
+    }
+    c.stroke(); c.restore();
+  }
+}
+
+/* ---------- confetti & toast ---------- */
+const Confetti = (() => {
+  const cv = document.getElementById("confetti"); let parts = [], raf = 0;
+  function burst(n = 140) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const W = innerWidth, H = innerHeight, cols = [cssVar("--accent"), cssVar("--accent2"), cssVar("--accent3"), cssVar("--tan"), cssVar("--ok")];
+    for (let i = 0; i < n; i++) parts.push({ x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35, vx: (Math.random() - .5) * 14, vy: -Math.random() * 13 - 4, r: Math.random() * TAU, vr: (Math.random() - .5) * .4, s: 5 + Math.random() * 6, c: cols[i % cols.length], life: 0 });
+    if (!raf) loop();
+  }
+  function loop() {
+    const dpr = devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr; const c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    parts = parts.filter(p => p.y < H + 20 && p.life < 260);
+    for (const p of parts) { p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++; c.save(); c.translate(p.x, p.y); c.rotate(p.r); c.fillStyle = p.c; c.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); c.restore(); }
+    raf = parts.length ? requestAnimationFrame(loop) : (c.clearRect(0, 0, W, H), 0);
+  }
+  return { burst };
+})();
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
+
+/* ---------- SVG helper ---------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+function S(tag, attrs = {}, parent) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) { if (k === "style") el.setAttribute("style", attrs[k]); else if (k === "text") el.textContent = attrs[k]; else el.setAttribute(k, attrs[k]); }
+  if (parent) parent.appendChild(el);
+  return el;
+}
+function svgPoint(svg, evt) {
+  const pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function arcPath(r, a0, a1) {   // counterclockwise (math) arc, svg y-down
+  if (Math.abs(a1 - a0) < 1e-6) return "";
+  const big = Math.abs(a1 - a0) > PI ? 1 : 0, sweep = a1 > a0 ? 0 : 1;
+  return `M ${r * Math.cos(a0)} ${-r * Math.sin(a0)} A ${r} ${r} 0 ${big} ${sweep} ${r * Math.cos(a1)} ${-r * Math.sin(a1)}`;
+}
+/* labels for all 16 special points (used on unit circle + cheat sheet) */
+function drawSpecialLabels(g, { r = 1.1, fs = 0.07, deg = true } = {}) {
+  SPECIAL.forEach(d => {
+    const a = d * PI / 180, c = Math.cos(a), s = Math.sin(a), ex = exactTrig(d);
+    const anchor = Math.abs(c) < 0.01 ? "middle" : c > 0 ? "start" : "end";
+    let x = r * c, y = -r * s;
+    if (d === 90) y -= fs * 1.4; if (d === 270) y += fs * 1.2;
+    const t = S("text", { x, y, "text-anchor": anchor, "font-size": fs, style: "fill:var(--text)" }, g);
+    const rad = piFracPlain(d, 180);
+    S("tspan", { x, dy: -fs * 0.15, "font-weight": 700, text: rad + (deg ? `  ${d}°` : ""), style: "fill:var(--accent)" }, t);
+    S("tspan", { x, dy: fs * 1.15, text: ex.plain, style: "fill:var(--text)" }, t);
+  });
+}
+
+/* =========================================================
+   Navigation, theme, hero, angles, unit circle, triangle, graphs
+   ========================================================= */
+renderMath();                               // typeset all static math first
+const redrawers = [];                       // canvases to repaint on theme/resize
+const onRedraw = fn => { redrawers.push(fn); return fn; };
+function redrawAll() { redrawers.forEach(f => { try { f(); } catch (e) { console.error(e); } }); }
+
+/* ---------- theme ---------- */
+(function theme() {
+  const saved = LS.get("theme", null);
+  const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  $("#themeBtn").addEventListener("click", () => {
+    const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = t; LS.set("theme", t); redrawAll();
+  });
+})();
+
+/* ---------- nav chips, progress bar, visited ---------- */
+(function nav() {
+  const secs = $$("main section"), box = $("#navchips"), visited = new Set(LS.get("visited", []));
+  const chips = secs.map((s, i) => {
+    const a = document.createElement("a");
+    a.className = "chip"; a.href = "#" + s.id; a.innerHTML = `<span class="n">${visited.has(s.id) ? "✓" : i + 1}</span>${s.dataset.title}`;
+    if (visited.has(s.id)) a.classList.add("visited");
+    box.appendChild(a); return a;
+  });
+  let current = -1;
+  function update() {
+    const y = scrollY, H = document.documentElement.scrollHeight - innerHeight;
+    $("#progbar").style.width = (H > 0 ? y / H * 100 : 0) + "%";
+    let idx = 0;
+    secs.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * 0.35) idx = i; });
+    if (idx !== current) {
+      current = idx;
+      chips.forEach((c, i) => c.classList.toggle("active", i === idx));
+      const c = chips[idx]; box.scrollTo({ left: c.offsetLeft - box.clientWidth / 2 + c.clientWidth / 2, behavior: "smooth" });
+      const id = secs[idx].id;
+      if (!visited.has(id)) { visited.add(id); LS.set("visited", [...visited]); c.classList.add("visited"); c.querySelector(".n").textContent = "✓"; }
+    }
+  }
+  addEventListener("scroll", update, { passive: true }); addEventListener("resize", update); update();
+})();
+
+/* ---------- hero animation ---------- */
+(function hero() {
+  const cv = $("#heroCanvas"); let t = 0, visible = true, last = 0, looping = false;
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !looping) { looping = true; last = 0; requestAnimationFrame(frame); } }).observe(cv);
+  function frame(ts) {
+    if (!visible) { looping = false; return; }
+    const dt = last ? Math.min(50, ts - last) : 16; last = ts;
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) t += dt / 1000 * 1.1;
+    const { ctx: c, w, h } = prepCanvas(cv, 1.25);
+    const R = Math.min(w * 0.2, h * 0.36), cx = R + 18, cy = h / 2, gx = cx + R + 22, gw = w - gx - 12;
+    const a = t % TAU, px = cx + R * Math.cos(a), py = cy - R * Math.sin(a);
+    c.lineWidth = 1; c.strokeStyle = cssVar("--grid");
+    c.beginPath(); c.moveTo(cx - R - 10, cy); c.lineTo(w - 6, cy); c.moveTo(cx, cy - R - 10); c.lineTo(cx, cy + R + 10); c.stroke();
+    c.lineWidth = 3; c.strokeStyle = cssVar("--accent"); c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.stroke();
+    // wave: newest point at gx, older points to the right
+    c.lineWidth = 3.5; c.strokeStyle = cssVar("--sin"); c.beginPath();
+    for (let i = 0; i <= gw; i += 2) { const y = cy - R * Math.sin(a - i / R); i ? c.lineTo(gx + i, y) : c.moveTo(gx, y); }
+    c.stroke();
+    c.lineWidth = 2.5; c.globalAlpha = .55; c.strokeStyle = cssVar("--cos"); c.beginPath();
+    for (let i = 0; i <= gw; i += 2) { const y = cy - R * Math.cos(a - i / R); i ? c.lineTo(gx + i, y) : c.moveTo(gx, y); }
+    c.stroke(); c.globalAlpha = 1;
+    c.setLineDash([5, 5]); c.lineWidth = 1.5; c.strokeStyle = cssVar("--muted");
+    c.beginPath(); c.moveTo(px, py); c.lineTo(gx, py); c.stroke(); c.setLineDash([]);
+    c.lineWidth = 3; c.strokeStyle = cssVar("--cos"); c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, cy); c.stroke();
+    c.strokeStyle = cssVar("--sin"); c.beginPath(); c.moveTo(px, cy); c.lineTo(px, py); c.stroke();
+    c.strokeStyle = cssVar("--text"); c.lineWidth = 2; c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, py); c.stroke();
+    const gl = c.createRadialGradient(px, py, 0, px, py, 22); gl.addColorStop(0, cssVar("--accent2")); gl.addColorStop(1, "transparent");
+    c.fillStyle = gl; c.beginPath(); c.arc(px, py, 22, 0, TAU); c.fill();
+    c.fillStyle = "#fff"; c.beginPath(); c.arc(px, py, 5, 0, TAU); c.fill();
+    c.fillStyle = cssVar("--sin"); c.beginPath(); c.arc(gx, py, 6, 0, TAU); c.fill();
+    c.font = "600 15px Georgia, serif"; c.fillStyle = cssVar("--sin"); c.fillText("y = sin θ", gx + 10, 22);
+    c.fillStyle = cssVar("--cos"); c.fillText("y = cos θ", gx + 100, 22);
+    requestAnimationFrame(frame);
+  }
+})();
+
+/* ---------- 2. angles & radians ---------- */
+(function angles() {
+  const svg = $("#radSvg"), sl = $("#degSlider");
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--line);stroke-width:.02" }, svg);
+  S("line", { x1: -1.45, y1: 0, x2: 1.45, y2: 0, style: "stroke:var(--axis);stroke-width:.012" }, svg);
+  S("line", { x1: 0, y1: -1.45, x2: 0, y2: 1.45, style: "stroke:var(--axis);stroke-width:.012" }, svg);
+  for (let k = 1; k <= 6; k++) {   // radian ticks
+    const c = Math.cos(k), s = Math.sin(k);
+    S("line", { x1: .93 * c, y1: -.93 * s, x2: 1.07 * c, y2: -1.07 * s, style: "stroke:var(--muted);stroke-width:.018" }, svg);
+    S("text", { x: 1.2 * c, y: -1.2 * s + .04, "text-anchor": "middle", "font-size": .11, style: "fill:var(--muted)", text: k + " rad" }, svg);
+  }
+  const turns = S("path", { fill: "none", style: "stroke:var(--accent2);stroke-width:.03;opacity:.35" }, svg);
+  const arc = S("path", { fill: "none", style: "stroke:var(--accent2);stroke-width:.05;stroke-linecap:round" }, svg);
+  const small = S("path", { fill: "none", style: "stroke:var(--accent);stroke-width:.02" }, svg);
+  S("line", { x1: 0, y1: 0, x2: 1, y2: 0, style: "stroke:var(--text);stroke-width:.025" }, svg);
+  const ray = S("line", { x1: 0, y1: 0, style: "stroke:var(--text);stroke-width:.03;stroke-linecap:round" }, svg);
+  const dot = S("circle", { r: .05, style: "fill:var(--accent2)" }, svg);
+  const lbl = S("text", { "font-size": .14, "text-anchor": "middle", style: "fill:var(--accent);font-weight:700" }, svg);
+  const presets = [0, 30, 45, 60, 90, 180, 270, 360, -90, 450];
+  presets.forEach(d => { const b = document.createElement("button"); b.className = "btn small"; b.textContent = d + "°"; b.onclick = () => { sl.value = d; upd(); }; $("#degPresets").appendChild(b); });
+  function upd() {
+    const d = +sl.value, a = d * PI / 180, norm = ((d % 360) + 360) % 360;
+    $("#degVal").textContent = d + "°"; $("#rDeg").textContent = d + "°";
+    $("#rRadExact").innerHTML = tex(degToRadTex(d)); $("#rRadDec").textContent = "≈ " + fmtNum(a, 4) + " rad";
+    $("#rCot").innerHTML = norm + "° = " + tex(degToRadTex(norm));
+    const full = Math.floor(Math.abs(a) / TAU) > 0;
+    turns.setAttribute("d", full ? "M 1 0 A 1 1 0 1 0 -1 0 A 1 1 0 1 0 1 0" : "");
+    const rem = a >= 0 ? a % TAU : -((-a) % TAU);
+    const end = Math.abs(rem) < 1e-9 && a !== 0 ? (a > 0 ? TAU - 1e-4 : -TAU + 1e-4) : rem;
+    arc.setAttribute("d", arcPath(1, 0, end));
+    small.setAttribute("d", arcPath(.25, 0, end));
+    ray.setAttribute("x2", Math.cos(a)); ray.setAttribute("y2", -Math.sin(a));
+    dot.setAttribute("cx", Math.cos(a)); dot.setAttribute("cy", -Math.sin(a));
+    const mid = end / 2; lbl.setAttribute("x", .45 * Math.cos(mid)); lbl.setAttribute("y", -.45 * Math.sin(mid) + .05);
+    lbl.textContent = Math.abs(a) > 0.2 ? fmtNum(a, 2) + " rad" : "";
+  }
+  sl.addEventListener("input", upd); upd();
+  function convDeg() {
+    const out = $("#convDegOut"), v = $("#convDeg").value.trim();
+    try {
+      const n = makeFn(v, { noVar: true }).f(0);
+      if (!isFinite(n)) throw new Error("Type a number of degrees");
+      const exact = Number.isInteger(n) ? tex(degToRadTex(n)) + " = " : "";
+      out.innerHTML = `<span class="m">${fmtNum(n, 4)}° × ${tex("\\f{π}{180}")} = ${exact}${fmtNum(n * PI / 180, 4)}</span> rad`;
+    } catch (e) { out.textContent = v ? e.message : ""; }
+  }
+  function convRad() {
+    const out = $("#convRadOut"), v = $("#convRad").value.trim();
+    try {
+      const m = makeFn(v, { noVar: true }), n = m.f(0);
+      if (!isFinite(n)) throw new Error("Type a number");
+      out.innerHTML = `<span class="m">${tex(m.tex)} × ${tex("\\f{180}{π}")} = ${fmtNum(n * 180 / PI, 4)}°</span>`;
+    } catch (e) { out.textContent = v ? e.message : ""; }
+  }
+  $("#convDeg").addEventListener("input", convDeg); $("#convRad").addEventListener("input", convRad); convDeg(); convRad();
+})();
+
+/* ---------- 3. unit circle ---------- */
+const UC = (function unitCircle() {
+  const svg = $("#ucSvg"); svg.setAttribute("tabindex", "0");
+  const quads = [[0, -1.62], [-1.62, -1.62], [-1.62, 0], [0, 0]].map(([x, y], i) =>
+    S("rect", { x, y, width: 1.62, height: 1.62, style: "fill:var(--accent);opacity:0;transition:opacity .25s" }, svg));
+  const astc = [["A", "All", 1.32, -1.38], ["S", "Sin", -1.32, -1.38], ["T", "Tan", -1.32, 1.42], ["C", "Cos", 1.32, 1.42]].map(([L, w, x, y]) => {
+    const g = S("g", { style: "opacity:.35;transition:opacity .25s" }, svg);
+    S("text", { x, y, "text-anchor": "middle", "font-size": .2, style: "fill:var(--accent);font-weight:800", text: L }, g);
+    S("text", { x, y: y + .12, "text-anchor": "middle", "font-size": .075, style: "fill:var(--muted)", text: w + " +" }, g);
+    return g;
+  });
+  ["I", "II", "III", "IV"].forEach((q, i) => S("text", { x: [.75, -.75, -.75, .75][i], y: [-.75, -.75, .8, .8][i], "text-anchor": "middle", "font-size": .1, style: "fill:var(--muted);opacity:.6", text: q }, svg));
+  S("line", { x1: -1.55, y1: 0, x2: 1.55, y2: 0, style: "stroke:var(--axis);stroke-width:.01" }, svg);
+  S("line", { x1: 0, y1: -1.55, x2: 0, y2: 1.55, style: "stroke:var(--axis);stroke-width:.01" }, svg);
+  S("text", { x: 1.5, y: -.04, "font-size": .09, style: "fill:var(--muted)", text: "x" }, svg);
+  S("text", { x: .04, y: -1.47, "font-size": .09, style: "fill:var(--muted)", text: "y" }, svg);
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--text);stroke-width:.018;opacity:.75" }, svg);
+  const tanG = S("g", { style: "display:none" }, svg);
+  S("line", { x1: 1, y1: -1.6, x2: 1, y2: 1.6, style: "stroke:var(--tan);stroke-width:.008;opacity:.5" }, tanG);
+  const tanExt = S("line", { style: "stroke:var(--tan);stroke-width:.012;stroke-dasharray:.04 .03" }, tanG);
+  const tanSeg = S("line", { x1: 1, y1: 0, x2: 1, style: "stroke:var(--tan);stroke-width:.04;stroke-linecap:round" }, tanG);
+  const tanLbl = S("text", { x: 1.04, "font-size": .085, style: "fill:var(--tan);font-weight:700" }, tanG);
+  const ticks = S("g", {}, svg);
+  SPECIAL.forEach(d => { const a = d * PI / 180; const c = S("circle", { cx: Math.cos(a), cy: -Math.sin(a), r: .022, style: "fill:var(--muted);cursor:pointer" }, ticks); c.addEventListener("click", () => set(d * PI / 180, true)); });
+  const labelsG = S("g", { style: "display:none" }, svg);
+  drawSpecialLabels(labelsG, { r: 1.08, fs: .062, deg: false });
+  const tri = S("polygon", { style: "fill:var(--accent);opacity:.1" }, svg);
+  const refArc = S("path", { fill: "none", style: "stroke:var(--accent2);stroke-width:.018;stroke-dasharray:.03 .02" }, svg);
+  const angArc = S("path", { fill: "none", style: "stroke:var(--accent);stroke-width:.022" }, svg);
+  const cosLeg = S("line", { x1: 0, y1: 0, y2: 0, style: "stroke:var(--cos);stroke-width:.04;stroke-linecap:round" }, svg);
+  const sinLeg = S("line", { y1: 0, style: "stroke:var(--sin);stroke-width:.04;stroke-linecap:round" }, svg);
+  const hyp = S("line", { x1: 0, y1: 0, style: "stroke:var(--text);stroke-width:.025;stroke-linecap:round" }, svg);
+  const rightMark = S("path", { fill: "none", style: "stroke:var(--muted);stroke-width:.01" }, svg);
+  const cosLbl = S("text", { "font-size": .085, "text-anchor": "middle", style: "fill:var(--cos);font-weight:700" }, svg);
+  const sinLbl = S("text", { "font-size": .085, style: "fill:var(--sin);font-weight:700" }, svg);
+  const thLbl = S("text", { "font-size": .1, "text-anchor": "middle", style: "fill:var(--accent);font-style:italic;font-weight:700", text: "θ" }, svg);
+  const ptLbl = S("text", { "font-size": .085, style: "fill:var(--text);font-weight:700;paint-order:stroke;stroke:var(--card);stroke-width:.03" }, svg);
+  const hit = S("circle", { r: .16, class: "handle", style: "fill:transparent" }, svg);
+  const glow = S("circle", { r: .09, style: "fill:var(--accent2);opacity:.25;pointer-events:none" }, svg);
+  const pt = S("circle", { r: .05, style: "fill:var(--accent2);stroke:#fff;stroke-width:.018;pointer-events:none" }, svg);
+
+  let theta = PI / 3, snapped = true, spinning = false, dragging = false;
+  const snapOn = () => $("#ucSnap").checked;
+  function nearestSpecial(a) { let best = 0, bd = 9; SPECIAL.concat([360]).forEach(d => { const diff = Math.abs(a - d * PI / 180); if (diff < bd) { bd = diff; best = d % 360; } }); return best; }
+  function set(a, forceSnap) {
+    a = ((a % TAU) + TAU) % TAU;
+    if ((snapOn() || forceSnap) && !spinning) { a = nearestSpecial(a) * PI / 180; snapped = true; } else snapped = false;
+    theta = a; draw();
+  }
+  function draw() {
+    const a = theta, c = Math.cos(a), s = Math.sin(a), deg = a * 180 / PI;
+    const degR = Math.round(deg * 10) / 10, isSp = snapped || SPECIAL.includes(Math.round(deg * 1e6) / 1e6);
+    const dInt = Math.round(deg) % 360;
+    const ex = isSp ? exactTrig(dInt) : null;
+    const X = c, Y = -s;
+    tri.setAttribute("points", `0,0 ${X},0 ${X},${Y}`);
+    cosLeg.setAttribute("x2", X); sinLeg.setAttribute("x1", X); sinLeg.setAttribute("x2", X); sinLeg.setAttribute("y2", Y);
+    hyp.setAttribute("x2", X); hyp.setAttribute("y2", Y);
+    [hit, glow, pt].forEach(e => { e.setAttribute("cx", X); e.setAttribute("cy", Y); });
+    angArc.setAttribute("d", arcPath(.2, 0, a < 1e-6 ? 0 : a));
+    // reference angle arc: between terminal side and nearest x-axis
+    const ref = refAngleDeg(deg) * PI / 180;
+    let base = (deg <= 90) ? 0 : (deg <= 270 ? PI : TAU);
+    refArc.setAttribute("d", (deg > 90 && ref > 1e-6 && Math.abs(deg - 180) > 1e-6) ? arcPath(.34, base, a) : "");
+    const showMark = Math.abs(c) > .08 && Math.abs(s) > .08;
+    const ox = -Math.sign(c) * .07;
+    rightMark.setAttribute("d", showMark ? `M ${X + ox} 0 L ${X + ox} ${s > 0 ? -.07 : .07} L ${X} ${s > 0 ? -.07 : .07}` : "");
+    const cs = ex ? ex.plain.slice(1, -1).split(", ") : [fmtNum(c, 3), fmtNum(s, 3)];
+    cosLbl.setAttribute("x", X / 2); cosLbl.setAttribute("y", s >= 0 ? .11 : -.05); cosLbl.textContent = Math.abs(c) > .15 ? "cos θ" : "";
+    sinLbl.setAttribute("x", X + (c >= 0 ? .04 : -.04)); sinLbl.setAttribute("y", Y / 2 + .03); sinLbl.setAttribute("text-anchor", c >= 0 ? "start" : "end"); sinLbl.textContent = Math.abs(s) > .15 ? "sin θ" : "";
+    const mid = a / 2; thLbl.setAttribute("x", .29 * Math.cos(mid)); thLbl.setAttribute("y", -.29 * Math.sin(mid) + .035);
+    thLbl.style.display = a > .25 ? "" : "none";
+    ptLbl.setAttribute("x", X * 1.12 + (c >= 0 ? 0 : -0)); ptLbl.setAttribute("y", Y * 1.12 + (s >= 0 ? -.04 : .1));
+    ptLbl.setAttribute("text-anchor", Math.abs(c) < .2 ? "middle" : c > 0 ? "start" : "end");
+    ptLbl.textContent = $("#ucLabels").checked ? "" : `(${cs[0]}, ${cs[1]})`;
+    // tangent line
+    const showTan = $("#ucTan").checked && Math.abs(c) > 1e-9;
+    tanG.style.display = showTan ? "" : "none";
+    if (showTan) {
+      const t = clamp(s / c, -40, 40);
+      tanSeg.setAttribute("y2", -t); tanExt.setAttribute("x1", X); tanExt.setAttribute("y1", Y); tanExt.setAttribute("x2", 1); tanExt.setAttribute("y2", -t);
+      tanLbl.setAttribute("y", clamp(-t / 2, -1.5, 1.5) + .03); tanLbl.textContent = "tan θ";
+    }
+    // quadrant / ASTC
+    const q = isAxis(deg) ? 0 : deg < 90 ? 1 : deg < 180 ? 2 : deg < 270 ? 3 : 4;
+    quads.forEach((r, i) => r.style.opacity = (i + 1 === q) ? .07 : 0);
+    astc.forEach((g, i) => g.style.opacity = (i + 1 === q) ? 1 : .3);
+    [1, 2, 3, 4].forEach(i => { const row = $("#astc" + i); row.style.background = i === q ? "color-mix(in srgb, var(--accent) 12%, transparent)" : ""; });
+    // readouts
+    $("#ucAngle").innerHTML = `θ = ${ex ? dInt : fmtNum(degR, 1)}°`;
+    $("#ucRad").innerHTML = ex ? `<span class="m">${tex(degToRadTex(dInt))}</span> ≈ ${fmtNum(a, 4)}` : "≈ " + fmtNum(a, 4);
+    $("#ucPt").innerHTML = ex ? `<span class="m">(${tex(ex.cos)}, ${tex(ex.sin)})</span>` : `(${fmtNum(c, 4)}, ${fmtNum(s, 4)})`;
+    $("#ucCos").innerHTML = ex ? `<span class="m">${tex(ex.cos)}</span>` + approx(c) : fmtNum(c, 4);
+    $("#ucSin").innerHTML = ex ? `<span class="m">${tex(ex.sin)}</span>` + approx(s) : fmtNum(s, 4);
+    const tanUndef = Math.abs(c) < 1e-9;
+    $("#ucTanV").innerHTML = tanUndef ? "undefined <span class='small muted'>(cos θ = 0, can't divide by 0)</span>" : ex ? `<span class="m">${tex(ex.tan)}</span>` + approx(s / c) : fmtNum(s / c, 4);
+    $("#ucQuad").innerHTML = q === 0 ? `on an axis <span class="small muted">(quadrantal angle)</span>` : `${["", "I", "II", "III", "IV"][q]} <span class="small muted">${["", "all positive", "sin positive", "tan positive", "cos positive"][q]}</span>`;
+    const refD = refAngleDeg(ex ? dInt : deg);
+    $("#ucRef").innerHTML = (ex ? `${refD}° = <span class="m">${tex(degToRadTex(refD))}</span>` : fmtNum(refD, 1) + "°") +
+      ` <span class="small muted">${q === 1 ? "(θ itself)" : q === 2 ? "(180° − θ)" : q === 3 ? "(θ − 180°)" : q === 4 ? "(360° − θ)" : ""}</span>`;
+    svg.setAttribute("aria-valuetext", `theta ${fmtNum(degR, 1)} degrees`);
+  }
+  const approx = v => Math.abs(v - Math.round(v)) < 1e-9 ? "" : ` <span class="small muted">≈ ${fmtNum(v, 4)}</span>`;
+  const isAxis = d => [0, 90, 180, 270, 360].some(k => Math.abs(d - k) < 1e-6);
+  function fromEvent(e) { const p = svgPoint(svg, e); if (Math.hypot(p.x, p.y) < .05) return; set(Math.atan2(-p.y, p.x)); }
+  svg.addEventListener("pointerdown", e => { const p = svgPoint(svg, e); if (Math.hypot(p.x, p.y) > 1.5) return; stopSpin(); dragging = true; svg.setPointerCapture(e.pointerId); fromEvent(e); e.preventDefault(); });
+  svg.addEventListener("pointermove", e => { if (dragging) fromEvent(e); });
+  ["pointerup", "pointercancel"].forEach(t => svg.addEventListener(t, () => dragging = false));
+  svg.addEventListener("keydown", e => {
+    const step = snapOn() ? null : PI / 180;
+    let dir = (e.key === "ArrowRight" || e.key === "ArrowUp") ? 1 : (e.key === "ArrowLeft" || e.key === "ArrowDown") ? -1 : 0;
+    if (!dir) return; e.preventDefault(); stopSpin();
+    if (step) set(theta + dir * step);
+    else { const d = Math.round(theta * 180 / PI) % 360, i = SPECIAL.indexOf(d); const j = (i + dir + 16) % 16; set(SPECIAL[j] * PI / 180); }
+  });
+  ["ucSnap", "ucTan", "ucLabels"].forEach(id => $("#" + id).addEventListener("change", () => { labelsG.style.display = $("#ucLabels").checked ? "" : "none"; ticks.style.opacity = $("#ucLabels").checked ? 1 : .8; if (id === "ucSnap" && snapOn()) set(theta); else draw(); }));
+  // jump buttons
+  SPECIAL.concat([]).forEach(d => {
+    const b = document.createElement("button"); b.className = "btn small m"; b.innerHTML = tex(degToRadTex(d)); b.dataset.done = 1;
+    b.title = d + "°"; b.onclick = () => { stopSpin(); set(d * PI / 180, true); }; $("#ucButtons").appendChild(b);
+  });
+  // spin
+  let raf = 0, lastT = 0;
+  function spinFrame(ts) { if (!spinning) return; const dt = lastT ? (ts - lastT) / 1000 : 0; lastT = ts; theta = (theta + dt * .7) % TAU; snapped = false; draw(); raf = requestAnimationFrame(spinFrame); }
+  function stopSpin() { if (!spinning) return; spinning = false; cancelAnimationFrame(raf); $("#ucSpin").textContent = "▶ Spin"; $("#ucSpin").classList.remove("on"); if (snapOn()) set(theta); }
+  $("#ucSpin").addEventListener("click", () => { if (spinning) return stopSpin(); spinning = true; lastT = 0; $("#ucSpin").textContent = "⏸ Stop"; $("#ucSpin").classList.add("on"); raf = requestAnimationFrame(spinFrame); });
+  draw();
+  return { set: (d) => set(d * PI / 180, true) };
+})();
+
+/* ---------- 4. SOH CAH TOA triangle ---------- */
+(function triangle() {
+  const svg = $("#triSvg"), so = $("#oppS"), sa = $("#adjS");
+  so.step = sa.step = "0.01";
+  const K = 38, Ax = 40, Ay = 268;
+  S("rect", { x: 0, y: 0, width: 400, height: 300, fill: "transparent" }, svg);
+  const fill = S("polygon", { style: "fill:var(--accent);opacity:.08" }, svg);
+  const adj = S("line", { style: "stroke:var(--cos);stroke-width:5;stroke-linecap:round" }, svg);
+  const opp = S("line", { style: "stroke:var(--sin);stroke-width:5;stroke-linecap:round" }, svg);
+  const hyp = S("line", { style: "stroke:var(--accent);stroke-width:5;stroke-linecap:round" }, svg);
+  const rm = S("path", { fill: "none", style: "stroke:var(--muted);stroke-width:1.5" }, svg);
+  const arc = S("path", { fill: "none", style: "stroke:var(--text);stroke-width:2" }, svg);
+  const th = S("text", { "font-size": 18, style: "fill:var(--text);font-style:italic;font-family:Georgia,serif", text: "θ" }, svg);
+  const lA = S("text", { "font-size": 15, "text-anchor": "middle", style: "fill:var(--cos);font-weight:700" }, svg);
+  const lO = S("text", { "font-size": 15, style: "fill:var(--sin);font-weight:700" }, svg);
+  const lH = S("text", { "font-size": 15, "text-anchor": "end", style: "fill:var(--accent);font-weight:700" }, svg);
+  const hB = S("circle", { r: 17, class: "handle", style: "fill:var(--sin);stroke:#fff;stroke-width:3" }, svg);
+  const hC = S("circle", { r: 17, class: "handle", style: "fill:var(--cos);stroke:#fff;stroke-width:3" }, svg);
+  const HL = { sin: ["opp", "hyp"], cos: ["adj", "hyp"], tan: ["opp", "adj"], csc: ["hyp", "opp"], sec: ["hyp", "adj"], cot: ["adj", "opp"] };
+  const sides = { opp, adj, hyp };
+  function draw() {
+    const o = +so.value, a = +sa.value, h = Math.hypot(o, a), Cx = Ax + a * K, By = Ay - o * K;
+    fill.setAttribute("points", `${Ax},${Ay} ${Cx},${Ay} ${Cx},${By}`);
+    adj.setAttribute("x1", Ax); adj.setAttribute("y1", Ay); adj.setAttribute("x2", Cx); adj.setAttribute("y2", Ay);
+    opp.setAttribute("x1", Cx); opp.setAttribute("y1", Ay); opp.setAttribute("x2", Cx); opp.setAttribute("y2", By);
+    hyp.setAttribute("x1", Ax); hyp.setAttribute("y1", Ay); hyp.setAttribute("x2", Cx); hyp.setAttribute("y2", By);
+    rm.setAttribute("d", `M ${Cx - 14} ${Ay} L ${Cx - 14} ${Ay - 14} L ${Cx} ${Ay - 14}`);
+    const ang = Math.atan2(o, a), r = 34;
+    arc.setAttribute("d", `M ${Ax + r} ${Ay} A ${r} ${r} 0 0 0 ${Ax + r * Math.cos(ang)} ${Ay - r * Math.sin(ang)}`);
+    th.setAttribute("x", Ax + 42 * Math.cos(ang / 2)); th.setAttribute("y", Ay - 42 * Math.sin(ang / 2) + 6);
+    lA.setAttribute("x", (Ax + Cx) / 2); lA.setAttribute("y", Ay + 22); lA.textContent = `adjacent = ${fmtNum(a, 2)}`;
+    lO.setAttribute("x", Cx + 10); lO.setAttribute("y", (Ay + By) / 2 + 5); lO.setAttribute("text-anchor", Cx > 300 ? "end" : "start");
+    if (Cx > 300) lO.setAttribute("x", Cx - 12);
+    lO.textContent = `opp = ${fmtNum(o, 2)}`;
+    const mx = (Ax + Cx) / 2, my = (Ay + By) / 2;
+    lH.setAttribute("x", mx - 10); lH.setAttribute("y", my - 10); lH.textContent = `hyp = ${fmtNum(h, 2)}`;
+    hB.setAttribute("cx", Cx); hB.setAttribute("cy", By); hC.setAttribute("cx", Cx); hC.setAttribute("cy", Ay);
+    $("#oppV").textContent = fmtNum(o, 2); $("#adjV").textContent = fmtNum(a, 2);
+    $("#triAng").innerHTML = `θ ≈ ${fmtNum(ang * 180 / PI, 2)}° <span class="small muted">≈ ${fmtNum(ang, 4)} rad</span>`;
+    const H = fmtNum(h, 2), O = fmtNum(o, 2), A = fmtNum(a, 2);
+    const rows = [["sin", "opp", "hyp", O, H, o / h, "sin"], ["cos", "adj", "hyp", A, H, a / h, "cos"], ["tan", "opp", "adj", O, A, o / a, "tan"],
+      ["csc", "hyp", "opp", H, O, h / o, "sin"], ["sec", "hyp", "adj", H, A, h / a, "cos"], ["cot", "adj", "opp", A, O, a / o, "tan"]];
+    $("#ratios").innerHTML = rows.map(([f, n, d, nv, dv, v, col]) =>
+      `<div class="ratio" data-f="${f}"><b class="c-${col}">${f} θ</b><span class="m">${tex(`\\f{${n}}{${d}} = \\f{${nv}}{${dv}}`)}</span><b>≈ ${fmtNum(v, 4)}</b></div>`).join("") +
+      `<p class="small muted" style="margin-top:8px">Check: <span class="m">sin<sup>2</sup>θ + cos<sup>2</sup>θ = ${fmtNum((o / h) ** 2, 4)} + ${fmtNum((a / h) ** 2, 4)} = ${fmtNum((o / h) ** 2 + (a / h) ** 2, 4)}</span> (always!)</p>`;
+    $$("#ratios .ratio").forEach(el => {
+      const on = () => { Object.values(sides).forEach(s => s.style.opacity = .25); HL[el.dataset.f].forEach(k => sides[k].style.opacity = 1); };
+      const off = () => Object.values(sides).forEach(s => s.style.opacity = 1);
+      el.addEventListener("pointerenter", on); el.addEventListener("pointerleave", off);
+    });
+  }
+  let drag = null;
+  [[hB, "B"], [hC, "C"]].forEach(([h, k]) => h.addEventListener("pointerdown", e => { drag = k; svg.setPointerCapture(e.pointerId); e.preventDefault(); }));
+  svg.addEventListener("pointermove", e => {
+    if (!drag) return; const p = svgPoint(svg, e);
+    if (drag === "B") so.value = clamp((Ay - p.y) / K, .5, 6).toFixed(2); else sa.value = clamp((p.x - Ax) / K, .5, 8).toFixed(2);
+    draw();
+  });
+  ["pointerup", "pointercancel"].forEach(t => svg.addEventListener(t, () => drag = null));
+  so.addEventListener("input", draw); sa.addEventListener("input", draw);
+  [["3-4-5", 3, 4], ["6-8-10 (same shape!)", 6, 8], ["45° (1-1-√2)", 3, 3], ["30° (1-√3-2)", 2, 2 * Math.sqrt(3)], ["60° (√3-1-2)", 2 * Math.sqrt(3), 2]].forEach(([t, o, a]) => {
+    const b = document.createElement("button"); b.className = "btn small"; b.textContent = t; b.onclick = () => { so.value = o; sa.value = a; draw(); }; $("#triPresets").appendChild(b);
+  });
+  draw();
+})();
+
+/* ---------- 5a. circle → wave tracer ---------- */
+(function tracer() {
+  const cv = $("#traceCanvas"), scrub = $("#trScrub"); let t = 0, playing = true, last = 0, visible = false, looping = false;
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !looping) { looping = true; last = 0; requestAnimationFrame(frame); } }).observe(cv);
+  function draw() {
+    const narrow = cv.clientWidth < 620;
+    const { ctx: c, w, h } = prepCanvas(cv, narrow ? 1.75 : 2.5);
+    const R = Math.min(h * .36, w * (narrow ? .19 : .14)), cx = R + 16, cy = h / 2;
+    const box = { l: cx + R + 26, r: w - 14, t: cy - R * 1.25, b: cy + R * 1.25 };
+    const P = new Plot(c, box, [0, TAU], [-1.25, 1.25]);
+    P.grid({ piStep: 2, yStep: 1, labels: true });
+    c.strokeStyle = cssVar("--axis"); c.lineWidth = 1;
+    c.beginPath(); c.moveTo(cx - R - 8, cy); c.lineTo(cx + R + 8, cy); c.moveTo(cx, cy - R - 8); c.lineTo(cx, cy + R + 8); c.stroke();
+    c.strokeStyle = cssVar("--text"); c.globalAlpha = .7; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, R, 0, TAU); c.stroke(); c.globalAlpha = 1;
+    const showS = $("#trSin").checked, showC = $("#trCos").checked;
+    const px = cx + R * Math.cos(t), py = cy - R * Math.sin(t);
+    // angle arc
+    c.strokeStyle = cssVar("--accent"); c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, R * .22, 0, -t, true); c.stroke();
+    if (showC) { P.fn(Math.cos, { color: cssVar("--cos"), width: 1.2, dash: [3, 4] }); P.fn(Math.cos, { color: cssVar("--cos"), width: 3.5, from: 0, to: t, n: 400 }); }
+    if (showS) { P.fn(Math.sin, { color: cssVar("--sin"), width: 1.2, dash: [3, 4] }); P.fn(Math.sin, { color: cssVar("--sin"), width: 3.5, from: 0, to: t, n: 400 }); }
+    const gx = P.X(t);
+    c.setLineDash([5, 5]); c.lineWidth = 1.4;
+    if (showS) { c.strokeStyle = cssVar("--sin"); c.beginPath(); c.moveTo(px, py); c.lineTo(gx, py); c.stroke(); }
+    if (showC) { c.strokeStyle = cssVar("--cos"); c.beginPath(); c.moveTo(gx, P.Y(Math.cos(t))); c.lineTo(gx, cy); c.stroke(); }
+    c.setLineDash([]);
+    c.lineWidth = 4; c.lineCap = "round";
+    c.strokeStyle = cssVar("--cos"); c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, cy); c.stroke();
+    c.strokeStyle = cssVar("--sin"); c.beginPath(); c.moveTo(px, cy); c.lineTo(px, py); c.stroke();
+    c.strokeStyle = cssVar("--text"); c.lineWidth = 2; c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, py); c.stroke();
+    c.fillStyle = cssVar("--accent2"); c.beginPath(); c.arc(px, py, 6, 0, TAU); c.fill();
+    if (showS) { c.fillStyle = cssVar("--sin"); c.beginPath(); c.arc(gx, P.Y(Math.sin(t)), 6, 0, TAU); c.fill(); }
+    if (showC) { c.fillStyle = cssVar("--cos"); c.beginPath(); c.arc(gx, P.Y(Math.cos(t)), 6, 0, TAU); c.fill(); }
+    c.font = "600 13px system-ui"; c.fillStyle = cssVar("--muted"); c.textAlign = "center"; c.fillText("θ", P.X(TAU) - 8, cy - 8);
+    $("#trT").innerHTML = `θ ≈ ${fmtNum(t, 2)}, <span class="c-sin">sin ${fmtNum(Math.sin(t), 2)}</span>, <span class="c-cos">cos ${fmtNum(Math.cos(t), 2)}</span>`;
+  }
+  function frame(ts) {
+    if (!visible) { looping = false; return; }
+    const dt = last ? Math.min(.05, (ts - last) / 1000) : 0; last = ts;
+    if (playing) { t += dt * .9; if (t > TAU) t = 0; scrub.value = t; }
+    draw(); requestAnimationFrame(frame);
+  }
+  $("#trPlay").onclick = () => { playing = !playing; $("#trPlay").textContent = playing ? "⏸ Pause" : "▶ Play"; };
+  scrub.addEventListener("input", () => { t = +scrub.value; playing = false; $("#trPlay").textContent = "▶ Play"; draw(); });
+  ["trSin", "trCos"].forEach(id => $("#" + id).addEventListener("change", draw));
+  onRedraw(draw); draw();
+})();
+
+/* ---------- 5b. transformation explorer ---------- */
+(function transform() {
+  const cv = $("#trfCanvas"), sA = $("#sA"), sB = $("#sB"), sC = $("#sC"), sD = $("#sD"); let fn = "sin", target = null;
+  const numTex = v => { const s = fmtNum(v, 2); return s; };
+  function params() { return { A: +sA.value, B: +sB.value, Cn: +sC.value, D: +sD.value }; }
+  function eqTex({ A, B, Cn, D }, f = fn) {
+    if (A === 0) return `y = ${D === 0 ? "0" : numTex(D)}`;
+    const a = A === 1 ? "" : A === -1 ? "-" : numTex(A) + " ";
+    const bs = B === 1 ? "" : numTex(B);
+    let inner;
+    if (Cn === 0) inner = bs + "x";
+    else { const cs = piFracTex(Math.abs(Cn), 12); const xs = `x ${Cn > 0 ? "-" : "+"} ${cs}`; inner = B === 1 ? xs : `${bs}(${xs})`; }
+    const d = D === 0 ? "" : D > 0 ? ` + ${numTex(D)}` : ` - ${numTex(-D)}`;
+    return `y = ${a}${f}(${inner})${d}`;
+  }
+  const mk = ({ A, B, Cn, D }, f = fn) => { const C = Cn * PI / 12, F = Math[f]; return x => A * F(B * (x - C)) + D; };
+  function draw() {
+    const p = params(), { A, B, Cn, D } = p, C = Cn * PI / 12;
+    $("#vA").textContent = fmtNum(A, 2); $("#vB").textContent = fmtNum(B, 2);
+    $("#vC").innerHTML = `<span class="m">${tex(piFracTex(Cn, 12))}</span>`; $("#vD").textContent = fmtNum(D, 2);
+    $("#trfEq").innerHTML = `<span class="m">${tex(eqTex(p))}</span>`;
+    const k = Math.round(B * 4), per = piFracTex(8, k);
+    $("#oAmp").textContent = fmtNum(Math.abs(A), 2) + (A < 0 ? " (A < 0: flipped upside down)" : "");
+    $("#oPer").innerHTML = `<span class="m">${tex(per)}</span> ≈ ${fmtNum(TAU / B, 3)}`;
+    $("#oPh").innerHTML = Cn === 0 ? "none" : `<span class="m">${tex(piFracTex(Math.abs(Cn), 12))}</span> to the ${Cn > 0 ? "right" : "left"}`;
+    $("#oMid").textContent = "y = " + fmtNum(D, 2);
+    $("#oRange").innerHTML = `[${fmtNum(D - Math.abs(A), 2)}, ${fmtNum(D + Math.abs(A), 2)}]`;
+    const narrow = cv.clientWidth < 520;
+    const { ctx: c, w, h } = prepCanvas(cv, narrow ? 1.1 : 1.45);
+    let ym = Math.max(2, Math.abs(D) + Math.abs(A) + .6);
+    if (target) ym = Math.max(ym, Math.abs(target.D) + Math.abs(target.A) + .6);
+    ym = Math.ceil(ym);
+    const P = new Plot(c, { l: 26, r: w - 10, t: 12, b: h - 22 }, [-TAU, TAU], [-ym, ym]);
+    P.grid({ piStep: 2, yStep: ym > 4 ? 2 : 1 });
+    P.fn(Math[fn], { color: cssVar("--axis"), width: 1.6, dash: [6, 5] });
+    if (target) { c.globalAlpha = .35; P.fn(mk(target, target.f), { color: cssVar("--bad"), width: 8 }); c.globalAlpha = 1; }
+    // midline & max/min
+    c.save(); c.setLineDash([8, 6]); c.strokeStyle = cssVar("--ok"); c.lineWidth = 1.6; c.beginPath(); c.moveTo(P.box.l, P.Y(D)); c.lineTo(P.box.r, P.Y(D)); c.stroke(); c.restore();
+    P.fn(mk(p), { color: cssVar("--accent"), width: 3.5 });
+    // period bracket
+    const x0 = C, x1 = C + TAU / B, yb = D + Math.abs(A) + .3;
+    c.save(); c.strokeStyle = cssVar("--tan"); c.fillStyle = cssVar("--tan"); c.lineWidth = 2.5;
+    c.beginPath(); c.moveTo(P.X(x0), P.Y(yb) + 6); c.lineTo(P.X(x0), P.Y(yb)); c.lineTo(P.X(x1), P.Y(yb)); c.lineTo(P.X(x1), P.Y(yb) + 6); c.stroke();
+    c.font = "700 12px system-ui"; c.textAlign = "center";
+    const lx = clamp((P.X(x0) + P.X(Math.min(x1, TAU))) / 2, 40, w - 40);
+    c.fillText("one period", lx, P.Y(yb) - 5);
+    const ky = fn === "sin" ? D : D + A;
+    c.beginPath(); c.arc(P.X(x0), P.Y(ky), 5.5, 0, TAU); c.fill(); c.restore();
+    if (target && matches()) { $("#trfChallenge").innerHTML = "🎉 <b>Matched!</b> You nailed the transformation."; if (!target.done) { target.done = true; Confetti.burst(); } }
+  }
+  function matches() { const f = mk(params()), g = mk(target, target.f); for (let i = 0; i < 60; i++) { const x = -6 + i * .21; if (Math.abs(f(x) - g(x)) > 1e-6) return false; } return true; }
+  $$("#trfFn button").forEach(b => b.onclick = () => { $$("#trfFn button").forEach(x => x.classList.toggle("on", x === b)); fn = b.dataset.f; draw(); });
+  [sA, sB, sC, sD].forEach(s => s.addEventListener("input", draw));
+  $("#trfReset").onclick = () => { sA.value = 1; sB.value = 1; sC.value = 0; sD.value = 0; target = null; $("#trfChallenge").style.display = "none"; draw(); };
+  $("#trfRandom").onclick = () => {
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    target = { A: pick([-2, -1.5, -1, 0.5, 1.5, 2, 3]), B: pick([0.5, 1, 2, 3]), Cn: pick([-6, -4, -3, -2, 0, 2, 3, 4, 6]), D: pick([-2, -1, 0, 1, 2]), f: fn };
+    $("#trfChallenge").style.display = "block";
+    $("#trfChallenge").innerHTML = `<b>Challenge:</b> move the sliders so your graph covers the thick red one: <span class="m">${tex(eqTex(target, target.f))}</span>`;
+    draw();
+  };
+  sA.value = 2; onRedraw(draw); draw();
+})();
+
+/* ---------- 5c. tan & reciprocal graphs ---------- */
+(function asymptotes() {
+  const cv = $("#asyCanvas"); let fn = "tan";
+  const INFO = {
+    tan: { f: Math.tan, asy: k => PI / 2 + k * PI, parent: null, html: "<b>tan x</b>: period <span class='m'>π</span>; zeros at <span class='m'>x = kπ</span>; asymptotes at <span class='m'>x = \\f{π}{2} + kπ</span> (where cos x = 0); range: all real numbers." },
+    cot: { f: x => Math.cos(x) / Math.sin(x), asy: k => k * PI, parent: null, html: "<b>cot x = \\f{cos x}{sin x}</b>: period <span class='m'>π</span>; zeros at <span class='m'>x = \\f{π}{2} + kπ</span>; asymptotes at <span class='m'>x = kπ</span> (where sin x = 0); range: all real numbers." },
+    sec: { f: x => 1 / Math.cos(x), asy: k => PI / 2 + k * PI, parent: "cos", html: "<b>sec x = \\f{1}{cos x}</b>: period <span class='m'>2π</span>; asymptotes where cos x = 0; range: <span class='m'>y ≤ -1</span> or <span class='m'>y ≥ 1</span>. Each U shape touches the cos curve (dashed) at its peaks and valleys." },
+    csc: { f: x => 1 / Math.sin(x), asy: k => k * PI, parent: "sin", html: "<b>csc x = \\f{1}{sin x}</b>: period <span class='m'>2π</span>; asymptotes where sin x = 0; range: <span class='m'>y ≤ -1</span> or <span class='m'>y ≥ 1</span>. Each U shape touches the sin curve (dashed) at its peaks and valleys." }
+  };
+  function draw() {
+    const I = INFO[fn], narrow = cv.clientWidth < 520;
+    const { ctx: c, w, h } = prepCanvas(cv, narrow ? 1.15 : 2.3);
+    const P = new Plot(c, { l: 26, r: w - 10, t: 10, b: h - 22 }, [-TAU, TAU], [-4, 4]);
+    P.grid({ piStep: 2, yStep: 1 });
+    const col = { tan: "--tan", cot: "--tan", sec: "--cos", csc: "--sin" }[fn];
+    if (I.parent) P.fn(Math[I.parent], { color: cssVar(I.parent === "cos" ? "--cos" : "--sin"), width: 1.4, dash: [5, 5] });
+    c.save(); c.setLineDash([6, 5]); c.strokeStyle = cssVar("--bad"); c.lineWidth = 1.5;
+    for (let k = -6; k <= 6; k++) { const a = I.asy(k); if (a < -TAU || a > TAU) continue; c.beginPath(); c.moveTo(P.X(a), P.box.t); c.lineTo(P.X(a), P.box.b); c.stroke(); }
+    c.restore();
+    for (let k = -6; k <= 6; k++) {    // draw branch between consecutive asymptotes
+      const a0 = I.asy(k), a1 = I.asy(k + 1);
+      if (a1 < -TAU || a0 > TAU) continue;
+      P.fn(I.f, { color: cssVar(col), width: 3.2, from: Math.max(-TAU, a0 + 1e-3), to: Math.min(TAU, a1 - 1e-3), n: 300, breakJump: false });
+    }
+    $("#asyInfo").innerHTML = tex(I.html);
+  }
+  $$("#asyFn button").forEach(b => b.onclick = () => { $$("#asyFn button").forEach(x => x.classList.toggle("on", x === b)); fn = b.dataset.f; draw(); });
+  onRedraw(draw); draw();
+})();
+let resizeT; addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(redrawAll, 120); });
+
+/* =========================================================
+   Identities, formulas, worked examples, practice, drill, cheat sheet
+   ========================================================= */
+/* ---------- Pythagorean visual ---------- */
+(function pythag() {
+  const svg = $("#pySvg"), sl = $("#pyS");
+  S("line", { x1: -1.3, y1: 0, x2: 1.3, y2: 0, style: "stroke:var(--axis);stroke-width:.01" }, svg);
+  S("line", { x1: 0, y1: -1.3, x2: 0, y2: 1.3, style: "stroke:var(--axis);stroke-width:.01" }, svg);
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--text);stroke-width:.015;opacity:.6" }, svg);
+  const tri = S("polygon", { style: "fill:var(--accent);opacity:.12" }, svg);
+  const cl = S("line", { x1: 0, y1: 0, y2: 0, style: "stroke:var(--cos);stroke-width:.045;stroke-linecap:round" }, svg);
+  const sl2 = S("line", { y1: 0, style: "stroke:var(--sin);stroke-width:.045;stroke-linecap:round" }, svg);
+  const hy = S("line", { x1: 0, y1: 0, style: "stroke:var(--text);stroke-width:.03" }, svg);
+  const one = S("text", { "font-size": .13, "text-anchor": "middle", style: "fill:var(--text);font-weight:800", text: "1" }, svg);
+  const ct = S("text", { "font-size": .1, "text-anchor": "middle", style: "fill:var(--cos);font-weight:700" }, svg);
+  const st = S("text", { "font-size": .1, style: "fill:var(--sin);font-weight:700" }, svg);
+  const dot = S("circle", { r: .05, style: "fill:var(--accent2)" }, svg);
+  function upd() {
+    const a = +sl.value * PI / 180, c = Math.cos(a), s = Math.sin(a);
+    tri.setAttribute("points", `0,0 ${c},0 ${c},${-s}`);
+    cl.setAttribute("x2", c); sl2.setAttribute("x1", c); sl2.setAttribute("x2", c); sl2.setAttribute("y2", -s);
+    hy.setAttribute("x2", c); hy.setAttribute("y2", -s); dot.setAttribute("cx", c); dot.setAttribute("cy", -s);
+    const sg = (c * s >= 0 ? -1 : 1) * .1;
+    one.setAttribute("x", c / 2 + sg * s); one.setAttribute("y", -s / 2 + sg * c + .045);
+    ct.setAttribute("x", c / 2); ct.setAttribute("y", s >= 0 ? .13 : -.06); ct.textContent = Math.abs(c) > .2 ? "cos θ" : "";
+    st.setAttribute("x", c + (c >= 0 ? .04 : -.04)); st.setAttribute("text-anchor", c >= 0 ? "start" : "end"); st.setAttribute("y", -s / 2 + .03); st.textContent = Math.abs(s) > .2 ? "sin θ" : "";
+    const s2 = s * s, c2 = c * c;
+    $("#pyBarS").style.width = s2 * 100 + "%"; $("#pyBarC").style.width = c2 * 100 + "%";
+    $("#pyBarS").textContent = s2 > .12 ? "sin²θ" : ""; $("#pyBarC").textContent = c2 > .12 ? "cos²θ" : "";
+    $("#pyNums").innerHTML = `θ = ${sl.value}°: &nbsp; <span class="c-sin">${fmtNum(s2, 4)}</span> + <span class="c-cos">${fmtNum(c2, 4)}</span> = <b>${fmtNum(s2 + c2, 4)}</b>`;
+  }
+  sl.addEventListener("input", upd); upd();
+})();
+
+/* ---------- identity checker ---------- */
+const IDENTS = [
+  ["sin^2 x + cos^2 x", "1", "Pythagorean"],
+  ["1 + tan^2 x", "sec^2 x", "Pythagorean"],
+  ["1 + cot^2 x", "csc^2 x", "Pythagorean"],
+  ["tan x", "sin x / cos x", "Quotient"],
+  ["sin(-x)", "-sin x", "Odd function"],
+  ["cos(pi/2 - x)", "sin x", "Cofunction"],
+  ["sin 2x", "2 sin x cos x", "Double angle"],
+  ["cos 2x", "1 - 2sin^2 x", "Double angle"],
+  ["sin(x + pi/3)", "sin x cos(pi/3) + cos x sin(pi/3)", "Sum formula"],
+  ["(1 - cos^2 x)/sin x", "sin x", "Worked example"],
+  ["tan x + cot x", "sec x csc x", "Worked example"],
+  ["(sin x + cos x)^2", "1 + sin 2x", "Worked example"],
+  ["sec x - cos x", "sin x tan x", "Worked example"],
+  ["cos x/(1 - sin x)", "sec x + tan x", "Worked example"],
+  ["sin 2x", "2 sin x", "❌ Trap"],
+  ["(sin x + cos x)^2", "sin^2 x + cos^2 x", "❌ Trap"],
+  ["sin(x + pi/3)", "sin x + sin(pi/3)", "❌ Trap"]
+];
+const Checker = (function checker() {
+  const sel = $("#idPreset"), L = $("#idL"), R = $("#idR"), cv = $("#idCanvas");
+  IDENTS.forEach(([a, b, tag], i) => { const o = document.createElement("option"); o.value = i; o.textContent = `${tag}: ${a} = ${b}`; sel.appendChild(o); });
+  const o = document.createElement("option"); o.value = "custom"; o.textContent = "✏️ My own (type below)"; sel.appendChild(o);
+  let fL = null, fR = null;
+  function parseSide(inp, out) {
+    try { const m = makeFn(inp.value); out.innerHTML = `read as: <span class="m">${tex(m.tex)}</span>`; inp.style.borderColor = ""; return m.f; }
+    catch (e) { out.innerHTML = `<span class="c-bad">⚠ ${escapeHTML(e.message)}</span>`; inp.style.borderColor = "var(--bad)"; return null; }
+  }
+  function verdict() {
+    const v = $("#idVerdict");
+    if (!fL || !fR) { v.className = "tip warn"; v.innerHTML = "Fix the expression above to see the graphs."; return; }
+    let valid = 0, maxd = 0, worst = null;
+    for (let i = 0; i < 2000; i++) {
+      const x = -TAU + (i + 0.37) * (2 * TAU / 2000), a = fL(x), b = fR(x);
+      if (!isFinite(a) || !isFinite(b) || Math.abs(a) > 1e6 || Math.abs(b) > 1e6) continue;
+      valid++; const d = Math.abs(a - b) / Math.max(1, Math.abs(a), Math.abs(b));
+      if (d > maxd) { maxd = d; worst = { x, a, b }; }
+    }
+    if (valid < 50) { v.className = "tip warn"; v.innerHTML = "Hmm, these expressions aren't defined for enough values of x to compare."; return; }
+    if (maxd < 1e-8) { v.className = "tip good"; v.innerHTML = `✅ <b>The graphs overlap everywhere.</b> Every one of ${valid} test points matches, so this looks like a true identity. (To be 100% sure, prove it with algebra.)`; }
+    else {
+      // pick a "nice" counterexample if possible
+      const nice = [PI / 6, PI / 4, PI / 3, PI / 2, 1, 2].find(x => { const a = fL(x), b = fR(x); return isFinite(a) && isFinite(b) && Math.abs(a - b) > 1e-6; });
+      const x = nice !== undefined ? nice : worst.x, a = fL(x), b = fR(x);
+      const names = new Map([[PI / 6, "π/6"], [PI / 4, "π/4"], [PI / 3, "π/3"], [PI / 2, "π/2"]]);
+      const xs = names.get(x) || fmtNum(x, 3);
+      v.className = "tip warn"; v.innerHTML = `❌ <b>Not an identity.</b> The graphs separate. For example at <span class="m">x = ${xs}</span>: left ≈ ${fmtNum(a, 4)} but right ≈ ${fmtNum(b, 4)}. One counterexample is enough to show it's false.`;
+    }
+  }
+  function draw() {
+    const narrow = cv.clientWidth < 520;
+    const { ctx: c, w, h } = prepCanvas(cv, narrow ? 1.2 : 2.4);
+    let vals = [];
+    if (fL && fR) for (let i = 0; i <= 400; i++) { const x = -TAU + i * TAU / 200; [fL(x), fR(x)].forEach(v => { if (isFinite(v) && Math.abs(v) < 1e6) vals.push(Math.abs(v)); }); }
+    vals.sort((a, b) => a - b);
+    const p90 = vals.length ? vals[Math.floor(vals.length * .9)] : 1.5;
+    const ym = clamp(Math.ceil(p90 * 1.35 * 2) / 2, 1.5, 6);
+    const P = new Plot(c, { l: 28, r: w - 10, t: 10, b: h - 22 }, [-TAU, TAU], [-ym, ym]);
+    P.grid({ piStep: 2, yStep: ym > 3 ? 1 : .5 });
+    if (fL) P.fn(fL, { color: cssVar("--accent"), width: 6, n: 1400 });
+    if (fR) P.fn(fR, { color: cssVar("--tan"), width: 2.5, dash: [9, 7], n: 1400 });
+  }
+  function update() { fL = parseSide(L, $("#idLp")); fR = parseSide(R, $("#idRp")); draw(); verdict(); }
+  function load(i) { const [a, b] = IDENTS[i]; L.value = a; R.value = b; sel.value = i; update(); }
+  sel.addEventListener("change", () => { if (sel.value !== "custom") load(+sel.value); else { L.focus(); } });
+  [L, R].forEach(inp => inp.addEventListener("input", () => { sel.value = "custom"; update(); }));
+  onRedraw(draw); load(0);
+  return { show(a, b) { const i = IDENTS.findIndex(([x, y]) => x === a && y === b); if (i >= 0) load(i); else { L.value = a; R.value = b; sel.value = "custom"; update(); } $("#checker").scrollIntoView({ behavior: "smooth" }); } };
+})();
+
+/* ---------- sum formula trap ---------- */
+(function trap() {
+  const a = $("#aS"), b = $("#bS");
+  function upd() {
+    const A = +a.value, B = +b.value, r = d => d * PI / 180;
+    $("#aV").textContent = A + "°"; $("#bV").textContent = B + "°";
+    const real = Math.sin(r(A + B)), wrong = Math.sin(r(A)) + Math.sin(r(B)), form = Math.sin(r(A)) * Math.cos(r(B)) + Math.cos(r(A)) * Math.sin(r(B));
+    $("#trapOut").innerHTML = `sin(${A}° + ${B}°) = sin ${A + B}° ≈ <b>${fmtNum(real, 4)}</b><br>` +
+      `sin ${A}° + sin ${B}° ≈ <b class="c-bad">${fmtNum(wrong, 4)}</b> ${Math.abs(real - wrong) < 1e-9 ? "(equal here by coincidence!)" : "✗ different"}<br>` +
+      `sin ${A}° cos ${B}° + cos ${A}° sin ${B}° ≈ <b class="c-ok">${fmtNum(form, 4)}</b> ✓ always matches`;
+  }
+  a.addEventListener("input", upd); b.addEventListener("input", upd); upd();
+})();
+
+/* ---------- step-by-step examples ---------- */
+const EXAMPLES = {
+  sum: { title: "Example: exact value of sin 75°", goal: "sin 75° = ?", steps: [
+    ["sin 75° = sin(45° + 30°)", "75° isn't a special angle, but it's the <b>sum</b> of two that are.", "Can you write 75° as a sum of two special angles?"],
+    ["= sin 45° cos 30° + cos 45° sin 30°", "<b>Sum formula:</b> sin(α + β) = sin α cos β + cos α sin β.", "Which formula handles sin of a sum?"],
+    ["= (\\f{\\r{2}}{2})(\\f{\\r{3}}{2}) + (\\f{\\r{2}}{2})(\\f{1}{2})", "Plug in the unit-circle values.", "Look up sin 45°, cos 30°, cos 45°, sin 30°."],
+    ["= \\f{\\r{6}}{4} + \\f{\\r{2}}{4}", "Multiply: √2 · √3 = √6.", "Multiply the fractions."],
+    ["= \\f{\\r{6} + \\r{2}}{4} ≈ 0.9659", "Combine over the common denominator. Calculator check: sin 75° ≈ 0.9659 ✓", "Same denominator, so add the numerators."]] },
+  diff: { title: "Example: exact value of cos 15°", goal: "cos 15° = ?", steps: [
+    ["cos 15° = cos(45° - 30°)", "15° is a <b>difference</b> of special angles.", "15 = ? − ?"],
+    ["= cos 45° cos 30° + sin 45° sin 30°", "<b>Difference formula</b> for cosine. The sign <b>flips</b> to +.", "cos(α − β): what happens to the sign?"],
+    ["= (\\f{\\r{2}}{2})(\\f{\\r{3}}{2}) + (\\f{\\r{2}}{2})(\\f{1}{2})", "Plug in values.", "Unit circle values for 45° and 30°."],
+    ["= \\f{\\r{6} + \\r{2}}{4} ≈ 0.9659", "Same answer as sin 75°! That's the <b>cofunction</b> identity: cos 15° = sin(90° − 15°) = sin 75°.", "Simplify, then compare with the sin 75° example."]] },
+  double: { title: "Example: double angle", goal: "sin θ = \\f{3}{5}, θ in Quadrant II. Find sin 2θ and cos 2θ.", steps: [
+    ["cos^2θ = 1 - sin^2θ = 1 - \\f{9}{25} = \\f{16}{25}", "We need cos θ first. Use the <b>Pythagorean identity</b>.", "Which identity links sin and cos?"],
+    ["cos θ = -\\f{4}{5}", "Square root gives ±4/5. In <b>Quadrant II</b>, cosine is negative.", "Positive or negative in QII?"],
+    ["sin 2θ = 2 sin θ cos θ = 2(\\f{3}{5})(-\\f{4}{5}) = -\\f{24}{25}", "<b>Double-angle</b> formula for sine.", "sin 2θ = 2 sin θ cos θ"],
+    ["cos 2θ = cos^2θ - sin^2θ = \\f{16}{25} - \\f{9}{25} = \\f{7}{25}", "<b>Double-angle</b> formula for cosine.", "Pick any of the three cos 2θ versions."],
+    ["Check: (-\\f{24}{25})^2 + (\\f{7}{25})^2 = \\f{576 + 49}{625} = 1 ✓", "sin²(2θ) + cos²(2θ) must equal 1, and it does. (2θ lands in Quadrant IV: sin negative, cos positive.)", "A great habit: verify with sin² + cos² = 1."]] },
+  half: { title: "Example: exact value of sin 22.5°", goal: "sin 22.5° = ?", steps: [
+    ["22.5° = \\f{45°}{2}", "22.5° is <b>half</b> of a special angle.", "22.5 is half of what?"],
+    ["sin 22.5° = +\\r{\\f{1 - cos 45°}{2}}", "<b>Half-angle formula</b>. Choose + because 22.5° is in Quadrant I.", "Which sign? Where is 22.5°?"],
+    ["= \\r{\\f{1 - \\f{\\r{2}}{2}}{2}}", "cos 45° = √2/2.", "Plug in cos 45°."],
+    ["= \\r{\\f{2 - \\r{2}}{4}}", "Multiply top and bottom of the big fraction by 2.", "Clear the little fraction."],
+    ["= \\f{\\r{2 - \\r{2}}}{2} ≈ 0.3827", "√4 = 2 comes out of the root. Calculator check: sin 22.5° ≈ 0.3827 ✓", "Take the square root of the denominator."]] },
+  e1: { title: "Verify the identity", goal: "\\f{1 - cos^2x}{sin x} = sin x", check: ["(1 - cos^2 x)/sin x", "sin x"], steps: [
+    ["\\f{1 - cos^2x}{sin x} = \\f{sin^2x}{sin x}", "<b>Pythagorean identity:</b> sin²x + cos²x = 1, so 1 − cos²x = sin²x.", "Does 1 − cos²x remind you of a famous identity?"],
+    ["= \\f{sin x · sin x}{sin x}", "Write sin²x as a product.", "sin²x means sin x times sin x."],
+    ["= sin x ✓", "<b>Cancel</b> the common factor sin x (allowed where sin x ≠ 0). Left side = right side. ∎", "What cancels?"]] },
+  e2: { title: "Verify the identity", goal: "tan x + cot x = sec x csc x", check: ["tan x + cot x", "sec x csc x"], steps: [
+    ["tan x + cot x = \\f{sin x}{cos x} + \\f{cos x}{sin x}", "<b>Quotient identities.</b> When stuck, rewrite everything in sin and cos.", "Rewrite tan and cot using sin and cos."],
+    ["= \\f{sin^2x}{sin x cos x} + \\f{cos^2x}{sin x cos x}", "Get a <b>common denominator</b>: sin x cos x.", "Two fractions → common denominator."],
+    ["= \\f{sin^2x + cos^2x}{sin x cos x}", "Add the numerators.", "Same denominator, so combine."],
+    ["= \\f{1}{sin x cos x}", "<b>Pythagorean identity</b> in the numerator.", "Spot something famous on top?"],
+    ["= \\f{1}{cos x} · \\f{1}{sin x}", "Split into a product of two fractions.", "Can you split 1/(ab) into two pieces?"],
+    ["= sec x csc x ✓", "<b>Reciprocal identities.</b> ∎", "1/cos x and 1/sin x have names."]] },
+  e3: { title: "Verify the identity", goal: "(sin x + cos x)^2 = 1 + sin 2x", check: ["(sin x + cos x)^2", "1 + sin 2x"], steps: [
+    ["(sin x + cos x)^2 = sin^2x + 2 sin x cos x + cos^2x", "<b>Expand</b> with (a + b)² = a² + 2ab + b². (Not a² + b²! Try that in the checker to see it fail.)", "FOIL it out. Don't forget the middle term!"],
+    ["= (sin^2x + cos^2x) + 2 sin x cos x", "Regroup the squares together.", "Put the two squared terms next to each other."],
+    ["= 1 + 2 sin x cos x", "<b>Pythagorean identity.</b>", "sin²x + cos²x = ?"],
+    ["= 1 + sin 2x ✓", "<b>Double-angle:</b> 2 sin x cos x = sin 2x. ∎", "2 sin x cos x is a double-angle formula in disguise."]] },
+  e4: { title: "Verify the identity", goal: "sec x - cos x = sin x tan x", check: ["sec x - cos x", "sin x tan x"], steps: [
+    ["sec x - cos x = \\f{1}{cos x} - cos x", "<b>Reciprocal identity.</b>", "Write sec x using cos x."],
+    ["= \\f{1}{cos x} - \\f{cos^2x}{cos x}", "Common denominator cos x.", "Turn cos x into a fraction over cos x."],
+    ["= \\f{1 - cos^2x}{cos x}", "Subtract the numerators.", "Combine the fractions."],
+    ["= \\f{sin^2x}{cos x}", "<b>Pythagorean identity.</b>", "1 − cos²x = ?"],
+    ["= sin x · \\f{sin x}{cos x}", "Split off one factor of sin x.", "Can you see a tan x hiding?"],
+    ["= sin x tan x ✓", "<b>Quotient identity.</b> ∎", "sin x / cos x = ?"]] },
+  e5: { title: "Verify the identity (conjugate trick)", goal: "\\f{cos x}{1 - sin x} = sec x + tan x", check: ["cos x/(1 - sin x)", "sec x + tan x"], steps: [
+    ["\\f{cos x}{1 - sin x} · \\f{1 + sin x}{1 + sin x}", "Multiply by the <b>conjugate</b> over itself. It equals 1, so the value doesn't change.", "1 − sin x looks like half of a difference of squares…"],
+    ["= \\f{cos x (1 + sin x)}{1 - sin^2x}", "(a − b)(a + b) = a² − b².", "Multiply out the denominator."],
+    ["= \\f{cos x (1 + sin x)}{cos^2x}", "<b>Pythagorean identity:</b> 1 − sin²x = cos²x.", "1 − sin²x = ?"],
+    ["= \\f{1 + sin x}{cos x}", "Cancel one cos x.", "What's common to top and bottom?"],
+    ["= \\f{1}{cos x} + \\f{sin x}{cos x}", "Split the fraction.", "(a + b)/c = a/c + b/c"],
+    ["= sec x + tan x ✓", "<b>Reciprocal and quotient identities.</b> ∎", "Name those two fractions."]] },
+  e6: { title: "Solve the equation", goal: "2sin^2x - sin x - 1 = 0 &nbsp; on [0, 2π)", steps: [
+    ["Let u = sin x: &nbsp; 2u^2 - u - 1 = 0", "It's a <b>quadratic in disguise</b>.", "What if sin x were just a letter?"],
+    ["(2u + 1)(u - 1) = 0", "<b>Factor.</b> Check: (2u + 1)(u − 1) = 2u² − 2u + u − 1 ✓", "Factor like any quadratic."],
+    ["sin x = -\\f{1}{2} &nbsp; or &nbsp; sin x = 1", "<b>Zero product property</b>, then put sin x back.", "Set each factor to zero."],
+    ["sin x = 1 &nbsp;⟹&nbsp; x = \\f{π}{2}", "The very top of the unit circle.", "Where is the y-coordinate 1?"],
+    ["sin x = -\\f{1}{2} &nbsp;⟹&nbsp; x = \\f{7π}{6}, \\f{11π}{6}", "Reference angle π/6. Sine is negative in <b>QIII and QIV</b>: π + π/6 and 2π − π/6.", "Reference angle? Which quadrants have negative sine?"],
+    ["x = \\f{π}{2}, \\f{7π}{6}, \\f{11π}{6} ✓", "Check x = 7π/6: 2(1/4) − (−1/2) − 1 = 0 ✓", "Collect every solution in [0, 2π)."]] },
+  e7: { title: "Solve the equation", goal: "sin 2x = cos x &nbsp; on [0, 2π)", steps: [
+    ["2 sin x cos x = cos x", "<b>Double-angle</b> so everything uses the same angle x.", "Rewrite sin 2x."],
+    ["2 sin x cos x - cos x = 0", "Move everything to one side. ⚠ Don't divide by cos x, or you'd lose the solutions where cos x = 0!", "Tempting to divide… don't. What instead?"],
+    ["cos x (2 sin x - 1) = 0", "<b>Factor</b> out cos x.", "What's common to both terms?"],
+    ["cos x = 0 &nbsp;⟹&nbsp; x = \\f{π}{2}, \\f{3π}{2}", "Where the x-coordinate on the unit circle is 0.", "Top and bottom of the circle."],
+    ["sin x = \\f{1}{2} &nbsp;⟹&nbsp; x = \\f{π}{6}, \\f{5π}{6}", "Sine is positive in <b>QI and QII</b>.", "Reference angle π/6, which quadrants?"],
+    ["x = \\f{π}{6}, \\f{π}{2}, \\f{5π}{6}, \\f{3π}{2} ✓", "Four solutions. Check x = 5π/6: sin(5π/3) = −√3/2 and cos(5π/6) = −√3/2 ✓", "List them all in order."]] }
+};
+function buildExample(host, key, num) {
+  const E = EXAMPLES[key];
+  host.classList.add("ex");
+  host.innerHTML = `<h3>${num ? `<span class="pill">Example ${num}</span>` : ""}${E.title}<span class="pill done-badge">✓ done</span></h3>
+    <div class="goal"><span class="m">${E.goal}</span></div>
+    <ol class="steps">${E.steps.map(([e, why]) => `<li><div><div class="expr m">${e}</div><div class="why">${why}</div></div></li>`).join("")}</ol>
+    <div class="tip hintbox"></div>
+    <div class="btnrow"><button class="btn primary small nx">Next step ▸</button><button class="btn small hn">💡 Hint</button><button class="btn small all">Show all</button><button class="btn small rs">↺ Reset</button>${E.check ? `<button class="btn small ck">🔬 Graph both sides</button>` : ""}</div>`;
+  renderMath(host);
+  const lis = $$(".steps li", host), hint = $(".hintbox", host); let k = 0;
+  function sync() {
+    lis.forEach((li, i) => li.classList.toggle("shown", i < k));
+    $(".nx", host).disabled = k >= lis.length; $(".hn", host).disabled = k >= lis.length;
+    $(".nx", host).textContent = k === 0 ? "Start ▸" : k >= lis.length ? "Done ✓" : "Next step ▸";
+    hint.classList.remove("on");
+    host.classList.toggle("complete", k >= lis.length);
+  }
+  $(".nx", host).onclick = () => { k++; sync(); if (k === lis.length) toast("Nice work! 🎉"); };
+  $(".hn", host).onclick = () => { hint.innerHTML = "💡 " + E.steps[k][2]; hint.classList.add("on"); };
+  $(".all", host).onclick = () => { k = lis.length; sync(); };
+  $(".rs", host).onclick = () => { k = 0; sync(); };
+  if (E.check) $(".ck", host).onclick = () => Checker.show(E.check[0], E.check[1]);
+  sync();
+}
+$$(".ex.mini").forEach(el => buildExample(el, el.dataset.ex));
+["e1", "e2", "e3", "e4", "e5", "e6", "e7"].forEach((k, i) => { const d = document.createElement("div"); $("#exList").appendChild(d); buildExample(d, k, i + 1); });
+
+/* ---------- practice problems ---------- */
+const R2 = Math.SQRT2, R3 = Math.sqrt(3);
+const PROBLEMS = [
+  { type: "in", q: "Find the exact value: <span class='m'>sin \\f{π}{6}</span>", ans: 0.5, show: "\\f{1}{2}", ex: "<span class='m'>\\f{π}{6}</span> = 30°. The unit-circle point is <span class='m'>(\\f{\\r{3}}{2}, \\f{1}{2})</span>, and sin is the <b>y</b>-coordinate." },
+  { type: "in", q: "Find the exact value: <span class='m'>cos \\f{3π}{4}</span>", ans: -R2 / 2, show: "-\\f{\\r{2}}{2}", ex: "<span class='m'>\\f{3π}{4}</span> = 135°, in Quadrant II with reference angle <span class='m'>\\f{π}{4}</span>. cos <span class='m'>\\f{π}{4} = \\f{\\r{2}}{2}</span>, and cosine is <b>negative</b> in QII." },
+  { type: "in", q: "Find the exact value: <span class='m'>tan \\f{5π}{3}</span>", ans: -R3, show: "-\\r{3}", ex: "<span class='m'>\\f{5π}{3}</span> = 300°, in Quadrant IV, reference angle <span class='m'>\\f{π}{3}</span>. tan <span class='m'>\\f{π}{3} = \\r{3}</span>, and tangent is <b>negative</b> in QIV (only cos is positive there)." },
+  { type: "in", q: "Find the exact value: <span class='m'>sec \\f{π}{3}</span>", ans: 2, show: "2", ex: "cos <span class='m'>\\f{π}{3} = \\f{1}{2}</span>, so sec <span class='m'>\\f{π}{3} = \\f{1}{1/2} = 2</span>." },
+  { type: "in", q: "Find the exact value: <span class='m'>csc \\f{7π}{6}</span>", ans: -2, show: "-2", ex: "<span class='m'>\\f{7π}{6}</span> = 210°, in Quadrant III, so sin = <span class='m'>-\\f{1}{2}</span>. csc is its reciprocal: <span class='m'>-2</span>." },
+  { type: "mc", q: "What is <span class='m'>tan \\f{π}{2}</span>?", opts: ["0", "1", "undefined", "-1"], ans: 2, ex: "At <span class='m'>\\f{π}{2}</span> the point is (0, 1). tan = <span class='m'>\\f{y}{x} = \\f{1}{0}</span>, and you can't divide by zero, so it's <b>undefined</b> (that's the asymptote on the tan graph)." },
+  { type: "mc", q: "If <span class='m'>sin θ &lt; 0</span> and <span class='m'>tan θ &gt; 0</span>, which quadrant is θ in?", opts: ["I", "II", "III", "IV"], ans: 2, ex: "sin &lt; 0 means QIII or QIV. tan &gt; 0 means QI or QIII. Both together: <b>Quadrant III</b> (\"<b>T</b>ake\": only tan is positive)." },
+  { type: "in", q: "If <span class='m'>cos θ = -\\f{3}{5}</span> and θ is in Quadrant II, find <span class='m'>sin θ</span>.", ans: 0.8, show: "\\f{4}{5}", ex: "<span class='m'>sin^2θ = 1 - cos^2θ = 1 - \\f{9}{25} = \\f{16}{25}</span>, so <span class='m'>sin θ = ±\\f{4}{5}</span>. Sine is <b>positive</b> in QII, so <span class='m'>\\f{4}{5}</span>." },
+  { type: "mc", q: "What is the reference angle of 240°?", opts: ["30°", "60°", "120°", "40°"], ans: 1, ex: "240° is in Quadrant III, so the reference angle is 240° − 180° = <b>60°</b>." },
+  { type: "mc", q: "Simplify: <span class='m'>sin x · cot x</span>", opts: ["cos x", "\\f{sin^2x}{cos x}", "1", "tan x"], ans: 0, ex: "<span class='m'>sin x · \\f{cos x}{sin x} = cos x</span>. The sin x cancels." },
+  { type: "mc", q: "Simplify: <span class='m'>\\f{sec^2x - 1}{tan x}</span>", opts: ["tan x", "1", "cot x", "sec x"], ans: 0, ex: "From <span class='m'>1 + tan^2x = sec^2x</span>, we get <span class='m'>sec^2x - 1 = tan^2x</span>. Then <span class='m'>\\f{tan^2x}{tan x} = tan x</span>." },
+  { type: "mc", q: "Which expression is equal to <span class='m'>cos 2x</span>?", opts: ["2 cos x", "1 - 2sin^2x", "1 - 2cos^2x", "2 sin x cos x"], ans: 1, ex: "The three forms of the cosine double-angle formula are <span class='m'>cos^2x - sin^2x = 2cos^2x - 1 = 1 - 2sin^2x</span>. (Watch out: <span class='m'>2 sin x cos x</span> is <b>sin</b> 2x, and <span class='m'>1 - 2cos^2x</span> is the <i>negative</i> of cos 2x.)" },
+  { type: "mc", q: "Exact value of <span class='m'>sin 15°</span>:", opts: ["\\f{\\r{6} - \\r{2}}{4}", "\\f{\\r{6} + \\r{2}}{4}", "\\f{\\r{3} - 1}{2}", "\\f{1}{4}"], ans: 0, ex: "<span class='m'>sin(45° - 30°) = sin 45° cos 30° - cos 45° sin 30° = \\f{\\r{6}}{4} - \\f{\\r{2}}{4} = \\f{\\r{6} - \\r{2}}{4}</span> ≈ 0.2588." },
+  { type: "list", q: "Solve <span class='m'>2cos x - 1 = 0</span> on <span class='m'>[0, 2π)</span>. Separate answers with commas.", ans: [PI / 3, 5 * PI / 3], show: "\\f{π}{3}, \\f{5π}{3}", ex: "<span class='m'>cos x = \\f{1}{2}</span>. Reference angle <span class='m'>\\f{π}{3}</span>; cosine is positive in QI and QIV: <span class='m'>x = \\f{π}{3}</span> and <span class='m'>2π - \\f{π}{3} = \\f{5π}{3}</span>." },
+  { type: "list", q: "Solve <span class='m'>tan^2x = 3</span> on <span class='m'>[0, 2π)</span>. Separate answers with commas.", ans: [PI / 3, 2 * PI / 3, 4 * PI / 3, 5 * PI / 3], show: "\\f{π}{3}, \\f{2π}{3}, \\f{4π}{3}, \\f{5π}{3}", ex: "<span class='m'>tan x = ±\\r{3}</span> (don't forget the negative root!). Reference angle <span class='m'>\\f{π}{3}</span>, and tan is ± in every quadrant, so there's one solution per quadrant: <span class='m'>\\f{π}{3}, \\f{2π}{3}, \\f{4π}{3}, \\f{5π}{3}</span>." }
+];
+(function practice() {
+  const list = $("#qList"), N = PROBLEMS.length, state = PROBLEMS.map(() => ({ first: null, solved: false }));
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  function score() {
+    const right = state.filter(s => s.first === true).length, answered = state.filter(s => s.first !== null).length;
+    $("#scoreTxt").textContent = `Score: ${right} / ${N}`; $("#scoreSub").textContent = `${answered} answered`;
+    $("#scoreMeter").style.width = right / N * 100 + "%";
+    if (answered === N && !score.celebrated) {
+      score.celebrated = true;
+      if (right === N) { Confetti.burst(220); toast("PERFECT SCORE! 🏆 You're a trig master!"); }
+      else if (right >= 12) { Confetti.burst(); toast(`${right}/${N}! Excellent work! 🌟`); }
+      else toast(`${right}/${N}. Review the explanations and hit Reset to try again 💪`);
+    }
+  }
+  function record(i, ok, card) {
+    const s = state[i];
+    if (s.first === null) s.first = ok;
+    if (ok) s.solved = true;
+    card.classList.toggle("right", ok); card.classList.toggle("wrong", !ok && !s.solved);
+    score();
+  }
+  function fb(card, cls, html) { const f = $(".fb", card); f.className = "fb on " + cls; f.innerHTML = html; renderMath(f); }
+  function build() {
+    list.innerHTML = ""; score.celebrated = false;
+    PROBLEMS.forEach((P, i) => {
+      const card = document.createElement("div"); card.className = "q";
+      let body = "";
+      if (P.type === "mc") {
+        const order = shuffle(P.opts.map((_, k) => k));
+        body = `<div class="opts">${order.map(k => `<button class="btn opt" data-k="${k}"><span class="m">${P.opts[k]}</span></button>`).join("")}</div>`;
+      } else {
+        body = `<div class="ansrow"><input type="text" class="mathin" placeholder="${P.type === "list" ? "e.g. pi/6, 5pi/6" : "e.g. sqrt(3)/2"}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your answer">
+          <div class="keypad"><button class="btn small" data-ins="√(">√</button><button class="btn small" data-ins="π">π</button><button class="btn small" data-ins="/">/</button><button class="btn small" data-ins="-">−</button></div>
+          <button class="btn primary chk">Check</button></div><div class="preview"></div>`;
+      }
+      card.innerHTML = `<div class="qhead"><span class="qn">${i + 1}.</span><span class="prompt">${P.q}</span></div>${body}<div class="fb"></div>`;
+      list.appendChild(card); renderMath(card);
+      if (P.type === "mc") {
+        $$(".opt", card).forEach(b => b.onclick = () => {
+          const k = +b.dataset.k, ok = k === P.ans;
+          b.classList.add(ok ? "sel-right" : "sel-wrong");
+          if (ok) { $$(".opt", card).forEach(x => x.disabled = true); fb(card, "ok", "✅ <b>Correct!</b> " + P.ex); }
+          else fb(card, "no", "❌ Not quite, try again! <details class='small'><summary>Show explanation</summary>" + P.ex + "</details>");
+          record(i, ok, card);
+        });
+      } else {
+        const inp = $("input", card), prev = $(".preview", card);
+        inp.addEventListener("input", () => {
+          const v = inp.value.trim(); if (!v) { prev.innerHTML = ""; return; }
+          try { prev.innerHTML = "you typed: " + v.split(/[,;]/).map(s => `<span class="m">${tex(makeFn(s, { noVar: true }).tex)}</span>`).join(", "); }
+          catch (e) { prev.innerHTML = /^\s*(und|dne|none|no sol)/i.test(v) ? "you typed: undefined" : `<span class="small">${escapeHTML(e.message)}</span>`; }
+        });
+        $$("[data-ins]", card).forEach(b => b.onclick = () => {
+          const s = inp.selectionStart ?? inp.value.length, e = inp.selectionEnd ?? s, ins = b.dataset.ins;
+          inp.value = inp.value.slice(0, s) + ins + inp.value.slice(e); inp.focus(); inp.setSelectionRange(s + ins.length, s + ins.length); inp.dispatchEvent(new Event("input"));
+        });
+        const check = () => {
+          const v = inp.value.trim(); if (!v) return;
+          if (state[i].solved) return;
+          const res = gradeInput(P, v);
+          if (res.nudge) { fb(card, "info", res.nudge); return; }
+          record(i, res.ok, card);
+          if (res.ok) { inp.disabled = true; $(".chk", card).disabled = true; fb(card, "ok", `✅ <b>Correct!</b> <span class="m">${P.show}</span>. ${P.ex}`); }
+          else fb(card, "no", `❌ ${res.msg || "Not quite."} Try again! <details class="small"><summary>Show explanation &amp; answer</summary>${P.ex}<br>Answer: <span class="m">${P.show}</span></details>`);
+        };
+        $(".chk", card).onclick = check; inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+      }
+    });
+    score();
+  }
+  $("#practiceReset").onclick = () => { state.forEach(s => { s.first = null; s.solved = false; }); build(); };
+  build();
+})();
+/* grading for typed answers (exported for testing) */
+function gradeInput(P, v) {
+  const close = (a, b) => Math.abs(a - b) < 1e-6;
+  if (P.type === "in") {
+    if (/^\s*(und|dne|undefined|none)/i.test(v)) return { ok: false, msg: "It's actually defined here." };
+    let n; try { n = makeFn(v, { noVar: true }).f(0); } catch (e) { return { nudge: "⚠ " + escapeHTML(e.message) }; }
+    if (!isFinite(n)) return { ok: false, msg: "That expression is undefined." };
+    if (/\d\.\d|^\.\d|[^\d]\.\d/.test(v)) return close(n, P.ans) || Math.abs(n - P.ans) < 0.0006 ? { nudge: "🔢 That's the right <i>decimal</i>! Now write it as an <b>exact</b> value (use √ and fractions)." } : { ok: false };
+    if (close(n, P.ans)) return { ok: true };
+    if (close(n, -P.ans)) return { ok: false, msg: "Right size, wrong <b>sign</b>. Check the quadrant!" };
+    if (close(n, 1 / P.ans)) return { ok: false, msg: "That's the <b>reciprocal</b> of the answer." };
+    return { ok: false };
+  }
+  if (P.type === "list") {
+    let vals;
+    try { vals = v.split(/[,;]|\band\b/).map(s => s.trim()).filter(Boolean).map(s => makeFn(s, { noVar: true }).f(0)); }
+    catch (e) { return { nudge: "⚠ " + escapeHTML(e.message) }; }
+    const asDeg = vals.every(x => P.ans.some(a => close(x * PI / 180, a))) && vals.some(x => x > 7);
+    if (asDeg) return { nudge: "Those look like <b>degrees</b>. The interval [0, 2π) means radians, e.g. <code>pi/3</code>." };
+    if (/\d\.\d/.test(v)) return { nudge: "🔢 Use exact values with π, like <code>2pi/3</code>, not decimals." };
+    const outside = vals.filter(x => x < -1e-9 || x >= TAU - 1e-9);
+    if (outside.length) return { ok: false, msg: "Some answers are outside [0, 2π)." };
+    const found = P.ans.filter(a => vals.some(x => close(x, a))).length;
+    const extra = vals.filter(x => !P.ans.some(a => close(x, a))).length;
+    if (found === P.ans.length && !extra) return { ok: true };
+    if (!extra && found > 0) return { ok: false, msg: `You found ${found} of ${P.ans.length} solutions. There are more!` };
+    return { ok: false, msg: extra ? `${extra} of your answers ${extra > 1 ? "don't" : "doesn't"} work.` : "" };
+  }
+}
+
+/* ---------- unit circle speed drill ---------- */
+(function drill() {
+  const VAL = { "0": 0, "1": 1, "-1": -1, "\\f{1}{2}": .5, "-\\f{1}{2}": -.5, "\\f{\\r{2}}{2}": R2 / 2, "-\\f{\\r{2}}{2}": -R2 / 2, "\\f{\\r{3}}{2}": R3 / 2, "-\\f{\\r{3}}{2}": -R3 / 2, "\\f{\\r{3}}{3}": R3 / 3, "-\\f{\\r{3}}{3}": -R3 / 3, "\\r{3}": R3, "-\\r{3}": -R3, "undefined": NaN };
+  const POOL = Object.keys(VAL);
+  let score = 0, streak = 0, timeLeft = 60, timer = 0, running = false, cur = null, best = LS.get("drillBest", 0), answered = 0;
+  $("#dBest").textContent = best;
+  function newQ() {
+    const d = SPECIAL[Math.floor(Math.random() * 16)], f = ["sin", "cos", "tan"][Math.floor(Math.random() * 3)], ex = exactTrig(d);
+    const ans = f === "tan" ? (ex.tan === null ? "undefined" : ex.tan) : ex[f];
+    const useDeg = Math.random() < .3;
+    const opts = new Set([ans]);
+    const neg = ans.startsWith("-") ? ans.slice(1) : ans === "0" || ans === "undefined" ? null : "-" + ans;
+    if (neg && VAL[neg] !== undefined) opts.add(neg);
+    const other = f === "sin" ? ex.cos : f === "cos" ? ex.sin : (ex.tan === null ? "0" : null);
+    if (other && VAL[other] !== undefined) opts.add(other);
+    while (opts.size < 4) opts.add(POOL[Math.floor(Math.random() * POOL.length)]);
+    cur = { ans, list: [...opts].sort(() => Math.random() - .5) };
+    $("#dQ").innerHTML = `<span class="m">${tex(useDeg ? `${f} ${d}°` : `${f}(${degToRadTex(d)})`)}</span>`;
+    $("#dOpts").innerHTML = cur.list.map(o => `<button class="btn opt" data-v="${escapeHTML(o)}"><span class="m">${tex(o)}</span></button>`).join("");
+    $$("#dOpts .opt").forEach(b => b.onclick = () => pick(b));
+  }
+  function pick(b) {
+    if (!running) return;
+    answered++;
+    const ok = b.dataset.v === cur.ans, card = $("#drill");
+    if (ok) { score++; streak++; } else { streak = 0; }
+    card.classList.remove("flash-ok", "flash-no"); void card.offsetWidth; card.classList.add(ok ? "flash-ok" : "flash-no");
+    $("#dMsg").innerHTML = ok ? (streak >= 5 && streak % 5 === 0 ? `🔥 ${streak} in a row!` : "✓") : `✗ It was <span class="m">${tex(cur.ans)}</span>`;
+    $("#dScore").textContent = score; $("#dStreak").textContent = streak;
+    newQ();
+  }
+  function tick() {
+    timeLeft -= .2; $("#dTime").textContent = Math.max(0, Math.ceil(timeLeft)); $("#dTimer").style.width = Math.max(0, timeLeft / 60 * 100) + "%";
+    if (timeLeft <= 0) end();
+  }
+  function end() {
+    running = false; clearInterval(timer); $("#dOpts").innerHTML = ""; $("#dStart").textContent = "Play again";
+    const acc = answered ? Math.round(score / answered * 100) : 0;
+    $("#dQ").innerHTML = `⏱ ${score} correct!`;
+    if (score > best) { best = score; LS.set("drillBest", best); $("#dBest").textContent = best; $("#dMsg").innerHTML = `🏆 <b>New best score!</b> Accuracy ${acc}%.`; if (score > 0) Confetti.burst(); }
+    else $("#dMsg").innerHTML = `Accuracy ${acc}%. Best: ${best}. Can you beat it?`;
+  }
+  $("#dStart").onclick = () => { if (running) return; score = 0; streak = 0; answered = 0; timeLeft = 60; running = true; $("#dScore").textContent = 0; $("#dStreak").textContent = 0; $("#dMsg").textContent = ""; $("#dStart").textContent = "Go go go!"; newQ(); timer = setInterval(tick, 200); };
+  window.__drill = { newQ, get cur() { return cur; } };
+})();
+
+/* ---------- cheat sheet ---------- */
+(function cheat() {
+  const svg = $("#cheatSvg");
+  S("line", { x1: -1.7, y1: 0, x2: 1.7, y2: 0, style: "stroke:var(--axis);stroke-width:.008" }, svg);
+  S("line", { x1: 0, y1: -1.7, x2: 0, y2: 1.7, style: "stroke:var(--axis);stroke-width:.008" }, svg);
+  S("circle", { r: 1, fill: "none", style: "stroke:var(--text);stroke-width:.014" }, svg);
+  SPECIAL.forEach(d => {
+    const a = d * PI / 180;
+    S("line", { x1: 0, y1: 0, x2: Math.cos(a), y2: -Math.sin(a), style: "stroke:var(--line);stroke-width:.006" }, svg);
+    S("circle", { cx: Math.cos(a), cy: -Math.sin(a), r: .02, style: "fill:var(--accent2)" }, svg);
+    if (d % 90) S("text", { x: .78 * Math.cos(a), y: -.78 * Math.sin(a) + .02, "text-anchor": "middle", "font-size": .07, style: "fill:var(--muted)", text: d + "°" }, svg);
+  });
+  [["A", .3, -.24], ["S", -.3, -.24], ["T", -.3, .36], ["C", .3, .36]].forEach(([t, x, y]) => S("text", { x, y, "text-anchor": "middle", "font-size": .16, style: "fill:var(--accent);opacity:.35;font-weight:800", text: t }, svg));
+  drawSpecialLabels(S("g", {}, svg), { r: 1.07, fs: .084, deg: false });
+  $("#printBtn").onclick = () => window.print();
+})();
+
+redrawAll();
+
+</script>
+</body>
+</html>
